@@ -1,8 +1,14 @@
 # We do not target python2.
 # Which python3 versions should we target? 3.6+ seems like a good idea.
 
-from typing import List, IO
+from typing import Optional, Union, List, IO
+
 import zipfile
+from textwrap import dedent
+from packaging.tags import parse_tag
+
+
+__version__ = '0.0.1'
 
 
 # Implements dict-style indices.
@@ -14,13 +20,73 @@ class PackageMeta:
     pass
 
 
-# Implements dict-style indices.
-# Should ensure that the contents are always correct.
-# Should rewrite itself to the zipfile on the fly? This would mean it has to
-# take one, which might not be the best usecase for it.
-# Wheel-Version should not be changeable.
+# TODO: reimplement using dataclasses
 class WheelMeta:
-    pass
+    """Implements .dist-info/WHEEL file format.
+
+    Descriptions of parameters based on PEP-427. All parameters are keyword
+    only.
+
+    Note
+    ----
+    Wheel-Version, the wheel format version specifier, is unchangable. Version
+    "1.0" is used.
+
+    Parameters
+    ----------
+    generator
+        Name and (optionally) version of the generator that generated the wheel
+        file. By default, "wheelfile {__version__}" is used.
+
+    root_is_purelib
+        Defines whether the root of the wheel file should be first unpacked into
+        purelib directory (see distutils.command.install.INSTALL_SCHEMES).
+
+    tags
+        See PEP-425 - "Compatibility Tags for Built Distributions". Either a
+        single string denoting one tag or a list of tags. Tags may contain
+        compressed tag sets, in which case they will be expanded.
+
+        By default, 'py2.py3-none-any' is used.
+
+    build
+        Optional build number. Used as a tie breaker when two wheels have the
+        same version.
+    """
+    def __init__(self, *,
+                 generator: str = 'wheelfile ' + __version__,
+                 root_is_purelib: bool = True,
+                 tags: Union[List[str], str] = 'py2.py3-none-any',
+                 build: Optional[int] = None):
+        # self.wheel_version = '1.0' by property
+        self.generator = generator
+        self.root_is_purelib = root_is_purelib
+        self.tags = self._extend_tags(
+            tags if isinstance(tags, list) else [tags]
+        )
+        self.build = build
+
+    @property
+    def wheel_version(self):
+        return '1.0'
+
+    def _extend_tags(self, tags: List[str]) -> List[str]:
+        extended_tags = []
+        for tag in tags:
+            extended_tags.extend([str(t) for t in parse_tag(tag)])
+        return extended_tags
+
+    def __str__(self):
+        text = (dedent(
+            f"""\
+            Wheel-Version: {self.wheel_version}
+            Generator: {self.generator}
+            Root-Is-Purelib: {str(self.root_is_purelib).lower()}
+            """
+        ) + '\n'.join(f"Tag: {tag}" for tag in self.tags) + '\n'
+          + (f"Build: {self.build}\n" if self.build else '')
+        )
+        return text
 
 
 # This should take a zipfile and write itself into it on each recalculation.
