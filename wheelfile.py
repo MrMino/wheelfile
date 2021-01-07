@@ -21,7 +21,7 @@ class PackageMeta:
 
 
 # TODO: reimplement using dataclasses
-class WheelMeta:
+class WheelData:
     """Implements .dist-info/WHEEL file format.
 
     Descriptions of parameters based on PEP-427. All parameters are keyword
@@ -193,7 +193,7 @@ class WheelFile:
     # This name is kinda verbose and can still be conflated with
     # "package_metadata".
     @property
-    def wheel_metadata(self) -> WheelMeta:
+    def wheel_metadata(self) -> WheelData:
         pass
 
     # Too verbpose?

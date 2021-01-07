@@ -1,12 +1,12 @@
 import pytest
 
-from wheelfile import __version__ as lib_version, WheelMeta
+from wheelfile import __version__ as lib_version, WheelData
 from textwrap import dedent
 
 
-class TestWheelMeta:
+class TestWheelData:
     def test_simple_init(self):
-        wm = WheelMeta()
+        wm = WheelData()
         assert (wm.generator.startswith('wheelfile ')
                 and wm.root_is_purelib is True
                 and set(wm.tags) == set(['py2-none-any', 'py3-none-any'])
@@ -16,7 +16,7 @@ class TestWheelMeta:
         args = {}
         args.update(generator='test', root_is_purelib=False,
                     tags='my-awesome-tag', build=2)
-        wm = WheelMeta(**args)
+        wm = WheelData(**args)
 
         assert (wm.generator == args['generator']
                 and wm.root_is_purelib == args['root_is_purelib']
@@ -24,7 +24,7 @@ class TestWheelMeta:
                 and wm.build == args['build'])
 
     def test_tags_are_extended(self):
-        wm = WheelMeta(tags=['py2.py3-none-any', 'py2-cp3.cp2-manylinux1'])
+        wm = WheelData(tags=['py2.py3-none-any', 'py2-cp3.cp2-manylinux1'])
         expected_tags = [
             'py2-none-any',
             'py3-none-any',
@@ -34,7 +34,7 @@ class TestWheelMeta:
         assert set(wm.tags) == set(expected_tags)
 
     def test_single_tag_is_extended(self):
-        wm = WheelMeta(tags='py2.py3-none-any')
+        wm = WheelData(tags='py2.py3-none-any')
         expected_tags = [
             'py2-none-any',
             'py3-none-any',
@@ -42,11 +42,11 @@ class TestWheelMeta:
         assert set(wm.tags) == set(expected_tags)
 
     def test_wheel_version_is_1_0(self):
-        wm = WheelMeta()
+        wm = WheelData()
         assert wm.wheel_version == '1.0'
 
     def test_wheel_version_is_not_settable(self):
-        wm = WheelMeta()
+        wm = WheelData()
         with pytest.raises(AttributeError):
             wm.wheel_version = '2.0'
 
@@ -60,11 +60,11 @@ class TestWheelMeta:
             Build: 123
             """
         )
-        wm = WheelMeta(tags='py2-none-any', build=123)
+        wm = WheelData(tags='py2-none-any', build=123)
         assert str(wm) == expected_contents
 
     def test_changing_attributes_changes_str(self):
-        wm = WheelMeta()
+        wm = WheelData()
         wm.generator = 'test'
         wm.root_is_purelib = False
         wm.tags = ['my-test-tag', 'another-test-tag']
