@@ -65,7 +65,6 @@ class TestWheelMeta:
 
     def test_changing_attributes_changes_str(self):
         wm = WheelMeta()
-
         wm.generator = 'test'
         wm.root_is_purelib = False
         wm.tags = ['my-test-tag', 'another-test-tag']
