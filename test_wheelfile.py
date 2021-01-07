@@ -82,3 +82,10 @@ class TestWheelData:
         )
 
         assert str(wm) == expected_contents
+
+    def test_breaks_when_multiple_use_arg_is_given_a_single_string(self):
+        wm = WheelData()
+        wm.tags = "this is a tag"
+
+        with pytest.raises(AssertionError):
+            str(wm)

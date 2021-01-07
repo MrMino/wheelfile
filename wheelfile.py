@@ -77,6 +77,9 @@ class WheelData:
         return extended_tags
 
     def __str__(self):
+        # TODO Custom exception? Exception message?
+        assert isinstance(self.tags, list)
+
         text = (dedent(
             f"""\
             Wheel-Version: {self.wheel_version}
