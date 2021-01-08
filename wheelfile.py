@@ -355,7 +355,7 @@ class WheelData:
     """Implements .dist-info/WHEEL file format.
 
     Descriptions of parameters based on PEP-427. All parameters are keyword
-    only.
+    only. Attributes of objects of this class follow parameter names.
 
     Note
     ----
@@ -377,7 +377,7 @@ class WheelData:
         single string denoting one tag or a list of tags. Tags may contain
         compressed tag sets, in which case they will be expanded.
 
-        By default, 'py2.py3-none-any' is used.
+        By default, "py2.py3-none-any" (the universal tag) is used.
 
     build
         Optional build number. Used as a tie breaker when two wheels have the
