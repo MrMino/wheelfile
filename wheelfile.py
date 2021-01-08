@@ -24,16 +24,333 @@ def _slots_from_params(func):
     return slots
 
 
-# Implements dict-style indices.
-# Should ensure that the contents are always correct.
-# Should rewrite itself to the zipfile on the fly? This would mean it has to
-# take one, which might not be the best usecase for it.
-# Meta-Version should not be changeable.
-class PackageMeta:
-    pass
-
-
 # TODO: reimplement using dataclasses
+# TODO: add version to the class name, reword the "Note"
+# TODO: to_dict
+# name regex for validation: ^([A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])$
+# TODO: helper-function or consts for description_content_type
+# TODO: what to do with empty lines in multiline fields (e.g. license)?
+# TODO: from_str
+# TODO: parse version using packaging.version.parse?
+# TODO: values validation
+# TODO: validate provides_extras ↔ requires_dists?
+# TODO: validate values charset-wise
+# TODO: to_json?
+# TODO: ensure name is the same as wheelfile name
+class MetaData:
+    """Implements Wheel Metadata format v2.1.
+
+    Descriptions of parameters based on
+    https://packaging.python.org/specifications/core-metadata/. All parameters
+    are keyword only. Attributes of objects of this class follow parameter
+    names.
+
+    All parameters except "name" and "version" are optional.
+
+    Note
+    ----
+    Metadata-Version, the metadata format version specifier, is unchangable.
+    Version "2.1" is used.
+
+    Parameters
+    ----------
+    name
+        Primary identifier for the distribution that uses this metadata. Must
+        start and end with a letter or number, and consists only of ASCII
+        alphanumerics, hyphen, underscore, and period.
+
+    version
+        A string that contains PEP-440 compatible version identifier.
+
+    summary
+        A one-line sentence describing this distribution.
+
+    description
+        Longer text that describes this distribution in detail. Can be written
+        using plaintext, reStructuredText, or Markdown (see
+        description_content_type parameter below).
+
+        The string given for this field should not include RFC 822 indentation
+        followed by a "|" symbol - this is added (removed) automatically by
+        this class on conversions to (and from) string, but should not be
+        included in the class initialization.
+
+    description_content_type
+        Defines content format of the text put in the "description" argument.
+        The field value should follow the following structure:
+
+            <type/subtype>; charset=<charset>[; <param_name>=<param value> ...]
+
+        Valid type/subtype strings are:
+            - text/plain
+            - text/x-rst
+            - text/markdown
+
+        For charset parameter, the only legal value is UTF-8.
+
+        For text/markdown, parameter "variant=<variant>" specifies variant of
+        the markdown used. Currently recognized variants include "GFM" and
+        "CommonMark".
+
+        Examples:
+
+            Description-Content-Type: text/markdown; charset=UTF-8; variant=GFM
+
+            Description-Content-Type: text/markdown
+
+    keywords
+        List of search keywords for this distribution. Optionally a single
+        string literal with keywords separated by commas.
+
+        Note: despite the name being a plural noun, the specification defines
+        this field as a single-use field. In this implementation however, the
+        value of the attribute after instance initialization is a list of
+        strings, and conversions to and from string follow the spec - they
+        require a comma-separated list.
+
+    classifiers
+        List PEP-301 classification values for this distribution, optionally
+        followed by a semicolon and an environmental marker.
+
+        Example of a classifier:
+
+            Operating System :: Microsoft :: Windows :: Windows 10
+
+    author
+        Name and, optionally, contact information of the original author of the
+        distribution.
+
+    author_email
+        Email address of the person specified in the "author" parameter. Format
+        of this field must follow the format of RFC-822 "From:" header field.
+
+    maintainer
+        Name and, optionally, contact information of person currently
+        maintaining the project to which this distribution belongs to.
+
+        Ommit this parameter if the author and current maintainer is the same
+        person.
+
+    maintainer_email
+        Email address of the person specified in the "maintainer" parameter.
+        Format of this field must follow the format of RFC-822 "From:" header
+        field.
+
+        Ommit this parameter if the author and current maintainer is the same
+        person.
+
+    license
+        Text of the license that covers this distribution. If license
+        classifier is used, this parameter may be ommited or used to specify the
+        particular version of the intended legal text.
+
+    home_page
+        URL of the home page for this distribution (project).
+
+    download_url
+        URL from which this distribution (in this version) can be downloaded.
+
+    project_urls
+        List of URLs with labels for them, in the following format:
+
+            <label>, <url>
+
+        The label must be at most 32 characters.
+
+        Example of an item of this list:
+
+            Repository, https://github.com/MrMino/wheelfile
+
+    platforms
+        List of strings that signify supported operating systems. Use only if
+        an OS cannot be listed by using a classifier.
+
+    supported_platforms
+        In binary distributions list of strings, each defining an operating
+        system and a CPU for which the distribution was compiled.
+
+        Semantics of this field aren't formalized by metadata specifications.
+
+    requires_python
+        PEP-440 version identificator, that specifies the set Python language
+        versions that this distribution is compatible with.
+
+        Some package management tools (most notably pip) use the value of this
+        field to filter out installation candidates.
+
+        Example:
+
+            ~=3.5,!=3.5.1,!=3.5.0
+
+    requires_dists
+        List of PEP-508 dependency specifiers (think line-split contents of
+        requirements.txt).
+
+    requires_externals
+        List of system dependencies that this distribution requires.
+
+        Each item is a string with a name of the dependency optionally followed
+        by a version (in the same way items in "requires_dists") are specified.
+
+        Each item may end with a semicolon followed by a PEP-496 environment
+        markers.
+
+    provides_extras
+        List of names of optional features provided by a distribution. Used to
+        specify which dependencies should be installed depending on which of
+        these optional features are requested.
+
+        For example, if you specified "network" and "ssh" as optional features,
+        the following requirement specifier can be used in "requires_externals"
+        list to indicate, that the "paramiko" dependency should only be
+        installed when "ssh" feature is requested:
+
+            paramiko; extra == "ssh"
+
+        or
+
+            paramiko[ssh]
+
+        If a dependency is required by multiple features, the features can be
+        specified in a square brackets, separated by commas:
+
+            ipython[repl, jupyter_kernel]
+
+        Specifying an optional feature without using it in "requires_externals"
+        is considered invalid.
+
+        Feature names "tests" and "doc" are reserved in their semantics. They
+        can be used for dependencies of automated testing or documentation
+        generation.
+
+    provides_dists
+        List of names of other distributions contained within this one. Each
+        entry must follow the same format that entries in "requires_dists" list
+        do.
+
+        Different distributions may use a name that does not correspond to any
+        particular project, to indicate a capability to provide a certain
+        feature, e.g. "relational_db" may be used to say that a project
+        provides relational database capabilities
+
+    obsoletes_dists
+        List of names of distributions obsoleted by installing this one,
+        indicating that they should not coexist in a single environment with
+        this one. Each entry must follow the same format that entries in
+        "requires_dists" list do.
+    """
+    def __init__(self, *, name: str, version: str,
+                 summary: Optional[str] = None,
+                 description: Optional[str] = None,
+                 description_content_type: Optional[str] = None,
+                 keywords: Union[List[str], str, None] = None,
+                 classifiers: Optional[List[str]] = None,
+                 author: Optional[str] = None,
+                 author_email: Optional[str] = None,
+                 maintainer: Optional[str] = None,
+                 maintainer_email: Optional[str] = None,
+                 license: Optional[str] = None,
+                 home_page: Optional[str] = None,
+                 download_url: Optional[str] = None,
+                 project_urls: Optional[List[str]] = None,
+                 platforms: Optional[List[str]] = None,
+                 supported_platforms: Optional[List[str]] = None,
+                 requires_python: Optional[str] = None,
+                 requires_dists: Optional[List[str]] = None,
+                 requires_externals: Optional[List[str]] = None,
+                 provides_extras: Optional[List[str]] = None,
+                 provides_dists: Optional[List[str]] = None,
+                 obsoletes_dists: Optional[List[str]] = None
+                 ):
+        self.name = name
+        self.version = version
+
+        self.summary = summary
+        self.description = description
+        self.description_content_type = description_content_type
+        self.keywords = keywords or []
+        self.classifiers = classifiers or []
+
+        self.author = author
+        self.author_email = author_email
+        self.maintainer = maintainer
+        self.maintainer_email = maintainer_email
+
+        self.license = license
+
+        self.home_page = home_page
+        self.download_url = download_url
+        self.project_urls = project_urls or []
+
+        self.platforms = platforms or []
+        self.supported_platforms = supported_platforms or []
+
+        self.requires_python = requires_python
+        self.requires_dists = requires_dists or []
+        self.requires_externals = requires_externals or []
+        self.provides_extras = provides_extras or []
+        self.provides_dists = provides_dists or []
+        self.obsoletes_dists = obsoletes_dists or []
+
+    __slots__ = _slots_from_params(__init__)
+
+    @property
+    def metadata_version(self):
+        return '2.1'
+
+    def _multiple_use(self, meta_field_name):
+        """Takes a proper spec-name of metadata field, finds a list for it in
+        this instance, and returns a list of lines that should be appended to
+        the metadata text.
+
+        Instance field names must be plural (end with an "s"), values of those
+        fields must be instances of list.
+        """
+        attr_name = meta_field_name.lower().replace('-', '_') + 's'
+        values = getattr(self, attr_name)
+
+        assert isinstance(values, list)
+
+        return '\n'.join(f"{meta_field_name}: {v}" for v in values) + '\n'
+
+    def __str__(self):
+        return (
+            dedent(f"""\
+                Metadata-Version: {self.metadata_version}
+                Name: {self.name}
+                Version: {self.version}
+            """)
+            + dedent(f"""\
+                Summary: {self.summary}
+                Description-Content-Type: {self.description_content_type}
+                Keywords: {','.join(self.keywords)}
+                Home-page: http://example.com/package-name/1.2.3
+                Download-URL: http://example.com/package-name/1.2.3/download
+                Author: MrMino
+                Author-email: mrmino@example.com
+                Maintainer: NotMrMino
+                Maintainer-email: not.mrmino@example.com
+                License: Distribution of this code hinges on the fact that this
+                        test does not fail.
+                Requires-Python: ~=3.6
+            """)
+            + self._multiple_use('Platform')
+            + self._multiple_use('Supported-Platform')
+            + self._multiple_use('Classifier')
+            + self._multiple_use('Requires-Dist')
+            + self._multiple_use('Requires-External')
+            + self._multiple_use('Project-URL')
+            + self._multiple_use('Provides-Extra')
+            + self._multiple_use('Obsoletes-Dist')
+            + '\n' + self.description
+        )
+
+
+# TODO: reimplement using dataclasses?
+# TODO: add version to the class name, reword the "Note"
+# TODO: from_str
+# TODO: values validation
+# TODO: to_json?
 class WheelData:
     """Implements .dist-info/WHEEL file format.
 

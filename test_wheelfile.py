@@ -1,7 +1,151 @@
 import pytest
 
-from wheelfile import __version__ as lib_version, WheelData
+from wheelfile import __version__ as lib_version, WheelData, MetaData
 from textwrap import dedent
+
+
+class TestMetadata:
+    def test_only_name_and_version_is_required(self):
+        md = MetaData(name='my-package', version='1.2.3')
+        assert md.name == 'my-package' and md.version == '1.2.3'
+
+    @pytest.fixture
+    def metadata(self):
+        return MetaData(name='my-package', version='1.2.3')
+
+    def test_metadata_version_is_2_1(self, metadata):
+        assert metadata.metadata_version == '2.1'
+
+    def test_metadata_version_is_unchangeable(self, metadata):
+        with pytest.raises(AttributeError):
+            metadata.metadata_version = '3.0'
+
+    def test_plural_params_default_to_empty_lists(self, metadata):
+        # Each of the attribute names here should end with an "s".
+        assert (metadata.keywords == []
+                and metadata.classifiers == []
+                and metadata.project_urls == []
+                and metadata.platforms == []
+                and metadata.supported_platforms == []
+                and metadata.requires_dists == []
+                and metadata.requires_externals == []
+                and metadata.provides_extras == []
+                and metadata.provides_dists == []
+                and metadata.obsoletes_dists == [])
+
+    @pytest.fixture
+    def full_usage(self):
+        description = dedent("""\
+
+            Some
+
+            Long
+
+            Description
+        """)
+        license = dedent("""\
+            Distribution of this code hinges on the fact that this test does not
+            fail.
+        """)
+        kwargs = {
+            'name': 'package-name',
+            'version': '1.2.3',
+            'summary': "this is a test",
+            'description': description,
+            'description_content_type': 'text/plain',
+            'keywords': ["test", "unittests", "package", "wheelfile"],
+            'classifiers': ["Topic :: Software Development :: Testing",
+                            "Framework :: Pytest"],
+            'author': "MrMino",
+            'author_email': "mrmino@example.com",
+            'maintainer': "NotMrMino",
+            'maintainer_email': "not.mrmino@example.com",
+            'license': license,
+            'home_page': "http://example.com/package-name/1.2.3",
+            'download_url': "http://example.com/package-name/1.2.3/download",
+            'project_urls': ["Details: http://example.com/package-name/"],
+            'platforms': ["SomeOS", "SomeOtherOS"],
+            'supported_platforms': ["some-architecture-128", "my-mips-21"],
+            'requires_python': "~=3.6",
+            'requires_dists': ["wheelfile[metadata]~=1.0", "paramiko"],
+            'requires_externals': ["vim", "zsh"],
+            'provides_extras': ["metadata"],
+            'provides_dists': ["wheel_packaging"],
+            'obsoletes_dists': ["wheel"]
+        }
+
+        return kwargs
+
+    def test_params_are_memorized(self, full_usage):
+        md = MetaData(**full_usage)
+        for field, value in full_usage.items():
+            assert getattr(md, field) == value
+
+    def test_metadata_text_generation(self, full_usage):
+        # Order of the header lines is NOT tested (order in payload - is)
+        expected_headers = dedent("""\
+            Metadata-Version: 2.1
+            Name: package-name
+            Version: 1.2.3
+            Platform: SomeOS
+            Platform: SomeOtherOS
+            Supported-Platform: some-architecture-128
+            Supported-Platform: my-mips-21
+            Summary: this is a test
+            Description-Content-Type: text/plain
+            Keywords: test,unittests,package,wheelfile
+            Home-page: http://example.com/package-name/1.2.3
+            Download-URL: http://example.com/package-name/1.2.3/download
+            Author: MrMino
+            Author-email: mrmino@example.com
+            Maintainer: NotMrMino
+            Maintainer-email: not.mrmino@example.com
+            License: Distribution of this code hinges on the fact that this
+                    test does not fail.
+            Classifier: Topic :: Software Development :: Testing
+            Classifier: Framework :: Pytest
+            Requires-Dist: wheelfile[metadata]~=1.0
+            Requires-Dist: paramiko
+            Requires-Python: ~=3.6
+            Requires-External: vim
+            Requires-External: zsh
+            Project-URL: Details: http://example.com/package-name/
+            Provides-Extra: metadata
+            Obsoletes-Dist: wheel
+        """)
+        expected_payload = dedent("""\
+
+            Some
+
+            Long
+
+            Description
+        """)
+
+        md_text = str(MetaData(**full_usage))
+        headers, payload = md_text.split('\n\n', maxsplit=1)
+        assert set(headers) == set(expected_headers)
+        assert payload == expected_payload
+
+    def test_no_mistaken_attributes(self, metadata):
+        with pytest.raises(AttributeError):
+            metadata.maintainers = ''
+
+        with pytest.raises(AttributeError):
+            metadata.Description = ''
+
+        with pytest.raises(AttributeError):
+            metadata.clasifiers = []
+
+    def test_there_are_24_fields_in_this_metadata_version(self):
+        assert len(
+            [field for field in MetaData.__slots__ if field != '__weakref__']
+            + ['metadata_version']
+        ) == 24
+
+    @pytest.mark.skip
+    def test_keywords_param_accepts_both_a_list_and_comman_separated_str(self):
+        pass
 
 
 class TestWheelData:
