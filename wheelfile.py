@@ -470,6 +470,21 @@ class WheelData:
 
         return str(m)
 
+    @classmethod
+    def from_str(cls, s):
+        m = message_from_string(s)
+        assert m['Wheel-Version'] == '1.0'
+        args = {
+            'generator': m.get('Generator'),
+            'root_is_purelib': bool(m.get('Root-Is-Purelib')),
+            'tags': m.get_all('Tag'),
+        }
+
+        if 'build' in m:
+            args['build'] = int(m.get('build'))
+
+        return cls(**args)
+
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             for attr in self.__slots__:
