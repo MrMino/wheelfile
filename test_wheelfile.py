@@ -33,6 +33,14 @@ class TestMetadata:
                 and metadata.provides_dists == []
                 and metadata.obsoletes_dists == [])
 
+    def test_plural_params_show_up_as_multiple_use(self):
+        multi_fields = {'classifiers', 'project_urls', 'platforms',
+                        'supported_platforms', 'requires_dists',
+                        'requires_externals', 'provides_extras',
+                        'provides_dists', 'obsoletes_dists'}
+        assert all(MetaData.field_is_multiple_use(f) for f in multi_fields)
+        assert not MetaData.field_is_multiple_use('keywords')
+
     @pytest.fixture
     def full_usage(self):
         description = dedent("""\

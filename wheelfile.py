@@ -7,6 +7,7 @@ import zipfile
 from inspect import signature
 from textwrap import dedent
 from packaging.tags import parse_tag
+from email.message import EmailMessage
 
 
 __version__ = '0.0.1'
@@ -67,12 +68,10 @@ class MetaData:
     description
         Longer text that describes this distribution in detail. Can be written
         using plaintext, reStructuredText, or Markdown (see
-        description_content_type parameter below).
+        "description_content_type" parameter below).
 
         The string given for this field should not include RFC 822 indentation
-        followed by a "|" symbol - this is added (removed) automatically by
-        this class on conversions to (and from) string, but should not be
-        included in the class initialization.
+        followed by a "|" symbol. Newline characters are permitted
 
     description_content_type
         Defines content format of the text put in the "description" argument.
@@ -261,6 +260,7 @@ class MetaData:
                  provides_dists: Optional[List[str]] = None,
                  obsoletes_dists: Optional[List[str]] = None
                  ):
+        # self.metadata_version = '2.1' by property
         self.name = name
         self.version = version
 
@@ -297,52 +297,46 @@ class MetaData:
     def metadata_version(self):
         return '2.1'
 
-    def _multiple_use(self, meta_field_name):
-        """Takes a proper spec-name of metadata field, finds a list for it in
-        this instance, and returns a list of lines that should be appended to
-        the metadata text.
+    @classmethod
+    def field_is_multiple_use(cls, field_name):
+        field_name = field_name.lower().replace('-', '_').rstrip('s')
+        if field_name in cls.__slots__ or field_name == 'keyword':
+            return False
+        if field_name + 's' in cls.__slots__:
+            return True
+        else:
+            raise ValueError(f"Unknown field: {field_name}")
 
-        Instance field names must be plural (end with an "s"), values of those
-        fields must be instances of list.
-        """
-        attr_name = meta_field_name.lower().replace('-', '_') + 's'
-        values = getattr(self, attr_name)
-
-        assert isinstance(values, list)
-
-        return '\n'.join(f"{meta_field_name}: {v}" for v in values) + '\n'
+    # TODO: test this
+    @classmethod
+    def attr_name_to_field_name(cls, attribute_name):
+        if cls.field_is_multiple_use(attribute_name):
+            attribute_name = attribute_name[:-1]
+        field_name = attribute_name.title()
+        field_name = field_name.replace('_', '-')
+        field_name = field_name.replace('Url', 'URL')
+        field_name = field_name.replace('-Page', '-page')
+        field_name = field_name.replace('-Email', '-email')
+        return field_name
 
     def __str__(self):
-        return (
-            dedent(f"""\
-                Metadata-Version: {self.metadata_version}
-                Name: {self.name}
-                Version: {self.version}
-            """)
-            + dedent(f"""\
-                Summary: {self.summary}
-                Description-Content-Type: {self.description_content_type}
-                Keywords: {','.join(self.keywords)}
-                Home-page: http://example.com/package-name/1.2.3
-                Download-URL: http://example.com/package-name/1.2.3/download
-                Author: MrMino
-                Author-email: mrmino@example.com
-                Maintainer: NotMrMino
-                Maintainer-email: not.mrmino@example.com
-                License: Distribution of this code hinges on the fact that this
-                        test does not fail.
-                Requires-Python: ~=3.6
-            """)
-            + self._multiple_use('Platform')
-            + self._multiple_use('Supported-Platform')
-            + self._multiple_use('Classifier')
-            + self._multiple_use('Requires-Dist')
-            + self._multiple_use('Requires-External')
-            + self._multiple_use('Project-URL')
-            + self._multiple_use('Provides-Extra')
-            + self._multiple_use('Obsoletes-Dist')
-            + '\n' + self.description
-        )
+        m = EmailMessage()
+        m.add_header("Metadata-Version", self.metadata_version)
+        for attr_name in self.__slots__:
+            content = getattr(self, attr_name)
+            field_name = self._field_name(attr_name)
+
+            if field_name == 'Keywords':
+                content = ','.join(content)
+
+            if self.field_is_multiple_use(field_name):
+                for value in content:
+                    m.add_header(field_name, value)
+            elif field_name == 'Description':
+                m.set_payload(content)
+            else:
+                m.add_header(field_name, content)
+        return str(m)
 
 
 # TODO: reimplement using dataclasses?
