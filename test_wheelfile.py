@@ -5,6 +5,12 @@ from textwrap import dedent
 
 
 class TestMetadata:
+    plurals = {
+        "keywords", "classifiers", "project_urls", "platforms",
+        "supported_platforms", "requires_dists", "requires_externals",
+        "provides_extras", "provides_dists", "obsoletes_dists"
+    }
+
     def test_only_name_and_version_is_required(self):
         md = MetaData(name='my-package', version='1.2.3')
         assert md.name == 'my-package' and md.version == '1.2.3'
@@ -13,6 +19,15 @@ class TestMetadata:
     def metadata(self):
         return MetaData(name='my-package', version='1.2.3')
 
+    def test_basic_to_str(self, metadata):
+        expected = dedent("""\
+            Metadata-Version: 2.1
+            Name: my-package
+            Version: 1.2.3
+
+        """)
+        assert str(metadata) == expected
+
     def test_metadata_version_is_2_1(self, metadata):
         assert metadata.metadata_version == '2.1'
 
@@ -20,25 +35,16 @@ class TestMetadata:
         with pytest.raises(AttributeError):
             metadata.metadata_version = '3.0'
 
-    def test_plural_params_default_to_empty_lists(self, metadata):
+    @pytest.mark.parametrize('field', plurals)
+    def test_plural_params_default_to_empty_lists(self, metadata, field):
         # Each of the attribute names here should end with an "s".
-        assert (metadata.keywords == []
-                and metadata.classifiers == []
-                and metadata.project_urls == []
-                and metadata.platforms == []
-                and metadata.supported_platforms == []
-                and metadata.requires_dists == []
-                and metadata.requires_externals == []
-                and metadata.provides_extras == []
-                and metadata.provides_dists == []
-                and metadata.obsoletes_dists == [])
+        assert getattr(metadata, field) == []
 
-    def test_plural_params_show_up_as_multiple_use(self):
-        multi_fields = {'classifiers', 'project_urls', 'platforms',
-                        'supported_platforms', 'requires_dists',
-                        'requires_externals', 'provides_extras',
-                        'provides_dists', 'obsoletes_dists'}
-        assert all(MetaData.field_is_multiple_use(f) for f in multi_fields)
+    @pytest.mark.parametrize('field', plurals - {'keywords'})
+    def test_plural_fields_except_keywords_show_up_as_multiple_use(self, field):
+        assert MetaData.field_is_multiple_use(field)
+
+    def test_keywords_is_not_multiple_use(self):
         assert not MetaData.field_is_multiple_use('keywords')
 
     @pytest.fixture
@@ -98,6 +104,7 @@ class TestMetadata:
             Summary: this is a test
             Description-Content-Type: text/plain
             Keywords: test,unittests,package,wheelfile
+            License: May be distributed only if this test succeeds
             Home-page: http://example.com/package-name/1.2.3
             Download-URL: http://example.com/package-name/1.2.3/download
             Author: MrMino
@@ -113,6 +120,7 @@ class TestMetadata:
             Requires-External: zsh
             Project-URL: Details: http://example.com/package-name/
             Provides-Extra: metadata
+            Provides-Dist: wheel_packaging
             Obsoletes-Dist: wheel
         """).splitlines()
         expected_payload = dedent("""\
@@ -123,7 +131,7 @@ class TestMetadata:
             Long
 
             Description
-        """)
+        """).splitlines()
 
         lines = str(MetaData(**full_usage)).splitlines()
         header_end_idx = lines.index('')

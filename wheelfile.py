@@ -28,8 +28,6 @@ def _slots_from_params(func):
 # TODO: add version to the class name, reword the "Note"
 # name regex for validation: ^([A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])$
 # TODO: helper-function or consts for description_content_type
-# TODO: what to do with empty lines in multiline fields (e.g. license)?
-# TODO: from_str
 # TODO: parse version using packaging.version.parse?
 # TODO: values validation
 # TODO: validate provides_extras ↔ requires_dists?
@@ -307,9 +305,8 @@ class MetaData:
         else:
             raise ValueError(f"Unknown field: {field_name}")
 
-    # TODO: test this
     @classmethod
-    def attr_name_to_field_name(cls, attribute_name):
+    def _field_name(cls, attribute_name):
         if cls.field_is_multiple_use(attribute_name):
             attribute_name = attribute_name[:-1]
         field_name = attribute_name.title()
@@ -324,12 +321,19 @@ class MetaData:
         m.add_header("Metadata-Version", self.metadata_version)
         for attr_name in self.__slots__:
             content = getattr(self, attr_name)
+            if not content:
+                continue
+
             field_name = self._field_name(attr_name)
 
             if field_name == 'Keywords':
                 content = ','.join(content)
 
             if self.field_is_multiple_use(field_name):
+                assert not isinstance(content, str), (
+                    f"Single string in multiple use attribute: {attr_name}"
+                )
+
                 for value in content:
                     m.add_header(field_name, value)
             elif field_name == 'Description':
