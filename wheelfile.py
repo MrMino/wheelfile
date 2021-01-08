@@ -5,7 +5,6 @@ from typing import Optional, Union, List, IO
 
 import zipfile
 from inspect import signature
-from textwrap import dedent
 from packaging.tags import parse_tag
 from email.message import EmailMessage
 from email import message_from_string
