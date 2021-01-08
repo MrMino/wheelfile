@@ -298,7 +298,7 @@ class MetaData:
     _metadata_version = '2.1'
 
     @classmethod
-    def field_is_multiple_use(cls, field_name):
+    def field_is_multiple_use(cls, field_name: str) -> bool:
         field_name = field_name.lower().replace('-', '_').rstrip('s')
         if field_name in cls.__slots__ or field_name == 'keyword':
             return False
@@ -308,7 +308,7 @@ class MetaData:
             raise ValueError(f"Unknown field: {field_name}")
 
     @classmethod
-    def _field_name(cls, attribute_name):
+    def _field_name(cls, attribute_name: str) -> str:
         if cls.field_is_multiple_use(attribute_name):
             attribute_name = attribute_name[:-1]
         field_name = attribute_name.title()
@@ -319,12 +319,12 @@ class MetaData:
         return field_name
 
     @classmethod
-    def _attr_name(cls, field_name):
+    def _attr_name(cls, field_name: str) -> str:
         if cls.field_is_multiple_use(field_name):
             field_name += 's'
         return field_name.lower().replace('-', '_')
 
-    def __str__(self):
+    def __str__(self) -> str:
         m = EmailMessage()
         m.add_header("Metadata-Version", self.metadata_version)
         for attr_name in self.__slots__:
@@ -361,7 +361,7 @@ class MetaData:
             return NotImplemented
 
     @classmethod
-    def from_str(cls, s):
+    def from_str(cls, s: str) -> 'MetaData':
         m = message_from_string(s)
         assert m['Metadata-Version'] == cls._metadata_version
         del m['Metadata-Version']
@@ -369,10 +369,10 @@ class MetaData:
         args = {}
         for field_name in m.keys():
             attr = cls._attr_name(field_name)
-            if attr.endswith('s'):
-                args[attr] = m.get_all(field_name)
-            else:
+            if not attr.endswith('s'):
                 args[attr] = m.get(field_name)
+            else:
+                args[attr] = m.get_all(field_name)
 
         args['description'] = m.get_payload()
 
@@ -431,7 +431,7 @@ class WheelData:
     __slots__ = _slots_from_params(__init__)
 
     @property
-    def wheel_version(self):
+    def wheel_version(self) -> str:
         return '1.0'
 
     def _extend_tags(self, tags: List[str]) -> List[str]:
@@ -440,7 +440,7 @@ class WheelData:
             extended_tags.extend([str(t) for t in parse_tag(tag)])
         return extended_tags
 
-    def __str__(self):
+    def __str__(self) -> str:
         # TODO Custom exception? Exception message?
         assert isinstance(self.generator, str), (
             f"'generator' must be a string, got {type(self.generator)} instead"
@@ -470,7 +470,7 @@ class WheelData:
         return str(m)
 
     @classmethod
-    def from_str(cls, s):
+    def from_str(cls, s: str) -> 'WheelData':
         m = message_from_string(s)
         assert m['Wheel-Version'] == '1.0'
         args = {
