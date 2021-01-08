@@ -1,14 +1,13 @@
 # We do not target python2.
 # Which python3 versions should we target? 3.6+ seems like a good idea.
-
-from typing import Optional, Union, List, IO
-
 import zipfile
+
 from inspect import signature
 from packaging.tags import parse_tag
 from email.message import EmailMessage
 from email import message_from_string
 
+from typing import Optional, Union, List, IO
 
 __version__ = '0.0.1'
 
