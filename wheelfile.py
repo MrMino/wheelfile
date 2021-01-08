@@ -432,6 +432,8 @@ class WheelData:
             else:
                 return True
 
+    # TODO: in this form this is probably unnecessary - there's __dict__
+    # TODO: maybe change keys to the metadata spec ones and add the version in?
     def to_dict(self):
         return {a_n: getattr(self, a_n) for a_n in self.__slots__
                 if a_n != '__weakref__'}
