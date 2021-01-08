@@ -8,6 +8,7 @@ from inspect import signature
 from textwrap import dedent
 from packaging.tags import parse_tag
 from email.message import EmailMessage
+from email import message_from_string
 
 
 __version__ = '0.0.1'
@@ -293,7 +294,8 @@ class MetaData:
 
     @property
     def metadata_version(self):
-        return '2.1'
+        return self._metadata_version
+    _metadata_version = '2.1'
 
     @classmethod
     def field_is_multiple_use(cls, field_name):
@@ -315,6 +317,12 @@ class MetaData:
         field_name = field_name.replace('-Page', '-page')
         field_name = field_name.replace('-Email', '-email')
         return field_name
+
+    @classmethod
+    def _attr_name(cls, field_name):
+        if cls.field_is_multiple_use(field_name):
+            field_name += 's'
+        return field_name.lower().replace('-', '_')
 
     def __str__(self):
         m = EmailMessage()
@@ -339,8 +347,37 @@ class MetaData:
             elif field_name == 'Description':
                 m.set_payload(content)
             else:
+                assert isinstance(content, str), (
+                    f"Expected string, got {type(content)} instead: {attr_name}"
+                )
                 m.add_header(field_name, content)
         return str(m)
+
+    def __eq__(self, other):
+        if isinstance(other, MetaData):
+            return all(
+                getattr(self, f) == getattr(other, f) for f in self.__slots__
+            )
+        else:
+            return False
+
+    @classmethod
+    def from_str(cls, s):
+        m = message_from_string(s)
+        assert m['Metadata-Version'] == cls._metadata_version
+        del m['Metadata-Version']
+
+        args = {}
+        for field_name in m.keys():
+            attr = cls._attr_name(field_name)
+            if attr.endswith('s'):
+                args[attr] = m.get_all(field_name)
+            else:
+                args[attr] = m.get(field_name)
+
+        args['description'] = m.get_payload()
+
+        return MetaData(**args)
 
 
 # TODO: reimplement using dataclasses?

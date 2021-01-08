@@ -19,6 +19,10 @@ class TestMetadata:
     def metadata(self):
         return MetaData(name='my-package', version='1.2.3')
 
+    def test_basic_eq(self):
+        args = {'name': 'x', 'version': '1'}
+        assert MetaData(**args) == MetaData(**args)
+
     def test_basic_to_str(self, metadata):
         expected = dedent("""\
             Metadata-Version: 2.1
@@ -27,6 +31,9 @@ class TestMetadata:
 
         """)
         assert str(metadata) == expected
+
+    def test_basic_from_str(self, metadata):
+        assert str(MetaData.from_str(str(metadata))) == str(metadata)
 
     def test_metadata_version_is_2_1(self, metadata):
         assert metadata.metadata_version == '2.1'
@@ -139,6 +146,11 @@ class TestMetadata:
         payload = lines[header_end_idx:]
         assert set(headers) == set(expected_headers)
         assert payload == expected_payload
+
+    def test_full_usage_from_str(self, full_usage):
+        md = MetaData(**full_usage)
+        fs = MetaData.from_str(str(md))
+        assert str(fs) == str(md)
 
     def test_no_mistaken_attributes(self, metadata):
         with pytest.raises(AttributeError):
