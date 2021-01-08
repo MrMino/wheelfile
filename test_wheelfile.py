@@ -43,10 +43,6 @@ class TestMetadata:
 
             Description
         """)
-        license = dedent("""\
-            Distribution of this code hinges on the fact that this test does not
-            fail.
-        """)
         kwargs = {
             'name': 'package-name',
             'version': '1.2.3',
@@ -60,7 +56,7 @@ class TestMetadata:
             'author_email': "mrmino@example.com",
             'maintainer': "NotMrMino",
             'maintainer_email': "not.mrmino@example.com",
-            'license': license,
+            'license': "May be distributed only if this test succeeds",
             'home_page': "http://example.com/package-name/1.2.3",
             'download_url': "http://example.com/package-name/1.2.3/download",
             'project_urls': ["Details: http://example.com/package-name/"],
@@ -100,8 +96,6 @@ class TestMetadata:
             Author-email: mrmino@example.com
             Maintainer: NotMrMino
             Maintainer-email: not.mrmino@example.com
-            License: Distribution of this code hinges on the fact that this
-                    test does not fail.
             Classifier: Topic :: Software Development :: Testing
             Classifier: Framework :: Pytest
             Requires-Dist: wheelfile[metadata]~=1.0
@@ -112,8 +106,9 @@ class TestMetadata:
             Project-URL: Details: http://example.com/package-name/
             Provides-Extra: metadata
             Obsoletes-Dist: wheel
-        """)
+        """).splitlines()
         expected_payload = dedent("""\
+
 
             Some
 
@@ -122,8 +117,10 @@ class TestMetadata:
             Description
         """)
 
-        md_text = str(MetaData(**full_usage))
-        headers, payload = md_text.split('\n\n', maxsplit=1)
+        lines = str(MetaData(**full_usage)).splitlines()
+        header_end_idx = lines.index('')
+        headers = lines[:header_end_idx]
+        payload = lines[header_end_idx:]
         assert set(headers) == set(expected_headers)
         assert payload == expected_payload
 
