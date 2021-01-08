@@ -478,11 +478,6 @@ class WheelData:
             else:
                 return True
 
-    # TODO: in this form this is probably unnecessary - there's __dict__
-    # TODO: maybe change keys to the metadata spec ones and add the version in?
-    def to_dict(self):
-        return {a_n: getattr(self, a_n) for a_n in self.__slots__}
-
 
 # This should take a zipfile and write itself into it on each recalculation.
 # Recalculation should be also done on __str__() or __bytes__().
