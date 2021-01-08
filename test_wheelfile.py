@@ -136,8 +136,7 @@ class TestMetadata:
 
     def test_there_are_24_fields_in_this_metadata_version(self):
         assert len(
-            [field for field in MetaData.__slots__ if field != '__weakref__']
-            + ['metadata_version']
+            [field for field in MetaData.__slots__] + ['metadata_version']
         ) == 24
 
     @pytest.mark.skip
@@ -251,9 +250,6 @@ class TestWheelData:
         wm_b.build = 10
 
         assert wm_a != wm_b
-
-    def test_to_dict_returns_without__weakref__(self):
-        assert '__weakref__' not in WheelData().to_dict()
 
     def test_is_dictable_both_ways(self):
         wm = WheelData()

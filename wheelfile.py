@@ -20,7 +20,6 @@ def _slots_from_params(func):
     funcsig = signature(func)
     slots = list(funcsig.parameters)
     slots.remove('self')
-    slots.append('__weakref__')
     return slots
 
 
@@ -425,8 +424,6 @@ class WheelData:
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             for attr in self.__slots__:
-                if attr == '__weakref__':
-                    continue
                 if not getattr(other, attr) == getattr(self, attr):
                     return False
             else:
@@ -435,8 +432,7 @@ class WheelData:
     # TODO: in this form this is probably unnecessary - there's __dict__
     # TODO: maybe change keys to the metadata spec ones and add the version in?
     def to_dict(self):
-        return {a_n: getattr(self, a_n) for a_n in self.__slots__
-                if a_n != '__weakref__'}
+        return {a_n: getattr(self, a_n) for a_n in self.__slots__}
 
 
 # This should take a zipfile and write itself into it on each recalculation.
