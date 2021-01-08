@@ -26,7 +26,6 @@ def _slots_from_params(func):
 
 # TODO: reimplement using dataclasses
 # TODO: add version to the class name, reword the "Note"
-# TODO: to_dict
 # name regex for validation: ^([A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])$
 # TODO: helper-function or consts for description_content_type
 # TODO: what to do with empty lines in multiline fields (e.g. license)?
@@ -35,7 +34,8 @@ def _slots_from_params(func):
 # TODO: values validation
 # TODO: validate provides_extras ↔ requires_dists?
 # TODO: validate values charset-wise
-# TODO: to_json?
+# TODO: as_json?
+# TODO: as_dict
 # TODO: ensure name is the same as wheelfile name
 class MetaData:
     """Implements Wheel Metadata format v2.1.
