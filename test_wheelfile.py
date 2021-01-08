@@ -186,13 +186,11 @@ class TestWheelData:
         assert set(wm.tags) == set(expected_tags)
 
     def test_wheel_version_is_1_0(self):
-        wm = WheelData()
-        assert wm.wheel_version == '1.0'
+        assert WheelData().wheel_version == '1.0'
 
     def test_wheel_version_is_not_settable(self):
-        wm = WheelData()
         with pytest.raises(AttributeError):
-            wm.wheel_version = '2.0'
+            WheelData().wheel_version = '2.0'
 
     def test_strignifies_into_valid_wheelmeta(self):
         expected_contents = dedent(
@@ -247,10 +245,7 @@ class TestWheelData:
             wm.generated_by = ''
 
     def test_instances_are_comparable(self):
-        wm_a = WheelData()
-        wm_b = WheelData()
-
-        assert wm_a == wm_b
+        assert WheelData() == WheelData()
 
     def test_different_instances_compare_negatively(self):
         wm_a = WheelData()
