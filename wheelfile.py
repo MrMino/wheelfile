@@ -355,11 +355,10 @@ class MetaData:
 
     def __eq__(self, other):
         if isinstance(other, MetaData):
-            return all(
-                getattr(self, f) == getattr(other, f) for f in self.__slots__
-            )
+            return all(getattr(self, f) == getattr(other, f)
+                       for f in self.__slots__)
         else:
-            return False
+            return NotImplemented
 
     @classmethod
     def from_str(cls, s):
@@ -486,17 +485,13 @@ class WheelData:
         return cls(**args)
 
     def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            for attr in self.__slots__:
-                if not getattr(other, attr) == getattr(self, attr):
-                    return False
-            else:
-                return True
+        if isinstance(other, WheelData):
+            return all(getattr(self, f) == getattr(other, f)
+                       for f in self.__slots__)
+        else:
+            return NotImplemented
 
 
-# This should take a zipfile and write itself into it on each recalculation.
-# Recalculation should be also done on __str__() or __bytes__().
-# That way changing any file inside the zip will change the record on the fly.
 class WheelRecord:
     # Argument name is a placeholder, come up with a better one.
     # What return type should this be?
