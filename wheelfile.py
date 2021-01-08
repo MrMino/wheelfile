@@ -115,6 +115,10 @@ class WheelData:
             else:
                 return True
 
+    def to_dict(self):
+        return {a_n: getattr(self, a_n) for a_n in self.__slots__
+                if a_n != '__weakref__'}
+
 
 # This should take a zipfile and write itself into it on each recalculation.
 # Recalculation should be also done on __str__() or __bytes__().

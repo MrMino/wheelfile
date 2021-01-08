@@ -115,3 +115,9 @@ class TestWheelData:
         wm_b.build = 10
 
         assert wm_a != wm_b
+
+    def test_is_dictable_both_ways(self):
+        wm = WheelData()
+        fd_wm = WheelData(**wm.to_dict())
+
+        assert wm == fd_wm
