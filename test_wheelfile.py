@@ -101,3 +101,17 @@ class TestWheelData:
 
         with pytest.raises(AttributeError):
             wm.generated_by = ''
+
+    def test_instances_are_comparable(self):
+        wm_a = WheelData()
+        wm_b = WheelData()
+
+        assert wm_a == wm_b
+
+    def test_different_instances_compare_negatively(self):
+        wm_a = WheelData()
+        wm_b = WheelData()
+
+        wm_b.build = 10
+
+        assert wm_a != wm_b

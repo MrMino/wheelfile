@@ -105,6 +105,16 @@ class WheelData:
         )
         return text
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            for attr in self.__slots__:
+                if attr == '__weakref__':
+                    continue
+                if not getattr(other, attr) == getattr(self, attr):
+                    return False
+            else:
+                return True
+
 
 # This should take a zipfile and write itself into it on each recalculation.
 # Recalculation should be also done on __str__() or __bytes__().
