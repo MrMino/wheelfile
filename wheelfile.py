@@ -443,18 +443,32 @@ class WheelData:
 
     def __str__(self):
         # TODO Custom exception? Exception message?
-        assert isinstance(self.tags, list)
-
-        text = (dedent(
-            f"""\
-            Wheel-Version: {self.wheel_version}
-            Generator: {self.generator}
-            Root-Is-Purelib: {str(self.root_is_purelib).lower()}
-            """
-        ) + '\n'.join(f"Tag: {tag}" for tag in self.tags) + '\n'
-          + (f"Build: {self.build}\n" if self.build else '')
+        assert isinstance(self.generator, str), (
+            f"'generator' must be a string, got {type(self.generator)} instead"
         )
-        return text
+        assert isinstance(self.root_is_purelib, bool), (
+            f"'root_is_purelib' must be a boolean, got"
+            f"{type(self.root_is_purelib)} instead"
+        )
+        assert isinstance(self.tags, list), (
+            f"Expected a list in 'tags', got {type(self.tags)} instead"
+        )
+        assert self.tags, "'tags' cannot be empty"
+        assert isinstance(self.build, int) or self.build is None, (
+            f"'build' must be an int, got {type(self.build)} instead"
+        )
+
+        m = EmailMessage()
+        m.add_header("Wheel-Version", self.wheel_version)
+        m.add_header("Generator", self.generator)
+        m.add_header("Root-Is-Purelib", "true"
+                     if self.root_is_purelib else "false")
+        for tag in self.tags:
+            m.add_header("Tag", tag)
+        if self.build is not None:
+            m.add_header("Build", str(self.build))
+
+        return str(m)
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):

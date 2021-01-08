@@ -224,6 +224,7 @@ class TestWheelData:
             Root-Is-Purelib: true
             Tag: py2-none-any
             Build: 123
+
             """
         )
         wm = WheelData(tags='py2-none-any', build=123)
@@ -244,6 +245,7 @@ class TestWheelData:
             Tag: my-test-tag
             Tag: another-test-tag
             Build: 12345
+
             """
         )
 
