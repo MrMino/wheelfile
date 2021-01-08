@@ -377,7 +377,7 @@ class MetaData:
 
         args['description'] = m.get_payload()
 
-        return MetaData(**args)
+        return cls(**args)
 
 
 # TODO: reimplement using dataclasses?
