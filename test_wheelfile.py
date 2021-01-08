@@ -89,3 +89,15 @@ class TestWheelData:
 
         with pytest.raises(AssertionError):
             str(wm)
+
+    def test_no_mistaken_attributes(self):
+        wm = WheelData()
+
+        with pytest.raises(AttributeError):
+            wm.root_is_platlib = ''
+
+        with pytest.raises(AttributeError):
+            wm.tag = ''
+
+        with pytest.raises(AttributeError):
+            wm.generated_by = ''

@@ -4,11 +4,24 @@
 from typing import Optional, Union, List, IO
 
 import zipfile
+from inspect import signature
 from textwrap import dedent
 from packaging.tags import parse_tag
 
 
 __version__ = '0.0.1'
+
+
+def _slots_from_params(func):
+    """List out slot names based on the names of parameters of func
+
+    Usage: __slots__ = _slots_from_signature(__init__)
+    """
+    funcsig = signature(func)
+    slots = list(funcsig.parameters)
+    slots.remove('self')
+    slots.append('__weakref__')
+    return slots
 
 
 # Implements dict-style indices.
@@ -65,6 +78,7 @@ class WheelData:
             tags if isinstance(tags, list) else [tags]
         )
         self.build = build
+    __slots__ = _slots_from_params(__init__)
 
     @property
     def wheel_version(self):
