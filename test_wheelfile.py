@@ -255,6 +255,9 @@ class TestWheelData:
 
         assert wm_a != wm_b
 
+    def test_to_dict_returns_without__weakref__(self):
+        assert '__weakref__' not in WheelData().to_dict()
+
     def test_is_dictable_both_ways(self):
         wm = WheelData()
         fd_wm = WheelData(**wm.to_dict())
