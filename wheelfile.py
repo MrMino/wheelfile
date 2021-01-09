@@ -1,9 +1,12 @@
 # We do not target python2.
 # Which python3 versions should we target? 3.6+ seems like a good idea.
+import csv
 import hashlib
 import zipfile
 
+from collections import namedtuple
 from inspect import signature
+from io import StringIO
 from packaging.tags import parse_tag
 from email.message import EmailMessage
 from email import message_from_string
@@ -492,7 +495,6 @@ class WheelData:
             return NotImplemented
 
 
-# TODO: reimplement using csv
 # TODO: leave out hashes of *.pyc files?
 class WheelRecord:
     """Contains logic for creation and modification of RECORD files.
@@ -505,10 +507,11 @@ class WheelRecord:
     """
     HASH_ALGO = hashlib.sha256
     HASH_BUF_SIZE = 65536
-    RECORD_LINE_FMT = '{path},{hash_hex},{byte_len}'
+
+    _Record = namedtuple('Record', 'path hash size')
 
     def __init__(self):
-        self._records: Dict[str, str] = {}
+        self._records: Dict[str, self._Record] = {}
 
     def hash_of(self, arc_path) -> str:
         """Return the hash of a file in the archive this RECORD describes
@@ -527,11 +530,14 @@ class WheelRecord:
             HASH_ALGO), and hexstr is a string containing a hexified version of
             the hash.
         """
-        return self._records[arc_path].split(',')[1]
+        return self._records[arc_path].hash
 
     def __str__(self) -> str:
-        content = '\n'.join(self._records.values())
-        return '' if not content else content + '\n'
+        buf = StringIO()
+        records = csv.DictWriter(buf, fieldnames=self._Record._fields)
+        for entry in self._records.values():
+            records.writerow(entry._asdict())
+        return buf.getvalue()
 
     def update(self, arc_path: str, buf: BinaryIO):
         """Add a record entry for a file in the archive.
@@ -565,9 +571,7 @@ class WheelRecord:
                 break
             hasher.update(data)
         hash_hex = hasher.name + '=' + hasher.hexdigest()
-        return cls.RECORD_LINE_FMT.format(
-            path=arc_path, hash_hex=hash_hex, byte_len=size
-        )
+        return cls._Record(arc_path, hash_hex, size)
 
     def __eq__(self, other):
         if isinstance(other, WheelRecord):

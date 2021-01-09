@@ -311,10 +311,11 @@ class TestWheelRecord:
         buf.seek(0)
         record.update('another/file', buf)
 
+        # CSV uses CRLF by default, hence \r-s
         expected_record = dedent(
             f"""\
-            file,{expected_hash},{size}
-            another/file,{expected_hash},{size}
+            file,{expected_hash},{size}\r
+            another/file,{expected_hash},{size}\r
             """)
 
         assert str(record) == expected_record
