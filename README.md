@@ -29,3 +29,11 @@ provide a simple API.
   v1.1](https://www.python.org/dev/peps/pep-0314/)
 - [PEP-241 - Metadata for Python Software Packages
   v1.0](https://www.python.org/dev/peps/pep-0241/)
+
+
+## Ackonwledgements
+
+Thanks to [Paul Moore](https://github.com/pfmoore) for providing
+[his gist](https://gist.github.com/pfmoore/20f3654ca33f8b14f0fcb6dfa1a6b469)
+of basic metadata parsing logic, which helped to avoid many foolish mistakes
+in the initial implementation.
