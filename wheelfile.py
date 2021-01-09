@@ -514,10 +514,10 @@ class WheelRecord:
     HASH_ALGO = hashlib.sha256
     HASH_BUF_SIZE = 65536
 
-    _Record = namedtuple('Record', 'path hash size')
+    _RecordEntry = namedtuple('Record', 'path hash size')
 
     def __init__(self):
-        self._records: Dict[str, self._Record] = {}
+        self._records: Dict[str, self._RecordEntry] = {}
 
     def hash_of(self, arc_path) -> str:
         """Return the hash of a file in the archive this RECORD describes
@@ -540,7 +540,7 @@ class WheelRecord:
 
     def __str__(self) -> str:
         buf = StringIO()
-        records = csv.DictWriter(buf, fieldnames=self._Record._fields)
+        records = csv.DictWriter(buf, fieldnames=self._RecordEntry._fields)
         for entry in self._records.values():
             records.writerow(entry._asdict())
         return buf.getvalue()
@@ -567,7 +567,7 @@ class WheelRecord:
         del self._records[arc_path]
 
     @classmethod
-    def _entry(cls, arc_path: str, buf: BinaryIO) -> _Record:
+    def _entry(cls, arc_path: str, buf: BinaryIO) -> _RecordEntry:
         size = 0
         hasher = cls.HASH_ALGO()
         while True:
@@ -577,7 +577,7 @@ class WheelRecord:
                 break
             hasher.update(data)
         hash_hex = hasher.name + '=' + hasher.hexdigest()
-        return cls._Record(arc_path, hash_hex, size)
+        return cls._RecordEntry(arc_path, hash_hex, size)
 
     def __eq__(self, other):
         if isinstance(other, WheelRecord):
