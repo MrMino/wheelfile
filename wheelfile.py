@@ -16,6 +16,11 @@ from typing import Optional, Union, List, Dict, IO, BinaryIO
 __version__ = '0.0.1'
 
 
+# TODO: change AssertionErrors to custom exceptions?
+# TODO: idea - install wheel - w/ INSTALLER file
+# TODO: idea - wheel from an installed distribution?
+
+
 def _slots_from_params(func):
     """List out slot names based on the names of parameters of func
 
@@ -496,6 +501,7 @@ class WheelData:
 
 
 # TODO: leave out hashes of *.pyc files?
+# TODO: from_str
 class WheelRecord:
     """Contains logic for creation and modification of RECORD files.
 
@@ -580,6 +586,9 @@ class WheelRecord:
             return NotImplemented
 
 
+# TODO: testwheel() method
+# TODO: use ZipFile.testzip()
+# TODO: facilities for converting arbitrary ZIPs to Wheels
 class WheelFile:
     # This should check if the zip name conforms to the wheel standard
     # Semantics to define for 'w' and 'a' modes:
@@ -588,7 +597,6 @@ class WheelFile:
     #   - the file exists, is a zip, but not a wheel
     #   - the file exists, is a wheel
     # Everything else should error out.
-    # TODO: use ZipFile.testzip()
     def __init__(self) -> None:
         pass
 
