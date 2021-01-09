@@ -567,7 +567,7 @@ class WheelRecord:
         del self._records[arc_path]
 
     @classmethod
-    def _entry(cls, arc_path: str, buf: BinaryIO) -> str:
+    def _entry(cls, arc_path: str, buf: BinaryIO) -> _Record:
         size = 0
         hasher = cls.HASH_ALGO()
         while True:
