@@ -685,7 +685,7 @@ class WheelFile:
     # Too verbpose?
     # Maybe "pkg_info"?
     @property
-    def package_metadata(self) -> PackageMeta:
+    def package_metadata(self) -> MetaData:
         pass
 
     @property
@@ -697,7 +697,6 @@ class WheelFile:
     # TODO: comment property
     # TODO: debug propery, as with ZipFile.debug
 
-    raise NotImplementedError("Implement those below!")
 
     def __del__(self):
         raise NotImplementedError("Implement me!")
