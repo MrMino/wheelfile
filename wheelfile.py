@@ -1,5 +1,6 @@
 # We do not target python2.
 # Which python3 versions should we target? 3.6+ seems like a good idea.
+import hashlib
 import zipfile
 
 from inspect import signature
@@ -7,7 +8,7 @@ from packaging.tags import parse_tag
 from email.message import EmailMessage
 from email import message_from_string
 
-from typing import Optional, Union, List, IO
+from typing import Optional, Union, List, Dict, IO, BinaryIO
 
 __version__ = '0.0.1'
 
@@ -491,14 +492,88 @@ class WheelData:
             return NotImplemented
 
 
+# TODO: reimplement using csv
+# TODO: leave out hashes of *.pyc files?
 class WheelRecord:
-    # Argument name is a placeholder, come up with a better one.
-    # What return type should this be?
-    def hash_of(self, archive_filename) -> str:
-        pass
+    """Contains logic for creation and modification of RECORD files.
 
-    def _recalculate(self) -> None:
-        pass
+    Keeps track of files in the wheel and their hashes.
+
+    For the full spec, see PEP-376 "RECORD" section, PEP-627,
+    "The .dist-info directory" section of PEP-427, and
+    https://packaging.python.org/specifications/recording-installed-packages/.
+    """
+    HASH_ALGO = hashlib.sha256
+    HASH_BUF_SIZE = 65536
+    RECORD_LINE_FMT = '{path},{hash_hex},{byte_len}'
+
+    def __init__(self):
+        self._records: Dict[str, str] = {}
+
+    def hash_of(self, arc_path) -> str:
+        """Return the hash of a file in the archive this RECORD describes
+
+
+        Parameters
+        ----------
+        arc_path
+            Location of the file inside the archive.
+
+        Returns
+        -------
+        str
+            String in the form <algorithm>=<hexstr>, where algorithm is the
+            name of the hashing agorithm used to generate the hash (see
+            HASH_ALGO), and hexstr is a string containing a hexified version of
+            the hash.
+        """
+        return self._records[arc_path].split(',')[1]
+
+    def __str__(self) -> str:
+        content = '\n'.join(self._records.values())
+        return '' if not content else content + '\n'
+
+    def update(self, arc_path: str, buf: BinaryIO):
+        """Add a record entry for a file in the archive.
+
+        Parameters
+        ----------
+        buf
+            Buffer from which the data will be read in HASH_BUF_SIZE chunks.
+            Must be fresh, i.e. seek(0)-ed.
+        """
+        assert buf.tell() == 0, (
+            f"Stale buffer given - current position: {buf.tell()}."
+        )
+        assert not arc_path.endswith('.dist-info/RECORD'), (
+            f"Attempt to add an entry for a RECORD file to the RECORD: "
+            f"{arc_path}."
+        )
+        self._records[arc_path] = self._entry(arc_path, buf)
+
+    def remove(self, arc_path: str):
+        del self._records[arc_path]
+
+    @classmethod
+    def _entry(cls, arc_path: str, buf: BinaryIO) -> str:
+        size = 0
+        hasher = cls.HASH_ALGO()
+        while True:
+            data = buf.read(cls.HASH_BUF_SIZE)
+            size += len(data)
+            if not data:
+                break
+            hasher.update(data)
+        hash_hex = hasher.name + '=' + hasher.hexdigest()
+        return cls.RECORD_LINE_FMT.format(
+            path=arc_path, hash_hex=hash_hex, byte_len=size
+        )
+
+    def __eq__(self, other):
+        if isinstance(other, WheelRecord):
+            return str(self) == str(other)
+        else:
+            return NotImplemented
 
 
 class WheelFile:

@@ -1,7 +1,9 @@
 import pytest
 
-from wheelfile import __version__ as lib_version, WheelData, MetaData
+from wheelfile import (__version__ as lib_version,
+                       WheelData, MetaData, WheelRecord)
 from textwrap import dedent
+from io import BytesIO
 
 
 class TestMetadata:
@@ -283,3 +285,53 @@ class TestWheelData:
 
     def test_from_str(self):
         assert str(WheelData.from_str(str(WheelData()))) == str(WheelData())
+
+
+class TestWheelRecord:
+    @pytest.fixture
+    def record(self):
+        return WheelRecord()
+
+    def test_after_adding_a_file_its_hash_is_available(self, record):
+        buf = BytesIO(bytes(1000))
+        expected_hash = ('sha256=541b3e9daa09b20bf85fa273e5cbd'
+                         '3e80185aa4ec298e765db87742b70138a53')
+        record.update('file', buf)
+        assert record.hash_of('file') == expected_hash
+
+    def test_empty_stringifies_to_empty_string(self, record):
+        assert str(record) == ''
+
+    def test_stringifies_to_proper_format(self, record):
+        size = 1000
+        buf = BytesIO(bytes(size))
+        expected_hash = ('sha256=541b3e9daa09b20bf85fa273e5cbd'
+                         '3e80185aa4ec298e765db87742b70138a53')
+        record.update('file', buf)
+        buf.seek(0)
+        record.update('another/file', buf)
+
+        expected_record = dedent(
+            f"""\
+            file,{expected_hash},{size}
+            another/file,{expected_hash},{size}
+            """)
+
+        assert str(record) == expected_record
+
+    def test_removing_file_removes_it_from_str_repr(self, record):
+        buf = BytesIO(bytes(1000))
+        record.update('file', buf)
+        record.remove('file')
+        assert str(record) == ''
+
+    def test_two_empty_records_are_equal(self):
+        assert WheelRecord() == WheelRecord()
+
+    def test_adding_same_files_to_two_records_make_them_equal(self):
+        a = WheelRecord()
+        b = WheelRecord()
+        buf = BytesIO(bytes(1000))
+        a.update('file', buf)
+        buf.seek(0)
+        b.update('file', buf)
