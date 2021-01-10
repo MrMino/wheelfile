@@ -1,15 +1,18 @@
 # We do not target python2.
 # Which python3 versions should we target? 3.6+ seems like a good idea.
 import csv
+import io
 import hashlib
-import zipfile
 
+from pathlib import Path
 from collections import namedtuple
 from inspect import signature
-from io import StringIO
 from packaging.tags import parse_tag
+from packaging.utils import canonicalize_name
+from packaging.version import Version
 from email.message import EmailMessage
 from email import message_from_string
+from zipfile import ZipFile, ZipInfo
 
 from typing import Optional, Union, List, Dict, IO, BinaryIO
 
@@ -539,7 +542,7 @@ class WheelRecord:
         return self._records[arc_path].hash
 
     def __str__(self) -> str:
-        buf = StringIO()
+        buf = io.StringIO()
         records = csv.DictWriter(buf, fieldnames=self._RecordEntry._fields)
         for entry in self._records.values():
             records.writerow(entry._asdict())
@@ -586,19 +589,193 @@ class WheelRecord:
             return NotImplemented
 
 
+class UnnamedDistribution(ValueError):
+    """Distribution name cannot be deduced from arguments."""
+
+
+class BadWheelFile(Exception):
+    """The given file cannot be interpretted as a wheel nor fixed."""
+
+
 # TODO: testwheel() method
-# TODO: use ZipFile.testzip()
 # TODO: facilities for converting arbitrary ZIPs to Wheels
+# TODO: prevent arbitrary writes to METADATA, WHEEL, and RECORD
+# TODO: prevent adding .dist-info and .data directories
 class WheelFile:
-    # This should check if the zip name conforms to the wheel standard
-    # Semantics to define for 'w' and 'a' modes:
-    #   - the file does not exist, create a new empty one
-    #   - the file exists, but is not a zip
-    #   - the file exists, is a zip, but not a wheel
-    #   - the file exists, is a wheel
-    # Everything else should error out.
-    def __init__(self) -> None:
+    """An archive that follows the wheel specification.
+
+    Used to read, create, validate, or modify *.whl files.
+
+    Attributes
+    ----------
+    filename : str
+        Path to the file, if the instance was initialized with one, otherwise
+        None.
+    """
+    def __init__(
+        self,
+        file_or_path: Union[str, Path, BinaryIO],
+        mode: str = 'r',
+        distname: Optional[str] = None,
+        version: Optional[Union[str, Version]] = None
+    ) -> None:
+        """Open or create a wheel file.
+
+        After opening, a RECORD, WHEEL and METADATA files are added to the
+        archive, under the proper *.dist-info path. If the archive is opened in
+        a read mode it must already contain at least WHEEL and METADATA (RECORD
+        is optional as per PEP-627).
+
+        Parameters
+        ----------
+        file_or_path
+            Path to the file to open/create or a file-like object to use.
+
+        mode
+            See zipfile.ZipFile docs for the list of available modes.
+
+            In the read mode, the file given has to be a proper PKZIP-formatted
+            file. No further checks are done. To validate whether the file is a
+            proper wheel, use WheelFile.validate().
+
+        distname
+            Name of the distribution for this wheelfile. Used to infer the name
+            of the directory in the archive in which metadata should reside,
+            and, when using validate(), whether the file path is correct in
+            terms of the naming convention.
+
+            If omitted, the name will be inferred from the filename given in
+            the path. If a file-like object is given instead of a path, it will
+            be inferred from its "name" attribute.
+
+            Should be composed of alphanumeric characters and underscores only.
+
+        version
+            Version of the distribution in this wheelfile. Used to infer the
+            name of the directory in the archive in which metadata should
+            reside, and, when using validate(), whether the file path is
+            correct in terms of the naming convention.
+
+            If omitted, the version will be inferred from the filename given in
+            the path. If a file-like object is given instead of a path, it will
+            be inferred from its "name" attribute.
+
+        Raises
+        ------
+        UnnamedDistribution
+            Raised if the distname or version cannot be inferred from the
+            given arguments.
+
+            E.g. when the path does not contain the version, or the
+            file-like object has no "name" attribute to get the filename from,
+            and the information wasn't provided via other arguments.
+
+        BadWheelFile
+            Raised in read mode, if the archive does not contain required
+            metadata: WHEEL, METADATA.
+
+        zipfile.BadZipFile
+            If given file is not a proper zip.
+        """
+        assert not isinstance(file_or_path, io.TextIOBase), (
+            "Text buffer given where a binary one was expected."
+        )
+
+        if isinstance(file_or_path, str):
+            file_or_path = Path(file_or_path)
+        if isinstance(version, str):
+            version = Version(version)
+
+        self._target = file_or_path
+
+        if distname is None:
+            distname = self._distname_from_target()
+        if version is None:
+            version = self._version_from_target()
+
+        self._distname = distname
+        self._version = version
+        self._zip = ZipFile(file_or_path, mode)
+
+        if mode == 'r':
+            self._read_metadata()
+        else:
+            self._ensure_metadata()
+
+    def _distname_from_target(self) -> str:
+        if self.filename is None:
+            raise UnnamedDistribution(
+                "No distname provided and an unnamed object given."
+            )
+
+        distname = self.filename.split('-')[0]
+
+        if not distname:
+            raise UnnamedDistribution(
+                f"No distname provided and the inferred filename does not "
+                f"contain a proper distname: {self.filename}"
+            )
+
+        return distname
+
+    def _version_from_target(self) -> Version:
+        if self.filename is None:
+            raise UnnamedDistribution(
+                "No version provided and an unnamed object given."
+            )
+
+        name_segments = self.filename.split('-')
+
+        if len(name_segments) < 2:
+            raise UnnamedDistribution(
+                f"No distname provided and the inferred filename does not "
+                f"contain a proper version string: {self.filename}"
+            )
+
+        return Version(name_segments[1])
+
+    def _read_metadata(self):
+        raise NotImplementedError
+
+    def _ensure_metadata(self):
+        raise NotImplementedError
+
+    def _dist_info_dir_name(self) -> str:
+        name = canonicalize_name(self.distname).replace("-", "_")
+        version = str(self.version).replace("-", "_")
+        return f"{name}-{version}.dist-info"
+
+    @property
+    def filename(self) -> str:
+        return getattr(self._target, 'name', None)
+
+    @property
+    def distname(self) -> str:
+        return self._distname
+
+    @property
+    def version(self) -> Version:
+        return self._version
+
+    # TODO: validate naming conventions, metadata, etc.
+    # TODO: use testwheel()
+    # TODO: idea: raise when completely out-of-spec, return a compliancy score?
+    def validate(self):
+        raise NotImplementedError
+
+    # TODO: ensure RECORD is correct
+    # TODO: use ZipFile.testzip()
+    def testwheel(self):
+        raise NotImplementedError
+
+    # TODO: do a final metadata write (in case something was changed)
+    # TODO: do a final RECORD recalculation?
+    # TODO: idea might be a good idea to redo RECORD and fail if it's different
+    def close(self) -> None:
         pass
+
+    # Below - only speculation
+    # =========================================================================
 
     # This should take file objects too
     def add(self, path: str) -> None:
@@ -627,24 +804,17 @@ class WheelFile:
     # ZipInfo but also cointain the hash from the RECORD. It would simplify the
     # whole implementation.
     # Having this method makes it possible to add comments to files.
-    def getinfo(self, name: str) -> zipfile.ZipInfo:
+    def getinfo(self, name: str) -> ZipInfo:
         pass
 
     # Does this class even need this?
-    def infolist(self) -> List[zipfile.ZipInfo]:
+    def infolist(self) -> List[ZipInfo]:
         pass
 
     # The name of this method comes from zipfile, but its... misleading.
     # It returns full paths from the archive tree. Not "names". Or is "name"
     # what you would call the archive path in PKZIP?
     def namelist(self) -> List[str]:
-        pass
-
-    # Do we actually want to have the open → close semantics?
-    # Open → close semantics might be required in order to ensure a given file
-    # comes last in the binary representation.
-    # This should do a final recalculation of RECORD
-    def close(self) -> None:
         pass
 
     @property
@@ -673,7 +843,7 @@ class WheelFile:
     # This makes it impossible to ensure that RECORD is valid. But without it,
     # the class is much less flexible.
     @property
-    def zipfile(self) -> zipfile.ZipFile:
+    def zipfile(self) -> ZipFile:
         pass
 
     # This name is kinda verbose and can still be conflated with
@@ -697,9 +867,10 @@ class WheelFile:
     # TODO: comment property
     # TODO: debug propery, as with ZipFile.debug
 
+    def __repr__(self):
+        pass
 
     def __del__(self):
-        raise NotImplementedError("Implement me!")
         self.close()
 
     def __enter__(self):
