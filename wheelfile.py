@@ -763,6 +763,7 @@ class WheelFile:
     # TODO: validate naming conventions, metadata, etc.
     # TODO: use testwheel()
     # TODO: idea: raise when completely out-of-spec, return a compliancy score?
+    # TODO: fail if there are multiple .dist-info or .data directories
     def validate(self):
         raise NotImplementedError
 
