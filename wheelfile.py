@@ -23,6 +23,9 @@ __version__ = '0.0.1'
 # TODO: idea - install wheel - w/ INSTALLER file
 # TODO: idea - wheel from an installed distribution?
 
+# TODO: module docstring
+# TODO: fix inconsistent referencing style of symbols in docstrings
+
 
 def _slots_from_params(func):
     """List out slot names based on the names of parameters of func
@@ -45,7 +48,7 @@ def _slots_from_params(func):
 # TODO: validate values charset-wise
 # TODO: as_json?
 # TODO: as_dict?
-# TODO: ensure name is the same as wheelfile name
+# TODO: ensure name is the same as wheelfile namepath
 # TODO: PEP-643 - v2.2
 class MetaData:
     """Implements Wheel Metadata format v2.1.
