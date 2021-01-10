@@ -716,7 +716,7 @@ class WheelFile:
         if not distname:
             raise UnnamedDistribution(
                 f"No distname provided and the inferred filename does not "
-                f"contain a proper distname: {self.filename}"
+                f"contain a proper distname substring: {self.filename}"
             )
 
         return distname
@@ -731,8 +731,8 @@ class WheelFile:
 
         if len(name_segments) < 2:
             raise UnnamedDistribution(
-                f"No distname provided and the inferred filename does not "
-                f"contain a proper version string: {self.filename}"
+                f"No version provided and the inferred filename does not "
+                f"contain a version segment: {self.filename}"
             )
 
         return Version(name_segments[1])
