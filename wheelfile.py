@@ -507,7 +507,6 @@ class WheelData:
 
 
 # TODO: leave out hashes of *.pyc files?
-# TODO: from_str
 class WheelRecord:
     """Contains logic for creation and modification of RECORD files.
 
@@ -550,6 +549,16 @@ class WheelRecord:
         for entry in self._records.values():
             records.writerow(entry._asdict())
         return buf.getvalue()
+
+    @classmethod
+    def from_str(self, s) -> 'WheelRecord':
+        record = WheelRecord()
+        buf = io.StringIO(s)
+        reader = csv.DictReader(buf, self._RecordEntry._fields)
+        for row in reader:
+            entry = self._RecordEntry(**row)
+            record._records[entry.path] = entry
+        return record
 
     def update(self, arc_path: str, buf: BinaryIO):
         """Add a record entry for a file in the archive.

@@ -336,3 +336,12 @@ class TestWheelRecord:
         a.update('file', buf)
         buf.seek(0)
         b.update('file', buf)
+
+    def test_from_empty_str_produces_empty_record(self):
+        assert str(WheelRecord.from_str('')) == ''
+
+    def test_stringification_is_stable(self):
+        wr = WheelRecord()
+        buf = BytesIO(bytes(1000))
+        wr.update('file', buf)
+        assert str(WheelRecord.from_str(str(wr))) == str(wr)
