@@ -801,6 +801,11 @@ class WheelFile:
     def __exit__(self):
         self.close()
 
+    @property
+    def closed(self) -> bool:
+        # ZipFile.fp is set to None upon ZipFile.close()
+        return self._zip.fp is None
+
     # Below - only speculation
     # =========================================================================
 
@@ -842,10 +847,6 @@ class WheelFile:
     # It returns full paths from the archive tree. Not "names". Or is "name"
     # what you would call the archive path in PKZIP?
     def namelist(self) -> List[str]:
-        pass
-
-    @property
-    def closed(self) -> bool:
         pass
 
     # Might not be needed. There's no good usecase for it, and ensuring RECORD
