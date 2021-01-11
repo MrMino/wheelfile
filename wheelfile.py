@@ -604,6 +604,7 @@ class BadWheelFile(Exception):
 # TODO: facilities for converting arbitrary ZIPs to Wheels
 # TODO: prevent arbitrary writes to METADATA, WHEEL, and RECORD
 # TODO: prevent adding .dist-info and .data directories
+# TODO: add attributes docstrings: distribution, tags, etc
 class WheelFile:
     """An archive that follows the wheel specification.
 
