@@ -609,10 +609,9 @@ class UnnamedDistribution(BadWheelFile):
     """Distribution name cannot be deduced from arguments."""
 
 
-# TODO: testwheel() method
-# TODO: facilities for converting arbitrary ZIPs to Wheels
-# TODO: prevent arbitrary writes to METADATA, WHEEL, and RECORD
-# TODO: prevent adding .dist-info and .data directories
+# TODO: prevent arbitrary writes to METADATA, WHEEL, and RECORD - or make sure
+# the writes are reflected internally
+# TODO: prevent adding .dist-info directories if there's one already there
 # TODO: add attributes docstrings: distribution, tags, etc
 class WheelFile:
     """An archive that follows the wheel specification.
@@ -625,19 +624,57 @@ class WheelFile:
         Path to the file, if the instance was initialized with one, otherwise
         None.
     """
+    # TODO: log reading/missing metadata errors
+    # TODO: implement "validate" argument, document it
+    # TODO: switch the validation policy around, make "validate=True" default
     def __init__(
         self,
         file_or_path: Union[str, Path, BinaryIO],
         mode: str = 'r',
         distname: Optional[str] = None,
-        version: Optional[Union[str, Version]] = None
+        version: Optional[Union[str, Version]] = None,
+        validate: bool = False
     ) -> None:
         """Open or create a wheel file.
 
-        After opening, a RECORD, WHEEL and METADATA files are added to the
-        archive, under the proper *.dist-info path. If the archive is opened in
-        a read mode it must already contain at least WHEEL and METADATA (RECORD
-        is optional as per PEP-627).
+        If the opened file does not contain WHEEL, METADATA or RECORD (which is
+        optional as per PEP-627), the attributes corresponding to the missing
+        data structures will be set to None. In order to create them, either
+        set these attributes yourself and call their respective write methods,
+        or use fix().
+
+        If any of the metadata files cannot be read due to a wrong format, they
+        are considered missing.
+
+        If the archive root contains a directory with a name ending with
+        '.dist-info', it is considered to be _the_ metadata directory for the
+        wheel, even if the given/inferred distname and version do not match its
+        name.
+
+        If the archive already contains either one of the aforementioned files,
+        they are read, but are not checked for consistency. Use validate() to
+        check whether there are errors, and fix() to fix them.
+
+        There are currently 2 classes of errors which prevent a well formatted
+        zip file from being read by this class:
+            - Unknown distribution name/version - when the naming scheme is
+            violated in a way that prevents inferring these values and the user
+            hasn't provided these values. In such case, the scope of
+            functioning features of this class would be limited to that of a
+            standard ZipFile, and is therefore unsupported.
+            - When there are multiple .data or .dist-info directories. This
+            would mean that the class would have to guess which are the genuine
+            ones - and we refuse the temptation to do that (see "The Zen of
+            Python").
+
+        In other words, this class is liberal in what it accepts, but very
+        conservative in what it does (A.K.A. the robustness principle).
+
+        Note
+        ----
+        Despite all of this, THERE ARE NO GUARANTEES being made as to whether a
+        misformatted file can be read or fixed by this class, and even if it is
+        currently, whether it will still be the case in the future versions.
 
         Parameters
         ----------
@@ -652,26 +689,25 @@ class WheelFile:
             proper wheel, use WheelFile.validate().
 
         distname
-            Name of the distribution for this wheelfile. Used to infer the name
-            of the directory in the archive in which metadata should reside,
-            and, when using validate(), whether the file path is correct in
-            terms of the naming convention.
+            Name of the distribution for this wheelfile.
 
             If omitted, the name will be inferred from the filename given in
             the path. If a file-like object is given instead of a path, it will
             be inferred from its "name" attribute.
 
+            The class requires this information, as it's used to infer the name
+            of the directory in the archive in which metadata should reside.
+
+            This argument should be understood as an override for the values
+            calculated from the object given in "file_or_path" argument.  It
+            should only be necessary when a file is read from memory or has a
+            misformatted name.
+
             Should be composed of alphanumeric characters and underscores only.
 
         version
-            Version of the distribution in this wheelfile. Used to infer the
-            name of the directory in the archive in which metadata should
-            reside, and, when using validate(), whether the file path is
-            correct in terms of the naming convention.
-
-            If omitted, the version will be inferred from the filename given in
-            the path. If a file-like object is given instead of a path, it will
-            be inferred from its "name" attribute.
+            Version of the distribution in this wheelfile. Follows the same
+            semantics as "distname".
 
         Raises
         ------
@@ -684,8 +720,8 @@ class WheelFile:
             and the information wasn't provided via other arguments.
 
         BadWheelFile
-            Raised in read mode, if the archive does not contain required
-            metadata: WHEEL, METADATA.
+            Raised if the archive contains multiple '.dist-info' or '.data'
+            directories.
 
         zipfile.BadZipFile
             If given file is not a proper zip.
@@ -777,7 +813,27 @@ class WheelFile:
     def validate(self):
         raise NotImplementedError
 
-    # TODO: ensure RECORD is correct
+    # TODO: fix everything we can without guessing
+    # TODO: provide sensible defaults
+    # TODO: return proper filename
+    def fix(self) -> str:
+        raise NotImplementedError
+
+    def refresh_record(self):
+        raise NotImplementedError
+
+    def write_metadata(self):
+        raise NotImplementedError
+
+    def write_wheeldata(self):
+        raise NotImplementedError
+
+    def write_record(self):
+        raise NotImplementedError
+
+    # TODO: ensure RECORD is correct, if it exists
+    # TODO: for the first wrong record found, return its arcpath
+    # TODO: for the first file not found in the record, return its arcpath
     # TODO: docstring
     def testwheel(self):
         first_broken = self._zip.testzip()
@@ -817,12 +873,6 @@ class WheelFile:
     # Change argnames to something better: "zip_path" does not carry the right
     # idea, "target_path" might be too descriptive.
     def extract(self, zip_path, target_path):
-        pass
-
-    # Adding metadata file from filesystem is one thing, it should also be
-    # possible to add metadata from memory without FS acting as a middleman.
-    # arcname argument maybe?
-    def add_meta(self, filename: str) -> None:
         pass
 
     # Same as with add_meta, there should be a way to add from memory.
