@@ -139,7 +139,7 @@ class MetaData:
         Name and, optionally, contact information of person currently
         maintaining the project to which this distribution belongs to.
 
-        Ommit this parameter if the author and current maintainer is the same
+        Omit this parameter if the author and current maintainer is the same
         person.
 
     maintainer_email
@@ -147,12 +147,12 @@ class MetaData:
         Format of this field must follow the format of RFC-822 "From:" header
         field.
 
-        Ommit this parameter if the author and current maintainer is the same
+        Omit this parameter if the author and current maintainer is the same
         person.
 
     license
         Text of the license that covers this distribution. If license
-        classifier is used, this parameter may be ommited or used to specify the
+        classifier is used, this parameter may be omitted or used to specify the
         particular version of the intended legal text.
 
     home_page
@@ -183,7 +183,7 @@ class MetaData:
         Semantics of this field aren't formalized by metadata specifications.
 
     requires_python
-        PEP-440 version identificator, that specifies the set Python language
+        PEP-440 version identifier, that specifies the set Python language
         versions that this distribution is compatible with.
 
         Some package management tools (most notably pip) use the value of this
@@ -406,7 +406,7 @@ class WheelData:
 
     Note
     ----
-    Wheel-Version, the wheel format version specifier, is unchangable. Version
+    Wheel-Version, the wheel format version specifier, is unchangeable. Version
     "1.0" is used.
 
     Parameters
@@ -606,7 +606,7 @@ class UnnamedDistribution(ValueError):
 
 
 class BadWheelFile(Exception):
-    """The given file cannot be interpretted as a wheel nor fixed."""
+    """The given file cannot be interpreted as a wheel nor fixed."""
 
 
 # TODO: testwheel() method
