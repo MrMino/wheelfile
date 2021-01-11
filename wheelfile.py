@@ -774,9 +774,19 @@ class WheelFile:
 
     # TODO: do a final metadata write (in case something was changed)
     # TODO: do a final RECORD recalculation?
-    # TODO: idea might be a good idea to redo RECORD and fail if it's different
+    # TODO: idea: might be a good idea to redo RECORD and fail if it's different
+    # TODO: docstring
     def close(self) -> None:
-        pass
+        self._zip.close()
+
+    def __del__(self):
+        self.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self):
+        self.close()
 
     # Below - only speculation
     # =========================================================================
@@ -874,11 +884,3 @@ class WheelFile:
     def __repr__(self):
         pass
 
-    def __del__(self):
-        self.close()
-
-    def __enter__(self):
-        raise NotImplementedError("Implement me!")
-
-    def __exit__(self):
-        raise NotImplementedError("Implement me!")
