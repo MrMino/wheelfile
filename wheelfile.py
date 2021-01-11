@@ -601,12 +601,12 @@ class WheelRecord:
             return NotImplemented
 
 
-class UnnamedDistribution(ValueError):
-    """Distribution name cannot be deduced from arguments."""
-
-
-class BadWheelFile(Exception):
+class BadWheelFile(ValueError):
     """The given file cannot be interpreted as a wheel nor fixed."""
+
+
+class UnnamedDistribution(BadWheelFile):
+    """Distribution name cannot be deduced from arguments."""
 
 
 # TODO: testwheel() method
