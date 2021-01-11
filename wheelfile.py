@@ -769,9 +769,12 @@ class WheelFile:
         raise NotImplementedError
 
     # TODO: ensure RECORD is correct
-    # TODO: use ZipFile.testzip()
+    # TODO: docstring
     def testwheel(self):
-        raise NotImplementedError
+        first_broken = self._zip.testzip()
+        if first_broken is not None:
+            return first_broken
+        raise NotImplementedError("Check if RECORD is correct here")
 
     # TODO: do a final metadata write (in case something was changed)
     # TODO: do a final RECORD recalculation?
