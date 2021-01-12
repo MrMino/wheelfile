@@ -614,6 +614,10 @@ class UnnamedDistribution(BadWheelFile):
 # TODO: prevent adding .dist-info directories if there's one already there
 # TODO: add attributes docstrings: distribution, tags, etc
 # TODO: ensure distname and varsion have no weird characters (!slashes!)
+# TODO: properties for build tag, python tag, abi tag, platform tag?
+# TODO: debug propery, as with ZipFile.debug
+# TODO: comment property
+# TODO: compression level arguments - is compression even supported by the spec?
 class WheelFile:
     """An archive that follows the wheel specification.
 
@@ -624,25 +628,76 @@ class WheelFile:
     filename : str
         Path to the file, if the instance was initialized with one, otherwise
         None.
+
+    distname : str
+        Name of the distribution (project). Either given to __init__()
+        explicitly or inferred from its file_or_path argument.
+
+    version : packaging.version.Version
+        Version of the distribution. Either given to __init__() explicitly or
+        inferred from its file_or_path argument.
+
+    record : Optional[WheelRecord]
+        Current state of .dist-info/RECORD file.
+
+        When modifying other files in the archive, the record is written on
+        each operation & on close().
+
+        In lazy mode, this is only the case when using refresh_record() and
+        write_record(), and if the file does not exist or is misformatted, this
+        attribute becomes None. In such cases, calling refresh_record() creates
+        it from scratch().
+
+        In non-lazy modes, this file is always created/read & validated on
+        initialization.
+
+    metadata : Optional[MetaData]
+        Current state of .dist-info/METADATA file.
+
+        Follows the same semantics as 'record'. Values from 'distname' and
+        'version' are used to provide required arguments when the file is
+        created from scratch in by __init__().
+
+        In standard modes, when changing data contained by the object this
+        property returns, the file is being written only on close(). In order
+        to write it beforehand, use write_metadata().
+
+        When using lazy mode, the data is not being written to the archive on
+        close().
+
+    wheeldata : Optional[WheelData]
+        Current state of .dist-info/WHEELDATA file.
+
+        Follows the same semantics as 'metadata'. Consult docstring of
+        WheelData class for the default values used.
+
+        Use write_wheeldata() after editting it, in order to write it before
+        close(), or - in lazy mode - to write the archive data at all.
     """
-    # TODO: log reading/missing metadata errors
-    # TODO: implement "validate" argument, document it
-    # TODO: switch the validation policy around, make "validate=True" default
+    # TODO: implement lazy mode
+    # TODO: in lazy mode, log reading/missing metadata errors
     def __init__(
         self,
         file_or_path: Union[str, Path, BinaryIO],
         mode: str = 'r',
         distname: Optional[str] = None,
         version: Optional[Union[str, Version]] = None,
-        validate: bool = False
     ) -> None:
         """Open or create a wheel file.
 
-        If the opened file does not contain WHEEL, METADATA or RECORD (which is
-        optional as per PEP-627), the attributes corresponding to the missing
-        data structures will be set to None. In order to create them, either
-        set these attributes yourself and call their respective write methods,
-        or use fix().
+        If lazy mode is not specified:
+            - In read and append modes, the file is validated using validate().
+            - In write and exclusive write modes, all .dist-info metadata files
+            are created (see "Attributes" section of this class).
+
+        To skip the validation for example if you wish to fix a misformated
+        wheel, use lazy mode ('l' - see description of the "mode" parameter).
+
+        In lazy mode, if the opened file does not contain WHEEL, METADATA, or
+        RECORD (which is optional as per PEP-627), the attributes corresponding
+        to the missing data structures will be set to None. In order to create
+        them, either set these attributes yourself and call their respective
+        write methods, or use fix().
 
         If any of the metadata files cannot be read due to a wrong format, they
         are considered missing.
@@ -656,11 +711,12 @@ class WheelFile:
         they are read, but are not checked for consistency. Use validate() to
         check whether there are errors, and fix() to fix them.
 
-        There are currently 2 classes of errors which prevent a well formatted
-        zip file from being read by this class:
-            - Unknown distribution name/version - when the naming scheme is
-            violated in a way that prevents inferring these values and the user
-            hasn't provided these values. In such case, the scope of
+        There are currently 2 classes of errors which completely prevent a well
+        formatted zip file from being read by this class:
+            - Unknown/incorrect distribution name/version - when the naming
+            scheme is violated in a way that prevents inferring these values
+            and the user hasn't provided these values, or provided ones that
+            do not conform to the specifications. In such case, the scope of
             functioning features of this class would be limited to that of a
             standard ZipFile, and is therefore unsupported.
             - When there are multiple .data or .dist-info directories. This
@@ -685,9 +741,17 @@ class WheelFile:
         mode
             See zipfile.ZipFile docs for the list of available modes.
 
-            In the read mode, the file given has to be a proper PKZIP-formatted
-            file. No further checks are done. To validate whether the file is a
-            proper wheel, use WheelFile.validate().
+            In the read and append modes, the file given has to contain proper
+            PKZIP-formatted data.
+
+            Adding "l" to the mode string turns on the "lazy mode". This
+            changes the behavior on initialization (see above), the behavior of
+            close() (see its docstring for more info), makes the archive
+            modifying methods refrain from refreshing the record & writing it
+            to the archive.
+
+            Lazy mode should only be used in cases where a misformatted wheels
+            have to be read or fixed.
 
         distname
             Name of the distribution for this wheelfile.
@@ -706,9 +770,16 @@ class WheelFile:
 
             Should be composed of alphanumeric characters and underscores only.
 
+            See the description of "distname" attribute for more information.
+
         version
             Version of the distribution in this wheelfile. Follows the same
             semantics as "distname".
+
+            The given value must be compliant with PEP-440 version identifier
+            specification.
+
+            See the description of "version" attribute for more information.
 
         Raises
         ------
@@ -747,11 +818,9 @@ class WheelFile:
         self._version = version
         self._zip = ZipFile(file_or_path, mode)
 
-        if mode == 'r':
-            self._read_metadata()
-        else:
-            self._ensure_metadata()
+        self._read_dist_info()
 
+    # TODO, FIXME: this should not use filename, as it might be a full path
     def _distname_from_target(self) -> str:
         if self.filename is None:
             raise UnnamedDistribution(
@@ -768,6 +837,7 @@ class WheelFile:
 
         return distname
 
+    # TODO, FIXME: this should not use filename, as it might be a full path
     def _version_from_target(self) -> Version:
         if self.filename is None:
             raise UnnamedDistribution(
@@ -784,10 +854,7 @@ class WheelFile:
 
         return Version(name_segments[1])
 
-    def _read_metadata(self):
-        raise NotImplementedError
-
-    def _ensure_metadata(self):
+    def _read_dist_info(self):
         raise NotImplementedError
 
     def _dist_info_dir_name(self) -> str:
@@ -796,8 +863,8 @@ class WheelFile:
         return f"{name}-{version}.dist-info"
 
     @property
-    def filename(self) -> str:
-        return getattr(self._target, 'name', None)
+    def filename(self) -> Optional[str]:
+        return self._zip.filename
 
     @property
     def distname(self) -> str:
@@ -811,14 +878,34 @@ class WheelFile:
     # TODO: use testwheel()
     # TODO: idea: raise when completely out-of-spec, return a compliancy score?
     # TODO: fail if there are multiple .dist-info or .data directories
+    # TODO: use lint()
     def validate(self):
+        raise NotImplementedError
+
+    # TODO: return a list of defects & negligences present in the wheel file
+    # TODO: maybe it's a good idea to put it outside this class?
+    # TODO: The implementation could be made simpler by utilizng an internal
+    # list of error & lint objects, that have facilities to check a WheelFile
+    # object and fix it.
+    def lint(self):
         raise NotImplementedError
 
     # TODO: fix everything we can without guessing
     # TODO: provide sensible defaults
     # TODO: return proper filename
+    # TODO: base the fixes on the return value of lint()?
     def fix(self) -> str:
         raise NotImplementedError
+
+    # TODO: ensure RECORD is correct, if it exists
+    # TODO: for the first wrong record found, return its arcpath
+    # TODO: for the first file not found in the record, return its arcpath
+    # TODO: docstring
+    def testwheel(self):
+        first_broken = self._zip.testzip()
+        if first_broken is not None:
+            return first_broken
+        raise NotImplementedError("Check if RECORD is correct here")
 
     def refresh_record(self):
         raise NotImplementedError
@@ -832,15 +919,17 @@ class WheelFile:
     def write_record(self):
         raise NotImplementedError
 
-    # TODO: ensure RECORD is correct, if it exists
-    # TODO: for the first wrong record found, return its arcpath
-    # TODO: for the first file not found in the record, return its arcpath
-    # TODO: docstring
-    def testwheel(self):
-        first_broken = self._zip.testzip()
-        if first_broken is not None:
-            return first_broken
-        raise NotImplementedError("Check if RECORD is correct here")
+    @property
+    def record(self) -> WheelRecord:
+        raise NotImplementedError
+
+    @property
+    def metadata(self) -> MetaData:
+        raise NotImplementedError
+
+    @property
+    def wheeldata(self) -> WheelData:
+        raise NotImplementedError
 
     # TODO: do a final metadata write (in case something was changed)
     # TODO: do a final RECORD recalculation?
@@ -862,6 +951,9 @@ class WheelFile:
     def closed(self) -> bool:
         # ZipFile.fp is set to None upon ZipFile.close()
         return self._zip.fp is None
+
+    def __repr__(self):
+        raise NotImplementedError
 
     # Below - only speculation
     # =========================================================================
@@ -923,28 +1015,4 @@ class WheelFile:
     # the class is much less flexible.
     @property
     def zipfile(self) -> ZipFile:
-        pass
-
-    # This name is kinda verbose and can still be conflated with
-    # "package_metadata".
-    @property
-    def wheel_metadata(self) -> WheelData:
-        pass
-
-    # Too verbpose?
-    # Maybe "pkg_info"?
-    @property
-    def package_metadata(self) -> MetaData:
-        pass
-
-    @property
-    def record(self) -> WheelRecord:
-        pass
-
-    # TODO: properties for data that is included in the naming
-    # TODO: compression level arguments - is compression even supported by Pip?
-    # TODO: comment property
-    # TODO: debug propery, as with ZipFile.debug
-
-    def __repr__(self):
         pass
