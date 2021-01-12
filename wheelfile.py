@@ -613,6 +613,7 @@ class UnnamedDistribution(BadWheelFile):
 # the writes are reflected internally
 # TODO: prevent adding .dist-info directories if there's one already there
 # TODO: add attributes docstrings: distribution, tags, etc
+# TODO: ensure distname and varsion have no weird characters (!slashes!)
 class WheelFile:
     """An archive that follows the wheel specification.
 
