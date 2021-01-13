@@ -657,7 +657,7 @@ class WheelFile:
 
         Follows the same semantics as 'record'. Values from 'distname' and
         'version' are used to provide required arguments when the file is
-        created from scratch in by __init__().
+        created from scratch by __init__().
 
         In standard modes, when changing data contained by the object this
         property returns, the file is being written only on close(). In order
