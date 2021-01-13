@@ -808,63 +808,71 @@ class WheelFile:
         if isinstance(file_or_path, str):
             file_or_path = Path(file_or_path)
 
-        self._target = file_or_path
-
-        if distname is None:
-            distname = self._distname_from_target()
-        elif not set(distname) <= self.VALID_DISTNAME_CHARS:
-            raise ValueError(
-                "Invalid distname: {repr(distname)}. Distnames should contain "
-                "only ASCII letters, numbers, underscore, and period."
-            )
-
-        if version is None:
-            version = self._version_from_target()
-        elif isinstance(version, str):
-            try:
-                version = Version(version)
-            except InvalidVersion as e:
-                raise ValueError("Invalid version: {repr(version)}.") from e
-
-        self._distname = distname
-        self._version = version
+        self._pick_a_distname(file_or_path, given_distname=distname)
+        self._pick_a_version(file_or_path, given_version=version)
         self._zip = ZipFile(file_or_path, mode)
-
         self._read_dist_info()
 
-    # TODO, FIXME: this should not use filename, as it might be a full path
-    def _distname_from_target(self) -> str:
-        if self.filename is None:
-            raise UnnamedDistributionError(
-                "No distname provided and an unnamed object given."
+    def _pick_a_distname(self, file_or_path: Union[Path, BinaryIO],
+                         given_distname: Union[None, str]):
+        if given_distname is not None:
+            distname = given_distname
+        else:
+            filename = getattr(file_or_path, 'name', None)
+            if filename is None:
+                raise UnnamedDistributionError(
+                    "No distname provided and an unnamed object given."
+                )
+
+            if not isinstance(file_or_path, Path):
+                filename = Path(filename).name
+
+            distname = filename.split('-')[0]
+            if not distname:
+                raise UnnamedDistributionError(
+                    f"No distname provided and the inferred filename does not "
+                    f"contain a proper distname substring: {self.filename}"
+                )
+
+        distname_valid = set(distname) <= self.VALID_DISTNAME_CHARS
+        if not distname_valid:
+            raise ValueError(
+                "Invalid distname: {repr(distname)}. Distnames should "
+                "contain only ASCII letters, numbers, underscores, and "
+                "periods."
             )
 
-        distname = self.filename.split('-')[0]
+        self._distname = distname
 
-        if not distname:
-            raise UnnamedDistributionError(
-                f"No distname provided and the inferred filename does not "
-                f"contain a proper distname substring: {self.filename}"
-            )
+    def _pick_a_version(self, file_or_path: Union[str, Path, BinaryIO],
+                        given_version: Union[None, str, Version]):
+        if isinstance(given_version, Version):
+            # We've got a valid object here, nothing else to do
+            self._version = given_version
+            return
 
-        return distname
+        if isinstance(given_version, str):
+            version = given_version
+        else:
+            filename = getattr(file_or_path, 'name', None)
+            if filename is None:
+                raise UnnamedDistributionError(
+                    "No version provided and an unnamed object given."
+                )
 
-    # TODO, FIXME: this should not use filename, as it might be a full path
-    def _version_from_target(self) -> Version:
-        if self.filename is None:
-            raise UnnamedDistributionError(
-                "No version provided and an unnamed object given."
-            )
+            name_segments = filename.split('-')
 
-        name_segments = self.filename.split('-')
+            if len(name_segments) < 2:
+                raise UnnamedDistributionError(
+                    f"No version provided and the inferred filename does not "
+                    f"contain a version segment: {self.filename}"
+                )
+            version = name_segments[1]
 
-        if len(name_segments) < 2:
-            raise UnnamedDistributionError(
-                f"No version provided and the inferred filename does not "
-                f"contain a version segment: {self.filename}"
-            )
-
-        return Version(name_segments[1])
+        try:
+            self._version = Version(version)
+        except InvalidVersion as e:
+            raise ValueError("Invalid version: {repr(version)}.") from e
 
     def _read_dist_info(self):
         raise NotImplementedError
