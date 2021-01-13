@@ -4,12 +4,13 @@ import csv
 import io
 import hashlib
 
+from string import ascii_letters, digits
 from pathlib import Path
 from collections import namedtuple
 from inspect import signature
 from packaging.tags import parse_tag
 from packaging.utils import canonicalize_name
-from packaging.version import Version
+from packaging.version import Version, InvalidVersion
 from email.message import EmailMessage
 from email import message_from_string
 from zipfile import ZipFile, ZipInfo
@@ -674,6 +675,8 @@ class WheelFile:
         Use write_wheeldata() after editting it, in order to write it before
         close(), or - in lazy mode - to write the archive data at all.
     """
+    VALID_DISTNAME_CHARS = set(ascii_letters + digits + '._')
+
     # TODO: implement lazy mode
     # TODO: in lazy mode, log reading/missing metadata errors
     def __init__(
@@ -804,15 +807,24 @@ class WheelFile:
 
         if isinstance(file_or_path, str):
             file_or_path = Path(file_or_path)
-        if isinstance(version, str):
-            version = Version(version)
 
         self._target = file_or_path
 
         if distname is None:
             distname = self._distname_from_target()
+        elif not set(distname) <= self.VALID_DISTNAME_CHARS:
+            raise ValueError(
+                "Invalid distname: {repr(distname)}. Distnames should contain "
+                "only ASCII letters, numbers, underscore, and period."
+            )
+
         if version is None:
             version = self._version_from_target()
+        elif isinstance(version, str):
+            try:
+                version = Version(version)
+            except InvalidVersion as e:
+                raise ValueError("Invalid version: {repr(version)}.") from e
 
         self._distname = distname
         self._version = version
