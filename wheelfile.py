@@ -601,11 +601,11 @@ class WheelRecord:
             return NotImplemented
 
 
-class BadWheelFile(ValueError):
+class BadWheelFileError(ValueError):
     """The given file cannot be interpreted as a wheel nor fixed."""
 
 
-class UnnamedDistribution(BadWheelFile):
+class UnnamedDistributionError(BadWheelFileError):
     """Distribution name cannot be deduced from arguments."""
 
 
@@ -783,7 +783,7 @@ class WheelFile:
 
         Raises
         ------
-        UnnamedDistribution
+        UnnamedDistributionError
             Raised if the distname or version cannot be inferred from the
             given arguments.
 
@@ -791,7 +791,7 @@ class WheelFile:
             file-like object has no "name" attribute to get the filename from,
             and the information wasn't provided via other arguments.
 
-        BadWheelFile
+        BadWheelFileError
             Raised if the archive contains multiple '.dist-info' or '.data'
             directories.
 
@@ -823,14 +823,14 @@ class WheelFile:
     # TODO, FIXME: this should not use filename, as it might be a full path
     def _distname_from_target(self) -> str:
         if self.filename is None:
-            raise UnnamedDistribution(
+            raise UnnamedDistributionError(
                 "No distname provided and an unnamed object given."
             )
 
         distname = self.filename.split('-')[0]
 
         if not distname:
-            raise UnnamedDistribution(
+            raise UnnamedDistributionError(
                 f"No distname provided and the inferred filename does not "
                 f"contain a proper distname substring: {self.filename}"
             )
@@ -840,14 +840,14 @@ class WheelFile:
     # TODO, FIXME: this should not use filename, as it might be a full path
     def _version_from_target(self) -> Version:
         if self.filename is None:
-            raise UnnamedDistribution(
+            raise UnnamedDistributionError(
                 "No version provided and an unnamed object given."
             )
 
         name_segments = self.filename.split('-')
 
         if len(name_segments) < 2:
-            raise UnnamedDistribution(
+            raise UnnamedDistributionError(
                 f"No version provided and the inferred filename does not "
                 f"contain a version segment: {self.filename}"
             )
