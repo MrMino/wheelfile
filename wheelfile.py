@@ -805,13 +805,22 @@ class WheelFile:
             "Text buffer given where a binary one was expected."
         )
 
+        # These might be none in case a corrupted wheel is read in lazy mode
+        self.wheeldata: Optional[WheelData] = None
+        self.metadata: Optional[MetaData] = None
+        self.record: Optional[WheelRecord] = None
+
         if isinstance(file_or_path, str):
             file_or_path = Path(file_or_path)
 
         self._pick_a_distname(file_or_path, given_distname=distname)
         self._pick_a_version(file_or_path, given_version=version)
         self._zip = ZipFile(file_or_path, mode)
-        self._read_dist_info()
+
+        if 'w' in mode:
+            self._initialize_dist_info()
+        else:
+            self._read_dist_info()
 
     def _pick_a_distname(self, file_or_path: Union[Path, BinaryIO],
                          given_distname: Union[None, str]):
@@ -873,6 +882,15 @@ class WheelFile:
             self._version = Version(version)
         except InvalidVersion as e:
             raise ValueError("Invalid version: {repr(version)}.") from e
+
+    def _initialize_dist_info(self):
+        self.metadata = MetaData(name=self.distname, version=self.version)
+        self.wheeldata = WheelData()
+        self.record = WheelRecord()
+
+        self.write_metadata()
+        self.write_wheeldata()
+        self.write_record()
 
     def _read_dist_info(self):
         raise NotImplementedError
@@ -937,18 +955,6 @@ class WheelFile:
         raise NotImplementedError
 
     def write_record(self):
-        raise NotImplementedError
-
-    @property
-    def record(self) -> WheelRecord:
-        raise NotImplementedError
-
-    @property
-    def metadata(self) -> MetaData:
-        raise NotImplementedError
-
-    @property
-    def wheeldata(self) -> WheelData:
         raise NotImplementedError
 
     # TODO: do a final metadata write (in case something was changed)
