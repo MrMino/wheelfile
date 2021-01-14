@@ -27,6 +27,8 @@ __version__ = '0.0.1'
 # TODO: module docstring
 # TODO: fix inconsistent referencing style of symbols in docstrings
 
+# TODO: parameters for path-like values should accept bytes
+
 
 def _slots_from_params(func):
     """List out slot names based on the names of parameters of func
