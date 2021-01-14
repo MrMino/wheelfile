@@ -4,7 +4,6 @@
 
 This library tries to make it dead simple to create a format-compliant
 [Wheel](https://pythonwheels.com/). It aims to provide an API comparable to
-[tarfile](https://docs.python.org/3/library/tarfile.html) and
 [zipfile](https://docs.python.org/3/library/zipfile.html). Use this if you wish
 to create wheels in your code.
 

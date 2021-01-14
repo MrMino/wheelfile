@@ -981,12 +981,24 @@ class WheelFile:
     def __repr__(self):
         raise NotImplementedError
 
+    # TODO: delegate to ._zip.write, but refresh record afterwards
+    # TODO: compression args?
+    # TODO: ensure metadata files aren't written to
+    def write(self,
+              filename: Union[str, Path],
+              arcname: Union[str, Path]) -> None:
+        raise NotImplementedError
+
+    # TODO: delegate to ._zip.writestr, but refresh record afterwards
+    # TODO: compression args?
+    # TODO: ensure metadata files aren't written to
+    def writestr(self,
+                 zinfo_or_arcname: Union[ZipInfo, str, Path],
+                 data):
+        raise NotImplementedError
+
     # Below - only speculation
     # =========================================================================
-
-    # This should take file objects too
-    def add(self, path: str) -> None:
-        pass
 
     # This should take file objects too
     # Change argnames to something better: "zip_path" does not carry the right
@@ -1026,15 +1038,6 @@ class WheelFile:
     # This has little use when it returns bytes.
     # Might not be needed.
     def read(self, name) -> bytes:
-        pass
-
-    # Might not be needed. We have "add".
-    def write(self) -> None:
-        pass
-
-    # This could be the replacement for "add from memory", a counterpart for
-    # add().
-    def writestr(self, arcname, data):
         pass
 
     # This makes it impossible to ensure that RECORD is valid. But without it,
