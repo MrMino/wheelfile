@@ -78,6 +78,9 @@ class MetaData:
     version
         A string that contains PEP-440 compatible version identifier.
 
+        Can be specified using packaging.version.Version object, or a string,
+        where the latter is always converted to the former.
+
     summary
         A one-line sentence describing this distribution.
 
@@ -253,7 +256,7 @@ class MetaData:
         this one. Each entry must follow the same format that entries in
         "requires_dists" list do.
     """
-    def __init__(self, *, name: str, version: str,
+    def __init__(self, *, name: str, version: Union[str, Version],
                  summary: Optional[str] = None,
                  description: Optional[str] = None,
                  description_content_type: Optional[str] = None,
@@ -278,7 +281,7 @@ class MetaData:
                  ):
         # self.metadata_version = '2.1' by property
         self.name = name
-        self.version = version
+        self.version = Version(version) if isinstance(version, str) else version
 
         self.summary = summary
         self.description = description
@@ -353,6 +356,8 @@ class MetaData:
 
             if field_name == 'Keywords':
                 content = ','.join(content)
+            elif field_name == "Version":
+                content = str(content)
 
             if self.field_is_multiple_use(field_name):
                 assert not isinstance(content, str), (

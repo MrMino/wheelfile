@@ -2,6 +2,7 @@ import pytest
 
 from wheelfile import (__version__ as lib_version,
                        WheelData, MetaData, WheelRecord)
+from packaging.version import Version
 from textwrap import dedent
 from io import BytesIO
 
@@ -15,7 +16,7 @@ class TestMetadata:
 
     def test_only_name_and_version_is_required(self):
         md = MetaData(name='my-package', version='1.2.3')
-        assert md.name == 'my-package' and md.version == '1.2.3'
+        assert md.name == 'my-package' and str(md.version) == '1.2.3'
 
     @pytest.fixture
     def metadata(self):
@@ -68,7 +69,7 @@ class TestMetadata:
         """)
         kwargs = {
             'name': 'package-name',
-            'version': '1.2.3',
+            'version': Version('1.2.3'),
             'summary': "this is a test",
             'description': description,
             'description_content_type': 'text/plain',
