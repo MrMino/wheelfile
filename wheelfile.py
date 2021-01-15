@@ -940,6 +940,10 @@ class WheelFile:
     # TODO: idea: raise when completely out-of-spec, return a compliancy score?
     # TODO: fail if there are multiple .dist-info or .data directories
     # TODO: use lint()
+    # TODO: ensure there are no synonym files for metadata (maybe others?)
+    # TODO: the bottom-line semantics of this method should be: if validate()
+    # goes through, the wheel is installable. Of course there are other
+    # requirements.
     def validate(self):
         raise NotImplementedError
 
