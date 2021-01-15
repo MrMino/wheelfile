@@ -1023,12 +1023,16 @@ class WheelFile:
         self._zip.close()
 
     def __del__(self):
-        self.close()
+        try:
+            self.close()
+        except AttributeError:
+            # This may happen if __init__ fails before creating self._zip
+            pass
 
     def __enter__(self):
         return self
 
-    def __exit__(self):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
     @property
