@@ -568,7 +568,7 @@ class WheelRecord:
             record._records[entry.path] = entry
         return record
 
-    def update(self, arc_path: str, buf: BinaryIO):
+    def update(self, arc_path: str, buf: IO[bytes]):
         """Add a record entry for a file in the archive.
 
         Parameters
@@ -590,7 +590,7 @@ class WheelRecord:
         del self._records[arc_path]
 
     @classmethod
-    def _entry(cls, arc_path: str, buf: BinaryIO) -> _RecordEntry:
+    def _entry(cls, arc_path: str, buf: IO[bytes]) -> _RecordEntry:
         size = 0
         hasher = cls.HASH_ALGO()
         while True:
