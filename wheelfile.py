@@ -1072,6 +1072,10 @@ class WheelFile:
         self._zip.writestr(zinfo_or_arcname, data)
         self.refresh_record(arcname)
 
+    @property
+    def zipfile(self) -> ZipFile:
+        return self._zip
+
     # Below - only speculation
     # =========================================================================
 
@@ -1113,10 +1117,4 @@ class WheelFile:
     # This has little use when it returns bytes.
     # Might not be needed.
     def read(self, name) -> bytes:
-        pass
-
-    # This makes it impossible to ensure that RECORD is valid. But without it,
-    # the class is much less flexible.
-    @property
-    def zipfile(self) -> ZipFile:
         pass
