@@ -812,6 +812,22 @@ class WheelFile:
             "Text buffer given where a binary one was expected."
         )
 
+        if 'a' in mode:
+            # Requires rewrite feature
+            raise NotImplementedError(
+                "Append mode is not supported yet"
+            )
+
+        if 'r' in mode:
+            raise NotImplementedError(
+                "Nontruncating modes are not supported yet"
+            )
+
+        if 'l' in mode:
+            raise NotImplementedError(
+                "Lazy modes are not supported yet"
+            )
+
         # These might be none in case a corrupted wheel is read in lazy mode
         self.wheeldata: Optional[WheelData] = None
         self.metadata: Optional[MetaData] = None
