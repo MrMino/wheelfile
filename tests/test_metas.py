@@ -346,3 +346,8 @@ class TestWheelRecord:
         buf = BytesIO(bytes(1000))
         wr.update('file', buf)
         assert str(WheelRecord.from_str(str(wr))) == str(wr)
+
+    def test_has_membership_operator_for_paths_in_the_record(self):
+        wr = WheelRecord()
+        wr.update('some/particular/path', BytesIO(bytes(1)))
+        assert 'some/particular/path' in wr

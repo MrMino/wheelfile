@@ -615,6 +615,9 @@ class WheelRecord:
         else:
             return NotImplemented
 
+    def __contains__(self, path):
+        return path in self._records
+
 
 class BadWheelFileError(ValueError):
     """The given file cannot be interpreted as a wheel nor fixed."""
