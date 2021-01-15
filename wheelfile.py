@@ -29,7 +29,10 @@ __version__ = '0.0.1'
 
 # TODO: parameters for path-like values should accept bytes
 
-# TODO: wheeldata -> wheelinfo
+# TODO: idea - wheeldata -> wheelinfo, but it contradicts the idea below
+# TODO: idea - might be better to provide WheelInfo objects via getinfo(),
+# which would inherit from ZipInfo but also cointain the hash from the RECORD.
+# It would simplify the whole implementation.
 
 
 def _slots_from_params(func):
@@ -1079,12 +1082,6 @@ class WheelFile:
     # Below - only speculation
     # =========================================================================
 
-    # This should take file objects too
-    # Change argnames to something better: "zip_path" does not carry the right
-    # idea, "target_path" might be too descriptive.
-    def extract(self, zip_path, target_path):
-        pass
-
     # Same as with add_meta, there should be a way to add from memory.
     # arcname argument maybe?
     def add_data(self, filename: str) -> None:
@@ -1092,29 +1089,11 @@ class WheelFile:
 
     # Argument name is lacking here.
     # Does this class even need this?
-    # Might be better to provide WheelInfo objects, which would inherit from
-    # ZipInfo but also cointain the hash from the RECORD. It would simplify the
-    # whole implementation.
     # Having this method makes it possible to add comments to files.
     def getinfo(self, name: str) -> ZipInfo:
-        pass
-
-    # Does this class even need this?
-    def infolist(self) -> List[ZipInfo]:
-        pass
-
-    # The name of this method comes from zipfile, but its... misleading.
-    # It returns full paths from the archive tree. Not "names". Or is "name"
-    # what you would call the archive path in PKZIP?
-    def namelist(self) -> List[str]:
         pass
 
     # Might not be needed. There's no good usecase for it, and ensuring RECORD
     # is valid becomes way harder.
     def open(self, path) -> IO:
-        pass
-
-    # This has little use when it returns bytes.
-    # Might not be needed.
-    def read(self, name) -> bytes:
         pass
