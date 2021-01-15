@@ -29,6 +29,8 @@ __version__ = '0.0.1'
 
 # TODO: parameters for path-like values should accept bytes
 
+# TODO: wheeldata -> wheelinfo
+
 
 def _slots_from_params(func):
     """List out slot names based on the names of parameters of func
@@ -688,6 +690,8 @@ class WheelFile:
 
     # TODO: implement lazy mode
     # TODO: in lazy mode, log reading/missing metadata errors
+    # TODO: arguments for build, tags, pyver, and abi?
+    # TODO: expand compatibility tags, put them into wheeldata
     def __init__(
         self,
         file_or_path: Union[str, Path, BinaryIO],
@@ -1000,6 +1004,7 @@ class WheelFile:
 
     # TODO: lazy mode - do not write anything in lazy mode
     # TODO: docstring
+    # TODO: use validate()
     def close(self) -> None:
         if self.closed:
             return
@@ -1034,7 +1039,6 @@ class WheelFile:
 
     # TODO: delegate to ._zip.write, but refresh record afterwards
     # TODO: compression args?
-    # TODO: ensure metadata files aren't written to
     # TODO: keep in mind that filename != arcname, so the former cannot be
     # given to refresh_record()
     def write(self,
