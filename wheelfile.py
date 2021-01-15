@@ -855,7 +855,7 @@ class WheelFile:
         self._pick_a_version(file_or_path, given_version=version)
         self._zip = ZipFile(file_or_path, mode)
 
-        if 'w' in mode:
+        if 'w' in mode or 'x' in mode:
             self._initialize_dist_info()
         else:
             self._read_dist_info()
