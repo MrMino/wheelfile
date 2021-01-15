@@ -626,6 +626,8 @@ class UnnamedDistributionError(BadWheelFileError):
 # TODO: debug propery, as with ZipFile.debug
 # TODO: comment property
 # TODO: compression level arguments - is compression even supported by the spec?
+# TODO: append mode
+# TODO: writing inexistent metadata in lazy mode
 class WheelFile:
     """An archive that follows the wheel specification.
 
@@ -697,11 +699,15 @@ class WheelFile:
 
         If lazy mode is not specified:
             - In read and append modes, the file is validated using validate().
-            - In write and exclusive write modes, all .dist-info metadata files
-            are created (see "Attributes" section of this class).
+            Contents of metadata files inside .dist-info directory are read and
+            converted into their respective object representations (see
+            "metadata", "wheeldata", and "record" attributes).
+            - In write and exclusive write modes, object representations for
+            each metadata file are created from scratch. They will be written
+            to each of their respective .dist-info/ files on close().
 
-        To skip the validation for example if you wish to fix a misformated
-        wheel, use lazy mode ('l' - see description of the "mode" parameter).
+        To skip the validation, e.g. if you wish to fix a misformated wheel,
+        use lazy mode ('l' - see description of the "mode" parameter).
 
         In lazy mode, if the opened file does not contain WHEEL, METADATA, or
         RECORD (which is optional as per PEP-627), the attributes corresponding
@@ -911,17 +917,9 @@ class WheelFile:
         self.wheeldata = WheelData()
         self.record = WheelRecord()
 
-        self.write_metadata()
-        self.write_wheeldata()
-        self.write_record()
-
+    # TODO: raise if there are multiple dist-info dirs
     def _read_dist_info(self):
         raise NotImplementedError
-
-    def _dist_info_dir_name(self) -> str:
-        name = canonicalize_name(self.distname).replace("-", "_")
-        version = str(self.version).replace("-", "_")
-        return f"{name}-{version}.dist-info"
 
     @property
     def filename(self) -> Optional[str]:
@@ -960,6 +958,7 @@ class WheelFile:
     # TODO: return proper filename
     # TODO: base the fixes on the return value of lint()?
     def fix(self) -> str:
+        # Requires rewrite feature
         raise NotImplementedError
 
     # TODO: ensure RECORD is correct, if it exists
@@ -972,23 +971,48 @@ class WheelFile:
             return first_broken
         raise NotImplementedError("Check if RECORD is correct here")
 
-    def refresh_record(self):
-        raise NotImplementedError
-
     def write_metadata(self):
-        raise NotImplementedError
+        # Requires rewrite functionality
+        raise NotImplementedError()
 
     def write_wheeldata(self):
-        raise NotImplementedError
+        # Requires rewrite functionality
+        raise NotImplementedError()
 
     def write_record(self):
-        raise NotImplementedError
+        # Requires rewrite functionality
+        raise NotImplementedError()
 
-    # TODO: do a final metadata write (in case something was changed)
-    # TODO: do a final RECORD recalculation?
-    # TODO: idea: might be a good idea to redo RECORD and fail if it's different
+    # TODO: if arcname is None, refresh everything (incl. deleted files)
+    # TODO: docstring - mention that this does not write record to archive
+    def refresh_record(self, arcname: Union[Path, str]):
+        if self.record is None:
+            return
+        if isinstance(arcname, Path):
+            arcname = str(arcname)
+        with self._zip.open(arcname) as zf:
+            self.record.update(arcname, zf)
+
+    def _distinfo_path(self, filename: str) -> str:
+        name = canonicalize_name(self.distname).replace("-", "_")
+        version = str(self.version).replace("-", "_")
+        return f"{name}-{version}.dist-info/{filename}"
+
+    # TODO: lazy mode - do not write anything in lazy mode
     # TODO: docstring
     def close(self) -> None:
+        if self.closed:
+            return
+
+        if self.metadata is not None:
+            self.writestr(self._distinfo_path("METADATA"),
+                          str(self.metadata).encode())
+        if self.wheeldata is not None:
+            self.writestr(self._distinfo_path("WHEEL"),
+                          str(self.wheeldata).encode())
+        self._zip.writestr(self._distinfo_path("RECORD"),
+                           str(self.record).encode())
+
         self._zip.close()
 
     def __del__(self):
@@ -1011,18 +1035,28 @@ class WheelFile:
     # TODO: delegate to ._zip.write, but refresh record afterwards
     # TODO: compression args?
     # TODO: ensure metadata files aren't written to
+    # TODO: keep in mind that filename != arcname, so the former cannot be
+    # given to refresh_record()
     def write(self,
               filename: Union[str, Path],
-              arcname: Union[str, Path]) -> None:
+              arcname: Optional[Union[str, Path]] = None) -> None:
         raise NotImplementedError
 
-    # TODO: delegate to ._zip.writestr, but refresh record afterwards
     # TODO: compression args?
-    # TODO: ensure metadata files aren't written to
     def writestr(self,
                  zinfo_or_arcname: Union[ZipInfo, str, Path],
-                 data):
-        raise NotImplementedError
+                 data: Union[bytes, str]):
+
+        if isinstance(zinfo_or_arcname, Path):
+            zinfo_or_arcname = str(Path)
+        arcname = (
+            zinfo_or_arcname.filename
+            if isinstance(zinfo_or_arcname, ZipInfo)
+            else zinfo_or_arcname
+        )
+
+        self._zip.writestr(zinfo_or_arcname, data)
+        self.refresh_record(arcname)
 
     # Below - only speculation
     # =========================================================================
