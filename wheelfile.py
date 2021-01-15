@@ -1037,14 +1037,18 @@ class WheelFile:
     def __repr__(self):
         raise NotImplementedError
 
-    # TODO: delegate to ._zip.write, but refresh record afterwards
     # TODO: compression args?
-    # TODO: keep in mind that filename != arcname, so the former cannot be
-    # given to refresh_record()
     def write(self,
               filename: Union[str, Path],
               arcname: Optional[Union[str, Path]] = None) -> None:
-        raise NotImplementedError
+        self._zip.write(filename, arcname=arcname)
+
+        # The arcname given to write may not be the same as the arcname
+        # actually used by ZipFile, and for RECORD we need the latter
+        # FIXME: this means that ZipInfo.from_file is called twice
+        arcname = ZipInfo.from_file(filename, arcname).filename
+
+        self.refresh_record(arcname)
 
     # TODO: compression args?
     def writestr(self,
