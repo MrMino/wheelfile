@@ -43,6 +43,8 @@ def _slots_from_params(func):
     return slots
 
 
+# TODO: accept packaging.requirements.Requirement in requires_dist, fix this in
+# example, ensure such objects are converted on __str__
 # TODO: reimplement using dataclasses
 # TODO: add version to the class name, reword the "Note"
 # name regex for validation: ^([A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])$
