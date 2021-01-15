@@ -1,11 +1,14 @@
 (🚧 Under construction 🚧)
 
-# wheelfile
+# wheelfile ⚙
 
 This library tries to make it dead simple to create a format-compliant
 [Wheel](https://pythonwheels.com/). It aims to provide an API comparable to
 [zipfile](https://docs.python.org/3/library/zipfile.html). Use this if you wish
 to create wheels in your code.
+
+For a quick look, see [example usage](example.py), which makes wheelfile
+package itself into a wheel 🤸.
 
 #### What's the difference between this and [wheel](https://pypi.org/project/wheel/)?
 
