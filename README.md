@@ -1,20 +1,20 @@
 (🚧 Under construction 🚧)
 
-# wheelfile ⚙
+# Wheelfile ⚙
 
 This library tries to make it dead simple to create a format-compliant
-[Wheel](https://pythonwheels.com/). It aims to provide an API comparable to
-[zipfile](https://docs.python.org/3/library/zipfile.html). Use this if you wish
-to create wheels in your code.
+[.whl file (wheel)](https://pythonwheels.com/). It aims to provide an API
+comparable to [zipfile](https://docs.python.org/3/library/zipfile.html). Use
+this if you wish to create wheels in your code.
 
 For a quick look, see [example usage](example.py), which makes wheelfile
 package itself into a wheel 🤸.
 
 #### What's the difference between this and [wheel](https://pypi.org/project/wheel/)?
 
-Wheel tries to provide a reference implementation for the standard. It is used
-by setuptools and has its own CLI, but no stable API. Wheelfile tries to
-provide a simple API.
+"Wheel" tries to provide a reference implementation for the standard. It is used
+by setuptools and has its own CLI, but no stable API. The goal of Wheelfile is
+to provide a simple API.
 
 ## Related PEPs
 - [PEP-427 - The Wheel Binary Package Format
