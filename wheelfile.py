@@ -904,7 +904,7 @@ class WheelFile:
         try:
             self._version = Version(version)
         except InvalidVersion as e:
-            raise ValueError("Invalid version: {repr(version)}.") from e
+            raise ValueError(f"Invalid version: {repr(version)}.") from e
 
     def _initialize_dist_info(self):
         self.metadata = MetaData(name=self.distname, version=self.version)
