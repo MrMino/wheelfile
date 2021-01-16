@@ -702,6 +702,7 @@ class WheelFile:
     # TODO: in lazy mode, log reading/missing metadata errors
     # TODO: arguments for build, tags, pyver, and abi?
     # TODO: expand compatibility tags, put them into wheeldata
+    # TODO: warn on 'w' modes if filename does not end with .whl
     def __init__(
         self,
         file_or_path: Union[str, Path, BinaryIO],
