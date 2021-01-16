@@ -1071,11 +1071,9 @@ class WheelFile:
 
     # TODO: compression args?
     def writestr(self,
-                 zinfo_or_arcname: Union[ZipInfo, str, Path],
+                 zinfo_or_arcname: Union[ZipInfo, str],
                  data: Union[bytes, str]):
 
-        if isinstance(zinfo_or_arcname, Path):
-            zinfo_or_arcname = str(Path)
         # FIXME: arcname should be normalized the same way write() does (xfail)
         arcname = (
             zinfo_or_arcname.filename
