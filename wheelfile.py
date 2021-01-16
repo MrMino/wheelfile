@@ -1056,9 +1056,6 @@ class WheelFile:
         # ZipFile.fp is set to None upon ZipFile.close()
         return self._zip.fp is None
 
-    def __repr__(self):
-        raise NotImplementedError
-
     # TODO: compression args?
     def write(self,
               filename: Union[str, Path],
