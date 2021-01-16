@@ -1,8 +1,10 @@
 import pytest
 
+from functools import partial
 from wheelfile import WheelFile, UnnamedDistributionError, BadWheelFileError
 from io import BytesIO
 from packaging.version import Version
+from pathlib import Path
 from zipfile import ZipFile, Path as ZipPath, ZipInfo
 
 
@@ -33,6 +35,31 @@ def test_can_work_on_in_memory_bufs(buf):
 
 
 class TestyWheelFileInit:
+    def empty_wheel_bytes(self, name, version):
+        buf = BytesIO()
+        with WheelFile(buf, 'w', name, version):
+            pass
+
+    @pytest.fixture
+    def real_path(self, tmp_path):
+        return tmp_path / 'test-0-py2.py3-none-any.whl'
+
+    def test_target_can_be_pathlib_path(self, real_path):
+        WheelFile(real_path, 'w').close()
+
+    def test_target_can_be_str_path(self, real_path):
+        path = str(real_path)
+        WheelFile(path, 'w').close()
+
+    def test_target_can_be_binary_rwb_file_obj(self, real_path):
+        file_obj = open(real_path, 'wb+')
+        WheelFile(file_obj, 'w').close()
+
+    @pytest.mark.skip  # Because WheelFile.__del__ shows tb
+    @pytest.mark.xfail
+    def test_target_can_be_binary_wb_file_obj(self, real_path):
+        file_obj = open(real_path, 'wb')
+        WheelFile(file_obj, 'w').close()
 
     def test_on_bufs_x_mode_behaves_same_as_w(self):
         f1, f2 = BytesIO(), BytesIO()
@@ -71,10 +98,6 @@ class TestyWheelFileInit:
     def test_if_given_distname_with_wrong_chars_raises_ValueError(self, buf):
         with pytest.raises(ValueError):
             WheelFile(buf, 'w', distname='!@#%^&*', version='0')
-
-    def test_given_buf_and_no_distname_raises_unnamed_distribution(self, buf):
-        with pytest.raises(UnnamedDistributionError):
-            WheelFile(buf, 'w', version='0')
 
     def test_wont_raise_on_distname_with_periods_and_underscores(self, buf):
         try:
@@ -195,10 +218,9 @@ class TestWheelFileWrites:
         wf.writestr(zi, "_")
         assert wf.zipfile.getinfo(arcpath.at) == zi
 
-    @pytest.mark.xfail
-    def test_writestr_writes_proper_path_to_record(self, wf):
+    def test_writestr_writes_path_to_record_as_is(self, wf):
         wf.writestr("/////this/should/be/stripped", "_")
-        assert "this/should/be/stripped" in wf.record
+        assert "/////this/should/be/stripped" in wf.record
 
     @pytest.fixture
     def tmp_file(self, tmp_path):
@@ -220,3 +242,57 @@ class TestWheelFileWrites:
     def test_write_writes_proper_path_to_record(self, wf, tmp_file):
         wf.write(tmp_file, "/////this/should/be/stripped")
         assert "this/should/be/stripped" in wf.record
+
+
+def named_bytesio(name: str) -> BytesIO:
+    bio = BytesIO()
+    bio.name = name
+    return bio
+
+
+rwb_open = partial(open, mode='wb+')
+
+
+@pytest.mark.parametrize("target_type", [str, Path, rwb_open, named_bytesio])
+class TestWheelFileAttributeInference:
+    """Tests how WheelFile infers metadata from the name of its target file"""
+
+    def test_infers_from_given_path(self, tmp_path, target_type):
+        path = target_type(tmp_path / "my_awesome.wheel-4.2.0-py3-none-any.whl")
+        wf = WheelFile(path, 'w')
+        assert wf.distname == "my_awesome.wheel" and str(wf.version) == '4.2.0'
+
+    def test_if_distname_part_is_empty_raises_UDE(self, tmp_path, target_type):
+        path = target_type(tmp_path / "-4.2.0-py3-none-any.whl")
+        with pytest.raises(UnnamedDistributionError):
+            WheelFile(path, 'w')
+
+    def test_if_given_distname_only_raises_UDE(self, tmp_path, target_type):
+        path = target_type(tmp_path / "my_awesome.wheel.whl")
+        with pytest.raises(UnnamedDistributionError):
+            WheelFile(path, 'w')
+
+    def test_if_version_part_is_empty_raises_UDE(self, tmp_path, target_type):
+        path = target_type(tmp_path / "my_awesome.wheel--py3-none-any.whl")
+        with pytest.raises(UnnamedDistributionError):
+            WheelFile(path, 'w')
+
+    def test_if_bad_chars_in_distname_raises_VE(self, tmp_path, target_type):
+        path = target_type(tmp_path / "my_@wesome.wheel-4.2.0-py3-none-any.whl")
+        with pytest.raises(ValueError):
+            WheelFile(path, 'w')
+
+    def test_if_invalid_version_raises_VE(self, tmp_path, target_type):
+        path = target_type(tmp_path / "my_awesome.wheel-nice-py3-none-any.whl")
+        with pytest.raises(ValueError):
+            WheelFile(path, 'w')
+
+
+def test_given_unnamed_buf_and_no_distname_raises_UDE(buf):
+    with pytest.raises(UnnamedDistributionError):
+        WheelFile(buf, 'w', version='0')
+
+
+def test_given_unnamed_buf_and_no_version_raises_UDE(buf):
+    with pytest.raises(UnnamedDistributionError):
+        WheelFile(buf, 'w', distname='_')
