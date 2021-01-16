@@ -799,6 +799,7 @@ class WheelFile:
             misformatted name.
 
             Should be composed of alphanumeric characters and underscores only.
+            Must not be an empty string.
 
             See the description of "distname" attribute for more information.
 
@@ -885,6 +886,9 @@ class WheelFile:
                     f"No distname provided and the inferred filename does not "
                     f"contain a proper distname substring: {self.filename}"
                 )
+
+        if distname == '':
+            raise ValueError("Empty string given as a distname.")
 
         distname_valid = set(distname) <= self.VALID_DISTNAME_CHARS
         if not distname_valid:
