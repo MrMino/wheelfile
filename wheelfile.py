@@ -34,6 +34,8 @@ __version__ = '0.0.1'
 # which would inherit from ZipInfo but also cointain the hash from the RECORD.
 # It would simplify the whole implementation.
 
+# TODO: fix usage of UnnamedDistributionError and ValueError - it is ambiguous
+
 
 def _slots_from_params(func):
     """List out slot names based on the names of parameters of func
@@ -640,6 +642,7 @@ class UnnamedDistributionError(BadWheelFileError):
 # TODO: writing inexistent metadata in lazy mode
 # TODO: better repr
 # TODO: docstrings
+# TODO: properties for rest of the naming convention parts
 class WheelFile:
     """An archive that follows the wheel specification.
 
