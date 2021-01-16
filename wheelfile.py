@@ -1085,8 +1085,9 @@ class WheelFile:
     def writestr(self,
                  zinfo_or_arcname: Union[ZipInfo, str],
                  data: Union[bytes, str]):
+        # XXX: ZipFile.writestr() does not normalize arcpaths the same way
+        #      ZipFile.write() does, and so this method won't do that either
 
-        # FIXME: arcname should be normalized the same way write() does (xfail)
         arcname = (
             zinfo_or_arcname.filename
             if isinstance(zinfo_or_arcname, ZipInfo)
