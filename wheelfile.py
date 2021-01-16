@@ -912,6 +912,9 @@ class WheelFile:
             version = given_version
         else:
             filename = getattr(file_or_path, 'name', None)
+            # Ensure we're getting a filename, not a path
+            filename = Path(filename).name
+
             if filename is None:
                 raise UnnamedDistributionError(
                     "No version provided and an unnamed object given."
