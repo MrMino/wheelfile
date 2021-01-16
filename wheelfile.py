@@ -706,6 +706,7 @@ class WheelFile:
         self,
         file_or_path: Union[str, Path, BinaryIO],
         mode: str = 'r',
+        *,
         distname: Optional[str] = None,
         version: Optional[Union[str, Version]] = None,
     ) -> None:

@@ -15,7 +15,7 @@ class TestEmptyWheelStructure:
 
     @pytest.fixture(scope='class')
     def wheelfile(self, buf):
-        wf = WheelFile(buf, 'w', self.distname, self.version)
+        wf = WheelFile(buf, 'w', distname=self.distname, version=self.version)
         wf.close()
         return wf
 
