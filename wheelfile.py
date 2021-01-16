@@ -703,12 +703,13 @@ class WheelFile:
 
     # TODO: implement lazy mode
     # TODO: in lazy mode, log reading/missing metadata errors
-    # TODO: arguments for build, tags, pyver, and abi?
     # TODO: expand compatibility tags, put them into wheeldata
     # TODO: warn on 'w' modes if filename does not end with .whl
+    # TODO: arguments for build, tags, pyver, and abi, with sensible defaults
+    # TODO: The defaults for tags should be the same as the ones in WheelData
     def __init__(
         self,
-        file_or_path: Union[str, Path, BinaryIO],
+        file_or_path: Union[str, Path, BinaryIO] = './',
         mode: str = 'r',
         *,
         distname: Optional[str] = None,
@@ -862,14 +863,52 @@ class WheelFile:
         if isinstance(file_or_path, str):
             file_or_path = Path(file_or_path)
 
+        # TODO: come up with argument names for these
+        # FIXME: this should not be hardcoded
+        build = None
+        langver = 'py3'
+        abi = 'none'
+        platform = 'any'
+
+        # TODO: mention this functionality in the docstring
+        if isinstance(file_or_path, Path):
+            if file_or_path.is_dir():
+                filename = self._pick_a_filename(
+                    distname, version, build, langver, abi, platform
+                )
+                file_or_path /= filename
+
+        # TODO: This should happen only after initialization of metas is done
         self._pick_a_distname(file_or_path, given_distname=distname)
         self._pick_a_version(file_or_path, given_version=version)
+        self._pick_tags(build, langver, abi, platform)
+
         self._zip = ZipFile(file_or_path, mode)
 
         if 'w' in mode or 'x' in mode:
             self._initialize_dist_info()
         else:
             self._read_dist_info()
+
+    @staticmethod
+    def _pick_a_filename(
+        distname, version, build, langver, abi, platform
+    ) -> Path:
+        # TODO: Walrus a witness up and put it into exception message
+        if any(value is None
+               for param, value in locals().items()
+               if param != 'build'):
+            raise ValueError(
+                "Missing arguments: if no path is specified, or given path is "
+                "a directory, all arguments corresponding to the name scheme "
+                "must be given."
+            )
+        if build is not None:
+            return Path(
+                f'{distname}-{version}-{build}-{langver}-{abi}-{platform}.whl'
+            )
+        else:
+            return Path(f'{distname}-{version}-{langver}-{abi}-{platform}.whl')
 
     def _pick_a_distname(self, file_or_path: Union[Path, BinaryIO],
                          given_distname: Union[None, str]):
@@ -938,6 +977,18 @@ class WheelFile:
             self._version = Version(version)
         except InvalidVersion as e:
             raise ValueError(f"Invalid version: {repr(version)}.") from e
+
+    # TODO: infer from filename or given args instead of hardcoded value
+    # TODO: properties for these?
+    def _pick_tags(self,
+                   given_build: Optional[str],
+                   given_python: str,
+                   given_abi: str,
+                   given_platform: str):
+        self._build_tag = given_build
+        self._python_tag = given_python
+        self._abi_tag = given_abi
+        self._platform_tag = given_platform
 
     def _initialize_dist_info(self):
         self.metadata = MetaData(name=self.distname, version=self.version)

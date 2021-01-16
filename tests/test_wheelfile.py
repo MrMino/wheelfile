@@ -1,5 +1,7 @@
 import pytest
 
+import os
+
 from functools import partial
 from wheelfile import WheelFile, UnnamedDistributionError, BadWheelFileError
 from io import BytesIO
@@ -296,3 +298,37 @@ def test_given_unnamed_buf_and_no_distname_raises_UDE(buf):
 def test_given_unnamed_buf_and_no_version_raises_UDE(buf):
     with pytest.raises(UnnamedDistributionError):
         WheelFile(buf, 'w', distname='_')
+
+
+# TODO: as soon as there are __init__ args for the name segments, make sure
+# theres a single test for "missing arg" situation.
+# TODO: tag arguments will be optional - test it
+class TestWheelFileDirectoryTarget:
+    """Tests how WheelFile.__init__() behaves when given a directory"""
+
+    def test_if_version_not_given_raises_ValueError(self, tmp_path):
+        with pytest.raises(ValueError):
+            WheelFile(tmp_path, 'w', distname='my_dist')
+
+    def test_if_distname_not_given_raises_ValueError(self, tmp_path):
+        with pytest.raises(ValueError):
+            WheelFile(tmp_path, 'w', version='0')
+
+    def test_given_directory_and_all_args__sets_filename(self, tmp_path):
+        expected_name = 'my_dist-1.0.0-py3-none-any.whl'
+        with WheelFile(
+            tmp_path, 'w', distname='my_dist', version='1.0.0'
+        ) as wf:
+            # XXX: all tags are hardcoded for now
+            assert wf.filename == str(tmp_path / expected_name)
+
+    def test_given_no_target_assumes_curdir(self, tmp_path):
+        expected_name = 'my_dist-1.0.0-py3-none-any.whl'
+        old_path = Path.cwd()
+        os.chdir(tmp_path)
+        with WheelFile(
+            mode='w', distname='my_dist', version='1.0.0'
+        ) as wf:
+            # XXX: all tags are hardcoded for now
+            assert wf.filename == str(Path('./') / expected_name)
+        os.chdir(old_path)
