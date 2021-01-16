@@ -1008,12 +1008,19 @@ class WheelFile:
     # TODO: if arcname is None, refresh everything (incl. deleted files)
     # TODO: docstring - mention that this does not write record to archive and
     # that the record itself is optional
+    # FIXME: this makes basic wheel creation impossible on files with 'wb' mode
     def refresh_record(self, arcname: Union[Path, str]):
         # RECORD file is optional
         if self.record is None:
             return
         if isinstance(arcname, Path):
             arcname = str(arcname)
+        if self.closed:
+            raise RuntimeError("Cannot refresh record: file closed.")
+        # See mypy issue #9917
+        assert self._zip.fp.readable(), (  # type: ignore
+            "The file must be readable in order to generate a record entry."
+        )
         with self._zip.open(arcname) as zf:
             self.record.update(arcname, zf)
 
