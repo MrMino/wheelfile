@@ -1005,6 +1005,7 @@ class WheelFile:
     # TODO: docstring - mention that this does not write record to archive and
     # that the record itself is optional
     def refresh_record(self, arcname: Union[Path, str]):
+        # RECORD file is optional
         if self.record is None:
             return
         if isinstance(arcname, Path):
