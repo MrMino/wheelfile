@@ -990,10 +990,14 @@ class WheelFile:
         self._abi_tag = given_abi
         self._platform_tag = given_platform
 
+    # TODO: initialize tags
     def _initialize_dist_info(self):
         self.metadata = MetaData(name=self.distname, version=self.version)
         self.wheeldata = WheelData()
         self.record = WheelRecord()
+
+        # FIXME: don't hardcode this
+        self.wheeldata.tags = ['py3-none-any']
 
     # TODO: raise if there are multiple dist-info dirs
     def _read_dist_info(self):
