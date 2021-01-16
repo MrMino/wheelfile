@@ -6,13 +6,13 @@
 <h1 style='border-bottom-style: none' align="center"> Wheelfile
 🔪🧀</h1>
 
-This library tries to make it dead simple to create a format-compliant
-[.whl file (wheel)](https://pythonwheels.com/). It aims to provide an API
-comparable to [zipfile](https://docs.python.org/3/library/zipfile.html). Use
-this if you wish to create wheels in your code.
+This library aims to make it dead simple to create a format-compliant [.whl
+file (wheel)](https://pythonwheels.com/). It aims to provide an API comparable
+to [zipfile](https://docs.python.org/3/library/zipfile.html). Use this if you
+wish to inspect or create wheels in your code.
 
-For a quick look, see example on the right, which makes wheelfile
-package itself into a wheel 🤸.
+For a quick look, see example on the right, which packages wheelfile
+module itself into a wheel 🤸.
 
 #### What's the difference between this and [wheel](https://pypi.org/project/wheel/)?
 
