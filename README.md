@@ -19,23 +19,6 @@ package itself into a wheel 🤸.
 by setuptools and has its own CLI, but no stable API. The goal of Wheelfile is
 to provide a simple API.
 
-## Related PEPs and specs
-- [PEP-427 - The Wheel Binary Package Format
-  1.0](https://www.python.org/dev/peps/pep-0427/)
-- [PEP-425 - Compatibility Tags for Built
-  Distributions](https://www.python.org/dev/peps/pep-0425/)
-- [PEP-376 - Database of Installed Python Distributions - RECORD
-  file](https://www.python.org/dev/peps/pep-0376/#record)
-- [PEP-566 - Metadata for Python Software Packages
-  v2.1](https://www.python.org/dev/peps/pep-0566/)
-- [PEP-345 - Metadata for Python Software Packages
-  v1.2](https://www.python.org/dev/peps/pep-0345/)
-- [PEP-314 - Metadata for Python Software Packages
-  v1.1](https://www.python.org/dev/peps/pep-0314/)
-- [PEP-241 - Metadata for Python Software Packages
-  v1.0](https://www.python.org/dev/peps/pep-0241/)
-
-
 ## Ackonwledgements
 
 Thanks to [Paul Moore](https://github.com/pfmoore) for providing
