@@ -638,6 +638,8 @@ class UnnamedDistributionError(BadWheelFileError):
 # TODO: compression level arguments - is compression even supported by the spec?
 # TODO: append mode
 # TODO: writing inexistent metadata in lazy mode
+# TODO: better repr
+# TODO: docstrings
 class WheelFile:
     """An archive that follows the wheel specification.
 
@@ -996,7 +998,8 @@ class WheelFile:
         raise NotImplementedError()
 
     # TODO: if arcname is None, refresh everything (incl. deleted files)
-    # TODO: docstring - mention that this does not write record to archive
+    # TODO: docstring - mention that this does not write record to archive and
+    # that the record itself is optional
     def refresh_record(self, arcname: Union[Path, str]):
         if self.record is None:
             return
@@ -1013,6 +1016,8 @@ class WheelFile:
     # TODO: lazy mode - do not write anything in lazy mode
     # TODO: docstring
     # TODO: use validate()
+    # TODO: ensure there are no writing handles open in zipfile before writing
+    # meta
     def close(self) -> None:
         if self.closed:
             return
@@ -1069,6 +1074,7 @@ class WheelFile:
 
         if isinstance(zinfo_or_arcname, Path):
             zinfo_or_arcname = str(Path)
+        # FIXME: arcname should be normalized the same way write() does (xfail)
         arcname = (
             zinfo_or_arcname.filename
             if isinstance(zinfo_or_arcname, ZipInfo)
