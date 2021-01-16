@@ -882,10 +882,10 @@ class WheelFile:
                 filename = Path(filename).name
 
             distname = filename.split('-')[0]
-            if not distname:
+            if distname == '':
                 raise UnnamedDistributionError(
                     f"No distname provided and the inferred filename does not "
-                    f"contain a proper distname substring: {self.filename}"
+                    f"contain a proper distname substring: {filename}"
                 )
 
         if distname == '':
@@ -894,9 +894,9 @@ class WheelFile:
         distname_valid = set(distname) <= self.VALID_DISTNAME_CHARS
         if not distname_valid:
             raise ValueError(
-                "Invalid distname: {repr(distname)}. Distnames should "
-                "contain only ASCII letters, numbers, underscores, and "
-                "periods."
+                f"Invalid distname: {repr(distname)}. Distnames should "
+                f"contain only ASCII letters, numbers, underscores, and "
+                f"periods."
             )
 
         self._distname = distname
@@ -912,20 +912,21 @@ class WheelFile:
             version = given_version
         else:
             filename = getattr(file_or_path, 'name', None)
-            # Ensure we're getting a filename, not a path
-            filename = Path(filename).name
 
             if filename is None:
                 raise UnnamedDistributionError(
                     "No version provided and an unnamed object given."
                 )
 
+            # Ensure we're getting a filename, not a path
+            filename = Path(filename).name
+
             name_segments = filename.split('-')
 
-            if len(name_segments) < 2:
+            if len(name_segments) < 2 or name_segments[1] == '':
                 raise UnnamedDistributionError(
                     f"No version provided and the inferred filename does not "
-                    f"contain a version segment: {self.filename}"
+                    f"contain a version segment: {filename}"
                 )
             version = name_segments[1]
 
