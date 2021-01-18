@@ -1156,17 +1156,22 @@ class WheelFile:
         self._zip.writestr(zinfo_or_arcname, data)
         self.refresh_record(arcname)
 
+    # TODO: implement me
+    def write_data(self, section: str, filename: str, arcname: str) -> None:
+        raise NotImplementedError
+
+    # TODO: implement me
+    def writestr_data(self, section: str,
+                      zinfo_or_arcname: Union[ZipInfo, str],
+                      data: Union[bytes, str]):
+        raise NotImplementedError
+
     @property
     def zipfile(self) -> ZipFile:
         return self._zip
 
     # Below - only speculation
     # =========================================================================
-
-    # Same as with add_meta, there should be a way to add from memory.
-    # arcname argument maybe?
-    def add_data(self, filename: str) -> None:
-        pass
 
     # Argument name is lacking here.
     # Does this class even need this?
