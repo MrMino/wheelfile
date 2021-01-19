@@ -541,13 +541,13 @@ class WheelRecord:
     def __init__(self):
         self._records: Dict[str, self._RecordEntry] = {}
 
-    def hash_of(self, arc_path) -> str:
+    def hash_of(self, arcpath) -> str:
         """Return the hash of a file in the archive this RECORD describes
 
 
         Parameters
         ----------
-        arc_path
+        arcpath
             Location of the file inside the archive.
 
         Returns
@@ -558,7 +558,7 @@ class WheelRecord:
             HASH_ALGO), and hexstr is a string containing a hexified version of
             the hash.
         """
-        return self._records[arc_path].hash
+        return self._records[arcpath].hash
 
     def __str__(self) -> str:
         buf = io.StringIO()
@@ -577,7 +577,7 @@ class WheelRecord:
             record._records[entry.path] = entry
         return record
 
-    def update(self, arc_path: str, buf: IO[bytes]):
+    def update(self, arcpath: str, buf: IO[bytes]):
         """Add a record entry for a file in the archive.
 
         Parameters
@@ -589,17 +589,17 @@ class WheelRecord:
         assert buf.tell() == 0, (
             f"Stale buffer given - current position: {buf.tell()}."
         )
-        assert not arc_path.endswith('.dist-info/RECORD'), (
+        assert not arcpath.endswith('.dist-info/RECORD'), (
             f"Attempt to add an entry for a RECORD file to the RECORD: "
-            f"{arc_path}."
+            f"{arcpath}."
         )
-        self._records[arc_path] = self._entry(arc_path, buf)
+        self._records[arcpath] = self._entry(arcpath, buf)
 
-    def remove(self, arc_path: str):
-        del self._records[arc_path]
+    def remove(self, arcpath: str):
+        del self._records[arcpath]
 
     @classmethod
-    def _entry(cls, arc_path: str, buf: IO[bytes]) -> _RecordEntry:
+    def _entry(cls, arcpath: str, buf: IO[bytes]) -> _RecordEntry:
         size = 0
         hasher = cls.HASH_ALGO()
         while True:
@@ -609,7 +609,7 @@ class WheelRecord:
                 break
             hasher.update(data)
         hash_hex = hasher.name + '=' + hasher.hexdigest()
-        return cls._RecordEntry(arc_path, hash_hex, size)
+        return cls._RecordEntry(arcpath, hash_hex, size)
 
     def __eq__(self, other):
         if isinstance(other, WheelRecord):
