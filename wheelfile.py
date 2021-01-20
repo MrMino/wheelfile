@@ -30,7 +30,7 @@ __version__ = '0.0.1'
 # TODO: parameters for path-like values should accept bytes
 
 # TODO: idea - wheeldata -> wheelinfo, but it contradicts the idea below
-# TODO: idea - might be better to provide WheelInfo objects via getinfo(),
+# TODO: idea - might be better to provide WheelInfo objects via a getinfo(),
 # which would inherit from ZipInfo but also cointain the hash from the RECORD.
 # It would simplify the whole implementation.
 
@@ -1019,6 +1019,9 @@ class WheelFile:
     # TODO: use testwheel()
     # TODO: idea: raise when completely out-of-spec, return a compliancy score?
     # TODO: fail if there are multiple .dist-info or .data directories
+    # TODO: actually, having two .data directories doesn't seem like a big
+    # deal, it could be just unpacked in the same place rest of the contents
+    # of the wheel are
     # TODO: use lint()
     # TODO: ensure there are no synonym files for metadata (maybe others?)
     # TODO: the bottom-line semantics of this method should be: if validate()
@@ -1170,16 +1173,6 @@ class WheelFile:
     def zipfile(self) -> ZipFile:
         return self._zip
 
-    # Below - only speculation
-    # =========================================================================
-
-    # Argument name is lacking here.
-    # Does this class even need this?
-    # Having this method makes it possible to add comments to files.
-    def getinfo(self, name: str) -> ZipInfo:
-        pass
-
-    # Might not be needed. There's no good usecase for it, and ensuring RECORD
-    # is valid becomes way harder.
+    # TODO: return a handle w/ record refresh semantics
     def open(self, path) -> IO:
         pass
