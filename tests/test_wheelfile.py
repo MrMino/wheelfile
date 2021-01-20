@@ -30,6 +30,13 @@ def wf(buf):
     wf.close()
 
 
+@pytest.fixture
+def tmp_file(tmp_path):
+    fp = tmp_path / 'file'
+    fp.touch()
+    return fp
+
+
 def test_can_work_on_in_memory_bufs(buf):
     wf = WheelFile(buf, 'w', distname='_', version='0')
     wf.close()
@@ -223,12 +230,6 @@ class TestWheelFileWrites:
     def test_writestr_writes_path_to_record_as_is(self, wf):
         wf.writestr("/////this/should/be/stripped", "_")
         assert "/////this/should/be/stripped" in wf.record
-
-    @pytest.fixture
-    def tmp_file(self, tmp_path):
-        fp = tmp_path / 'file'
-        fp.touch()
-        return fp
 
     def test_write_adds_file_to_archive(self, wf, tmp_file):
         tmp_file.write_text("contents")
