@@ -1147,7 +1147,7 @@ class WheelFile:
     # TODO: compression args?
     def writestr(self,
                  zinfo_or_arcname: Union[ZipInfo, str],
-                 data: Union[bytes, str]):
+                 data: Union[bytes, str]) -> None:
         # XXX: ZipFile.writestr() does not normalize arcpaths the same way
         #      ZipFile.write() does, and so this method won't do that either
 
@@ -1167,7 +1167,7 @@ class WheelFile:
     # TODO: implement me
     def writestr_data(self, section: str,
                       zinfo_or_arcname: Union[ZipInfo, str],
-                      data: Union[bytes, str]):
+                      data: Union[bytes, str]) -> None:
         raise NotImplementedError
 
     @property
