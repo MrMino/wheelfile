@@ -1174,6 +1174,11 @@ class WheelFile:
     def zipfile(self) -> ZipFile:
         return self._zip
 
+    # TODO: return a list of paths where files would be installed by this wheel
+    # This probably means utilizing INSTALL_SCHEMES from distutils.install
+    def namelist(self) -> List[str]:
+        raise NotImplementedError()
+
     # TODO: return a handle w/ record refresh semantics
     def open(self, path) -> IO:
         pass
