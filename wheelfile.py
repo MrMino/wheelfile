@@ -1088,10 +1088,10 @@ class WheelFile:
         with self._zip.open(arcname) as zf:
             self.record.update(arcname, zf)
 
-    def _distinfo_path(self, filename: str) -> str:
+    def _distinfo_path(self, filename: str, *, kind='dist-info') -> str:
         name = canonicalize_name(self.distname).replace("-", "_")
         version = str(self.version).replace("-", "_")
-        return f"{name}-{version}.dist-info/{filename}"
+        return f"{name}-{version}.{kind}/{filename}"
 
     # TODO: lazy mode - do not write anything in lazy mode
     # TODO: docstring
@@ -1160,9 +1160,24 @@ class WheelFile:
         self._zip.writestr(zinfo_or_arcname, data)
         self.refresh_record(arcname)
 
-    # TODO: implement me
-    def write_data(self, section: str, filename: str, arcname: str) -> None:
-        raise NotImplementedError
+    # TODO: compression args?
+    # TODO: docstring
+    def write_data(self, filename: Union[str, Path],
+                   section: str, arcname: Optional[str] = None) -> None:
+        if section == '':
+            raise ValueError("Section cannot be an empty string.")
+        if '/' in section:
+            raise ValueError("Section cannot contain slashes.")
+
+        if isinstance(filename, str):
+            filename = Path(filename)
+        if arcname is None:
+            arcname = filename.name
+
+        arcname = self._distinfo_path(section + '/' + arcname.lstrip('/'),
+                                      kind='data')
+
+        self.write(filename, arcname)
 
     # TODO: implement me
     def writestr_data(self, section: str,
