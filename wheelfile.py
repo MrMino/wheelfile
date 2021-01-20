@@ -1082,7 +1082,8 @@ class WheelFile:
             raise RuntimeError("Cannot refresh record: file closed.")
         # See mypy issue #9917
         assert self._zip.fp.readable(), (  # type: ignore
-            "The file must be readable in order to generate a record entry."
+            "The zipfile stream must be readable in order to generate a record "
+            "entry."
         )
         with self._zip.open(arcname) as zf:
             self.record.update(arcname, zf)
