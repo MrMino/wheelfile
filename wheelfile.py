@@ -1136,7 +1136,7 @@ class WheelFile:
     # TODO: compression args?
     def write(self,
               filename: Union[str, Path],
-              arcname: Optional[Union[str, Path]] = None) -> None:
+              arcname: Optional[str] = None) -> None:
         self._zip.write(filename, arcname=arcname)
 
         # The arcname given to write may not be the same as the arcname
