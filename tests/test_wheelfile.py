@@ -351,6 +351,5 @@ class TestWheelFileDistDataWrite:
         expected_arcpath = f'_-0.data/section/{tmp_file.name}'
         tmp_file.write_text(contents)
         wf.write_data(path_type(tmp_file), 'section')
-        expected_arcpath
 
         assert wf.zipfile.read(expected_arcpath) == tmp_file.read_bytes()
