@@ -353,3 +353,19 @@ class TestWheelFileDistDataWrite:
         wf.write_data(path_type(tmp_file), 'section')
 
         assert wf.zipfile.read(expected_arcpath) == tmp_file.read_bytes()
+
+    def test_writestr__if_section_is_empty_raises_VE(self, wf):
+        with pytest.raises(ValueError):
+            wf.writestr_data('', '_', b'data')
+
+    def test_writestr__if_section_contains_slashes_raises_VE(self, wf):
+        with pytest.raises(ValueError):
+            wf.writestr_data('section/path/', '_', 'data')
+
+    def test_writestr__writes_given_str_path(self, wf):
+        contents = b"Contents of to write"
+        filename = "file"
+        expected_arcpath = f'_-0.data/section/{filename}'
+        wf.writestr_data('section', filename, contents)
+
+        assert wf.zipfile.read(expected_arcpath) == contents

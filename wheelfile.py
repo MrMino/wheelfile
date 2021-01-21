@@ -1166,10 +1166,7 @@ class WheelFile:
     # TODO: docstring
     def write_data(self, filename: Union[str, Path],
                    section: str, arcname: Optional[str] = None) -> None:
-        if section == '':
-            raise ValueError("Section cannot be an empty string.")
-        if '/' in section:
-            raise ValueError("Section cannot contain slashes.")
+        self._check_section(section)
 
         if isinstance(filename, str):
             filename = Path(filename)
@@ -1181,11 +1178,30 @@ class WheelFile:
 
         self.write(filename, arcname)
 
-    # TODO: implement me
+    # TODO: compression args?
+    # TODO: docstring
     def writestr_data(self, section: str,
                       zinfo_or_arcname: Union[ZipInfo, str],
                       data: Union[bytes, str]) -> None:
-        raise NotImplementedError
+        self._check_section(section)
+
+        arcname = (
+            zinfo_or_arcname.filename
+            if isinstance(zinfo_or_arcname, ZipInfo)
+            else zinfo_or_arcname
+        )
+
+        arcname = self._distinfo_path(section + '/' + arcname.lstrip('/'),
+                                      kind='data')
+
+        self.writestr(arcname, data)
+
+    @staticmethod
+    def _check_section(section):
+        if section == '':
+            raise ValueError("Section cannot be an empty string.")
+        if '/' in section:
+            raise ValueError("Section cannot contain slashes.")
 
     @property
     def zipfile(self) -> ZipFile:
