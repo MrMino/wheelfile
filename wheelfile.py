@@ -36,6 +36,8 @@ __version__ = '0.0.1'
 
 # TODO: fix usage of UnnamedDistributionError and ValueError - it is ambiguous
 
+# TODO: methods that take ZipInfo should take compression switches into account
+
 
 def _slots_from_params(func):
     """List out slot names based on the names of parameters of func
