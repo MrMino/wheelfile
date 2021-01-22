@@ -721,12 +721,19 @@ class WheelFile:
     ) -> None:
         """Open or create a wheel file.
 
+        In write and exclusive-write modes, if `file_or_path` is not specified,
+        or the specified path is a directory, the wheelfile will be created in
+        the current working directory, with filename generated using the values
+        given via `distname`, `version`, `build_tag`, `language_tag`,
+        `abi_tag`, and `platfrom_tag` arguments. Each of these parameters is
+        stored in a read-only property of the same name.
+
         If lazy mode is not specified:
             - In read and append modes, the file is validated using validate().
             Contents of metadata files inside .dist-info directory are read and
             converted into their respective object representations (see
             "metadata", "wheeldata", and "record" attributes).
-            - In write and exclusive write modes, object representations for
+            - In write and exclusive-write modes, object representations for
             each metadata file are created from scratch. They will be written
             to each of their respective .dist-info/ files on close().
 
@@ -892,7 +899,6 @@ class WheelFile:
         abi = 'none'
         platform = 'any'
 
-        # TODO: mention this functionality in the docstring
         if isinstance(file_or_path, Path):
             if file_or_path.is_dir():
                 filename = self._pick_a_filename(
