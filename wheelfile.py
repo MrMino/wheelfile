@@ -821,6 +821,16 @@ class WheelFile:
 
             See the description of "version" attribute for more information.
 
+        build
+            Optional build number specifier for the distribution.
+
+            See `WheelData` docstring for information about semantics of this
+            field.
+
+            If lazy mode is not specified, this value must be an integer or a
+            string that converts to one. Otherwise no checks for this value are
+            performed.
+
         Raises
         ------
         UnnamedDistributionError
