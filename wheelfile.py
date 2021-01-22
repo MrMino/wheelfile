@@ -716,6 +716,7 @@ class WheelFile:
         *,
         distname: Optional[str] = None,
         version: Optional[Union[str, Version]] = None,
+        build_tag: Optional[int] = None,
     ) -> None:
         """Open or create a wheel file.
 
@@ -867,7 +868,6 @@ class WheelFile:
 
         # TODO: come up with argument names for these
         # FIXME: this should not be hardcoded
-        build = None
         langver = 'py3'
         abi = 'none'
         platform = 'any'
@@ -876,14 +876,14 @@ class WheelFile:
         if isinstance(file_or_path, Path):
             if file_or_path.is_dir():
                 filename = self._pick_a_filename(
-                    distname, version, build, langver, abi, platform
+                    distname, version, build_tag, langver, abi, platform
                 )
                 file_or_path /= filename
 
         # TODO: This should happen only after initialization of metas is done
         self._pick_a_distname(file_or_path, given_distname=distname)
         self._pick_a_version(file_or_path, given_version=version)
-        self._pick_tags(build, langver, abi, platform)
+        self._pick_tags(build_tag, langver, abi, platform)
 
         self._zip = ZipFile(file_or_path, mode)
 
@@ -981,9 +981,9 @@ class WheelFile:
             raise ValueError(f"Invalid version: {repr(version)}.") from e
 
     # TODO: infer from filename or given args instead of hardcoded value
-    # TODO: properties for these?
+    # TODO: properties for python_tag, abi_tag, and platform_tag
     def _pick_tags(self,
-                   given_build: Optional[str],
+                   given_build: Optional[int],
                    given_python: str,
                    given_abi: str,
                    given_platform: str):
@@ -995,7 +995,7 @@ class WheelFile:
     # TODO: initialize tags
     def _initialize_dist_info(self):
         self.metadata = MetaData(name=self.distname, version=self.version)
-        self.wheeldata = WheelData()
+        self.wheeldata = WheelData(build=self.build_tag)
         self.record = WheelRecord()
 
         # FIXME: don't hardcode this
@@ -1016,6 +1016,10 @@ class WheelFile:
     @property
     def version(self) -> Version:
         return self._version
+
+    @property
+    def build_tag(self) -> Optional[int]:
+        return self._build_tag
 
     # TODO: validate naming conventions, metadata, etc.
     # TODO: use testwheel()

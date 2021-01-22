@@ -122,6 +122,11 @@ class TestyWheelFileInit:
         with pytest.raises(ValueError):
             WheelFile(buf, 'w', distname='_', version='BOGUS')
 
+    def test_if_given_build_number_passes_it_to_wheeldata(self, buf):
+        wf = WheelFile(buf, 'w', distname='_', version='0',
+                       build_tag=123)
+        assert wf.wheeldata.build == 123
+
 
 class TestWheelFileAttributes:
 
@@ -149,6 +154,11 @@ class TestWheelFileAttributes:
         version = Version('1.2.3')
         wf = WheelFile(buf, 'w', distname='_', version=version)
         assert wf.version == version
+
+    def test_given_build_tag_is_stored_in_build_tag_attr(self, buf):
+        build_tag = 123
+        wf = WheelFile(buf, 'w', distname='_', version='0', build_tag=build_tag)
+        assert wf.build_tag == build_tag
 
 
 class TestWheelFileClose:
