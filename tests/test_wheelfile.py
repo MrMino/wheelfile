@@ -123,9 +123,10 @@ class TestyWheelFileInit:
             WheelFile(buf, 'w', distname='_', version='BOGUS')
 
     def test_if_given_build_number_passes_it_to_wheeldata(self, buf):
+        build_tag = 123
         wf = WheelFile(buf, 'w', distname='_', version='0',
-                       build_tag=123)
-        assert wf.wheeldata.build == 123
+                       build_tag=build_tag)
+        assert wf.wheeldata.build == build_tag
 
 
 class TestWheelFileAttributes:
