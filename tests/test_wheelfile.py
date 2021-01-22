@@ -155,7 +155,7 @@ class TestyWheelFileInit:
                        platform_tag=platform_tag)
         assert wf.wheeldata.tags == ['py3-none-linux_x84_64']
 
-    def test_language_tag_defaults_to_py3(self, wf):
+    def test_wheeldata_tag_defaults_to_py3_none_any(self, wf):
         assert wf.wheeldata.tags == ['py3-none-any']
 
 
