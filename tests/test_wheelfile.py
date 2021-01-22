@@ -377,21 +377,27 @@ class TestWheelFileDirectoryTarget:
             WheelFile(tmp_path, 'w', version='0')
 
     def test_given_directory_and_all_args__sets_filename(self, tmp_path):
-        expected_name = 'my_dist-1.0.0-py3-none-any.whl'
         with WheelFile(
             tmp_path, 'w', distname='my_dist', version='1.0.0'
         ) as wf:
-            # XXX: all tags are hardcoded for now
+            expected_name = '-'.join((wf.distname,
+                                      str(wf.version),
+                                      wf.language_tag,
+                                      wf.abi_tag,
+                                      wf.platform_tag)) + '.whl'
             assert wf.filename == str(tmp_path / expected_name)
 
     def test_given_no_target_assumes_curdir(self, tmp_path):
-        expected_name = 'my_dist-1.0.0-py3-none-any.whl'
         old_path = Path.cwd()
         os.chdir(tmp_path)
         with WheelFile(
             mode='w', distname='my_dist', version='1.0.0'
         ) as wf:
-            # XXX: all tags are hardcoded for now
+            expected_name = '-'.join((wf.distname,
+                                      str(wf.version),
+                                      wf.language_tag,
+                                      wf.abi_tag,
+                                      wf.platform_tag)) + '.whl'
             assert wf.filename == str(Path('./') / expected_name)
         os.chdir(old_path)
 
