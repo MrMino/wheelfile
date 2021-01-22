@@ -32,7 +32,7 @@ def wf(buf):
 
 @pytest.fixture
 def tmp_file(tmp_path):
-    fp = tmp_path / 'file'
+    fp = tmp_path / 'wheel-0-py3-none-any.whl'
     fp.touch()
     return fp
 
@@ -136,9 +136,9 @@ class TestWheelFileAttributes:
         assert wf.zipfile.fp is buf
 
     def test_filename_returns_buf_name(self, buf):
-        buf.name = 'random_name'
+        buf.name = 'random_name-0-py3-none-any.whl'
         wf = WheelFile(buf, 'w', distname='_', version='0')
-        assert wf.filename == 'random_name'
+        assert wf.filename == buf.name
 
     def test_given_distname_is_stored_in_distname_attr(self, buf):
         distname = 'random_name'
@@ -175,9 +175,11 @@ class TestWheelFileClose:
         wf.__del__()
         assert zf.fp is None
 
-    def test_calling_close_twice_does_nothing(self, wf):
+    def test_calling_close_second_time_nothing(self, wf):
         wf.close()
+        assert wf.closed
         wf.close()
+        assert wf.closed
 
     @pytest.mark.xfail
     def test_refreshes_record(self, wf):
@@ -249,7 +251,7 @@ class TestWheelFileWrites:
 
 def named_bytesio(name: str) -> BytesIO:
     bio = BytesIO()
-    bio.name = name
+    bio.name = str(name)
     return bio
 
 
