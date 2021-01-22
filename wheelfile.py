@@ -901,7 +901,7 @@ class WheelFile:
 
         if isinstance(file_or_path, Path):
             if file_or_path.is_dir():
-                filename = self._pick_a_filename(
+                filename = self._pick_filename(
                     distname, version, build_tag, language_tag, abi, platform
                 )
                 file_or_path /= filename
@@ -919,7 +919,7 @@ class WheelFile:
             self._read_dist_info()
 
     @staticmethod
-    def _pick_a_filename(
+    def _pick_filename(
         distname, version, build, langver, abi, platform
     ) -> Path:
         # TODO: Walrus a witness up and put it into exception message
