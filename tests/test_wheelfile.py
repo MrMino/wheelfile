@@ -128,6 +128,15 @@ class TestyWheelFileInit:
                        build_tag=build_tag)
         assert wf.wheeldata.build == build_tag
 
+    def test_if_given_language_tag_passes_it_to_wheeldata_tags(self, buf):
+        language_tag = 'ip2'
+        wf = WheelFile(buf, 'w', distname='_', version='0',
+                       language_tag=language_tag)
+        assert wf.wheeldata.tags == ['ip2-none-any']
+
+    def test_language_tag_defaults_to_py3(self, wf):
+        assert wf.wheeldata.tags == ['py3-none-any']
+
 
 class TestWheelFileAttributes:
 
@@ -160,6 +169,12 @@ class TestWheelFileAttributes:
         build_tag = 123
         wf = WheelFile(buf, 'w', distname='_', version='0', build_tag=build_tag)
         assert wf.build_tag == build_tag
+
+    def test_given_language_tag_is_stored_in_language_tag_attr(self, buf):
+        language_tag = 'cp3'
+        wf = WheelFile(buf, 'w', distname='_', version='0',
+                       language_tag=language_tag)
+        assert wf.language_tag == language_tag
 
 
 class TestWheelFileClose:

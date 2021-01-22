@@ -717,6 +717,7 @@ class WheelFile:
         distname: Optional[str] = None,
         version: Optional[Union[str, Version]] = None,
         build_tag: Optional[int] = None,
+        language_tag: Optional[str] = 'py3',
     ) -> None:
         """Open or create a wheel file.
 
@@ -831,6 +832,16 @@ class WheelFile:
             string that converts to one. Otherwise no checks for this value are
             performed.
 
+        language_tag
+            Language implementation specification. Used to distinguish
+            between distributions targetted at different versions of
+            interpreters.
+
+            The values given should be in the same form as the ones appearing
+            in wheels' filenames.
+
+            Defaults to `'py3'`.
+
         Raises
         ------
         UnnamedDistributionError
@@ -878,7 +889,6 @@ class WheelFile:
 
         # TODO: come up with argument names for these
         # FIXME: this should not be hardcoded
-        langver = 'py3'
         abi = 'none'
         platform = 'any'
 
@@ -886,14 +896,14 @@ class WheelFile:
         if isinstance(file_or_path, Path):
             if file_or_path.is_dir():
                 filename = self._pick_a_filename(
-                    distname, version, build_tag, langver, abi, platform
+                    distname, version, build_tag, language_tag, abi, platform
                 )
                 file_or_path /= filename
 
         # TODO: This should happen only after initialization of metas is done
         self._pick_a_distname(file_or_path, given_distname=distname)
         self._pick_a_version(file_or_path, given_version=version)
-        self._pick_tags(build_tag, langver, abi, platform)
+        self._pick_tags(build_tag, language_tag, abi, platform)
 
         self._zip = ZipFile(file_or_path, mode)
 
@@ -994,22 +1004,22 @@ class WheelFile:
     # TODO: properties for python_tag, abi_tag, and platform_tag
     def _pick_tags(self,
                    given_build: Optional[int],
-                   given_python: str,
+                   given_language: Optional[str],
                    given_abi: str,
                    given_platform: str):
         self._build_tag = given_build
-        self._python_tag = given_python
+        self._language_tag = given_language
         self._abi_tag = given_abi
         self._platform_tag = given_platform
 
     # TODO: initialize tags
     def _initialize_dist_info(self):
+        collapsed_tags = '-'.join((self._language_tag,
+                                   self._abi_tag,
+                                   self._platform_tag))
+        self.wheeldata = WheelData(build=self.build_tag, tags=collapsed_tags)
         self.metadata = MetaData(name=self.distname, version=self.version)
-        self.wheeldata = WheelData(build=self.build_tag)
         self.record = WheelRecord()
-
-        # FIXME: don't hardcode this
-        self.wheeldata.tags = ['py3-none-any']
 
     # TODO: raise if there are multiple dist-info dirs
     def _read_dist_info(self):
@@ -1030,6 +1040,10 @@ class WheelFile:
     @property
     def build_tag(self) -> Optional[int]:
         return self._build_tag
+
+    @property
+    def language_tag(self) -> Optional[str]:
+        return self._language_tag
 
     # TODO: validate naming conventions, metadata, etc.
     # TODO: use testwheel()

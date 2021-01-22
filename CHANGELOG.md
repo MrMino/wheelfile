@@ -10,8 +10,8 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 - Added `write_data` and `writestr_data` methods to `WheelFile` class. Use
   these methods to write files to `.data/` directory of the wheel.
-- Added `build_tag` parameter to `WheelFile.__init__`, with its respective
-  property.
+- Added `build_tag` and `language_tag` parameters to `WheelFile.__init__`, with
+  their respective properties.
 
 ### Changed
 - Default tag set of `WheelData` class is now `['py3-none-any']`. Previously,
