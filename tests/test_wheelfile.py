@@ -134,6 +134,12 @@ class TestyWheelFileInit:
                        language_tag=language_tag)
         assert wf.wheeldata.tags == ['ip2-none-any']
 
+    def test_if_given_abi_tag_passes_it_to_wheeldata_tags(self, buf):
+        abi_tag = 'cp38d'
+        wf = WheelFile(buf, 'w', distname='_', version='0',
+                       abi_tag=abi_tag)
+        assert wf.wheeldata.tags == ['py3-cp38d-any']
+
     def test_language_tag_defaults_to_py3(self, wf):
         assert wf.wheeldata.tags == ['py3-none-any']
 
@@ -175,6 +181,12 @@ class TestWheelFileAttributes:
         wf = WheelFile(buf, 'w', distname='_', version='0',
                        language_tag=language_tag)
         assert wf.language_tag == language_tag
+
+    def test_given_abi_tag_is_stored_in_abi_tag_attr(self, buf):
+        abi_tag = 'abi3'
+        wf = WheelFile(buf, 'w', distname='_', version='0',
+                       abi_tag=abi_tag)
+        assert wf.abi_tag == abi_tag
 
 
 class TestWheelFileClose:

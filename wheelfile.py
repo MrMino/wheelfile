@@ -718,6 +718,7 @@ class WheelFile:
         version: Optional[Union[str, Version]] = None,
         build_tag: Optional[int] = None,
         language_tag: Optional[str] = 'py3',
+        abi_tag: Optional[str] = 'none',
     ) -> None:
         """Open or create a wheel file.
 
@@ -849,6 +850,16 @@ class WheelFile:
 
             Defaults to `'py3'`.
 
+        abi_tag
+            In distributions that utilize compiled binaries, specifies the
+            version of the ABI that the binaries in the wheel are compatible
+            with.
+
+            The given value should be in the same form as the ones appearing
+            in wheels' filenames.
+
+            Defaults to `'none'`.
+
         Raises
         ------
         UnnamedDistributionError
@@ -896,20 +907,20 @@ class WheelFile:
 
         # TODO: come up with argument names for these
         # FIXME: this should not be hardcoded
-        abi = 'none'
         platform = 'any'
 
         if isinstance(file_or_path, Path):
             if file_or_path.is_dir():
                 filename = self._pick_filename(
-                    distname, version, build_tag, language_tag, abi, platform
+                    distname, version, build_tag,
+                    language_tag, abi_tag, platform
                 )
                 file_or_path /= filename
 
         # TODO: This should happen only after initialization of metas is done
         self._pick_a_distname(file_or_path, given_distname=distname)
         self._pick_a_version(file_or_path, given_version=version)
-        self._pick_tags(build_tag, language_tag, abi, platform)
+        self._pick_tags(build_tag, language_tag, abi_tag, platform)
 
         self._zip = ZipFile(file_or_path, mode)
 
@@ -1011,11 +1022,11 @@ class WheelFile:
     def _pick_tags(self,
                    given_build: Optional[int],
                    given_language: Optional[str],
-                   given_abi: str,
+                   given_abi: Optional[str],
                    given_platform: str):
         self._build_tag = given_build
         self._language_tag = given_language
-        self._abi_tag = given_abi
+        self._abi_tag = given_abi or 'none'
         self._platform_tag = given_platform
 
     # TODO: initialize tags
@@ -1050,6 +1061,10 @@ class WheelFile:
     @property
     def language_tag(self) -> Optional[str]:
         return self._language_tag
+
+    @property
+    def abi_tag(self) -> str:
+        return self._abi_tag
 
     # TODO: validate naming conventions, metadata, etc.
     # TODO: use testwheel()
