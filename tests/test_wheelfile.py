@@ -140,6 +140,12 @@ class TestyWheelFileInit:
                        abi_tag=abi_tag)
         assert wf.wheeldata.tags == ['py3-cp38d-any']
 
+    def test_if_given_platform_tag_passes_it_to_wheeldata_tags(self, buf):
+        platform_tag = 'linux_x84_64'
+        wf = WheelFile(buf, 'w', distname='_', version='0',
+                       platform_tag=platform_tag)
+        assert wf.wheeldata.tags == ['py3-none-linux_x84_64']
+
     def test_language_tag_defaults_to_py3(self, wf):
         assert wf.wheeldata.tags == ['py3-none-any']
 
@@ -187,6 +193,12 @@ class TestWheelFileAttributes:
         wf = WheelFile(buf, 'w', distname='_', version='0',
                        abi_tag=abi_tag)
         assert wf.abi_tag == abi_tag
+
+    def test_given_platform_tag_is_stored_in_abi_tag_attr(self, buf):
+        platform_tag = 'win32'
+        wf = WheelFile(buf, 'w', distname='_', version='0',
+                       platform_tag=platform_tag)
+        assert wf.platform_tag == platform_tag
 
 
 class TestWheelFileClose:

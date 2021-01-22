@@ -708,7 +708,6 @@ class WheelFile:
     # TODO: expand compatibility tags, put them into wheeldata
     # TODO: warn on 'w' modes if filename does not end with .whl
     # TODO: arguments for build, tags, pyver, and abi, with sensible defaults
-    # TODO: The defaults for tags should be the same as the ones in WheelData
     def __init__(
         self,
         file_or_path: Union[str, Path, BinaryIO] = './',
@@ -719,6 +718,7 @@ class WheelFile:
         build_tag: Optional[int] = None,
         language_tag: Optional[str] = 'py3',
         abi_tag: Optional[str] = 'none',
+        platform_tag: Optional[str] = 'any'
     ) -> None:
         """Open or create a wheel file.
 
@@ -860,6 +860,14 @@ class WheelFile:
 
             Defaults to `'none'`.
 
+        platform_tag
+            Used to specify platforms that the distribution is compatible with.
+
+            The given value should be in the same form as the ones appearing
+            in wheels' filenames.
+
+            Defaults to `'any'`.
+
         Raises
         ------
         UnnamedDistributionError
@@ -905,22 +913,18 @@ class WheelFile:
         if isinstance(file_or_path, str):
             file_or_path = Path(file_or_path)
 
-        # TODO: come up with argument names for these
-        # FIXME: this should not be hardcoded
-        platform = 'any'
-
         if isinstance(file_or_path, Path):
             if file_or_path.is_dir():
                 filename = self._pick_filename(
                     distname, version, build_tag,
-                    language_tag, abi_tag, platform
+                    language_tag, abi_tag, platform_tag
                 )
                 file_or_path /= filename
 
         # TODO: This should happen only after initialization of metas is done
         self._pick_a_distname(file_or_path, given_distname=distname)
         self._pick_a_version(file_or_path, given_version=version)
-        self._pick_tags(build_tag, language_tag, abi_tag, platform)
+        self._pick_tags(build_tag, language_tag, abi_tag, platform_tag)
 
         self._zip = ZipFile(file_or_path, mode)
 
@@ -1018,16 +1022,15 @@ class WheelFile:
             raise ValueError(f"Invalid version: {repr(version)}.") from e
 
     # TODO: infer from filename or given args instead of hardcoded value
-    # TODO: properties for python_tag, abi_tag, and platform_tag
     def _pick_tags(self,
                    given_build: Optional[int],
                    given_language: Optional[str],
                    given_abi: Optional[str],
-                   given_platform: str):
+                   given_platform: Optional[str]):
         self._build_tag = given_build
         self._language_tag = given_language or 'py3'
         self._abi_tag = given_abi or 'none'
-        self._platform_tag = given_platform
+        self._platform_tag = given_platform or 'any'
 
     # TODO: initialize tags
     def _initialize_dist_info(self):
@@ -1065,6 +1068,10 @@ class WheelFile:
     @property
     def abi_tag(self) -> str:
         return self._abi_tag
+
+    @property
+    def platform_tag(self) -> str:
+        return self._platform_tag
 
     # TODO: validate naming conventions, metadata, etc.
     # TODO: use testwheel()
