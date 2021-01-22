@@ -1025,7 +1025,7 @@ class WheelFile:
                    given_abi: Optional[str],
                    given_platform: str):
         self._build_tag = given_build
-        self._language_tag = given_language
+        self._language_tag = given_language or 'py3'
         self._abi_tag = given_abi or 'none'
         self._platform_tag = given_platform
 
@@ -1059,7 +1059,7 @@ class WheelFile:
         return self._build_tag
 
     @property
-    def language_tag(self) -> Optional[str]:
+    def language_tag(self) -> str:
         return self._language_tag
 
     @property
