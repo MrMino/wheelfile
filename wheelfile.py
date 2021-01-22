@@ -443,7 +443,7 @@ class WheelData:
         single string denoting one tag or a list of tags. Tags may contain
         compressed tag sets, in which case they will be expanded.
 
-        By default, "py2.py3-none-any" (the universal tag) is used.
+        By default, "py3-none-any" is used.
 
     build
         Optional build number. Used as a tie breaker when two wheels have the
@@ -452,7 +452,7 @@ class WheelData:
     def __init__(self, *,
                  generator: str = 'wheelfile ' + __version__,
                  root_is_purelib: bool = True,
-                 tags: Union[List[str], str] = 'py2.py3-none-any',
+                 tags: Union[List[str], str] = 'py3-none-any',
                  build: Optional[int] = None):
         # self.wheel_version = '1.0' by property
         self.generator = generator

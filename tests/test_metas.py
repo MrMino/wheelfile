@@ -180,7 +180,7 @@ class TestWheelData:
         wm = WheelData()
         assert (wm.generator.startswith('wheelfile ')
                 and wm.root_is_purelib is True
-                and set(wm.tags) == set(['py2-none-any', 'py3-none-any'])
+                and wm.tags == ['py3-none-any']
                 and wm.build is None)
 
     def test_init_args(self):

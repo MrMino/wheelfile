@@ -14,7 +14,8 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   property.
 
 ### Changed
-- Nothing yet
+- Default tag set of `WheelData` class is now `['py3-none-any']`. Previously,
+  universal tag was used.
 
 ## [0.0.1] - 2021-01-16
 ### Added
