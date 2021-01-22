@@ -122,6 +122,15 @@ class TestyWheelFileInit:
         with pytest.raises(ValueError):
             WheelFile(buf, 'w', distname='_', version='BOGUS')
 
+    def test_default_language_tag_is_py3(self, wf):
+        assert wf.language_tag == 'py3'
+
+    def test_default_abi_tag_is_none(self, wf):
+        assert wf.abi_tag == 'none'
+
+    def test_default_platform_tag_is_any(self, wf):
+        assert wf.platform_tag == 'any'
+
     def test_if_given_build_number_passes_it_to_wheeldata(self, buf):
         build_tag = 123
         wf = WheelFile(buf, 'w', distname='_', version='0',
