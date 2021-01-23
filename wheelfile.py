@@ -953,6 +953,9 @@ class WheelFile:
         else:
             self._read_dist_info()
 
+        if 'l' not in mode:
+            self.validate()
+
     @staticmethod
     def _pick_filename(
         distname, version, build, langver, abi, platform
@@ -996,14 +999,6 @@ class WheelFile:
 
         if distname == '':
             raise ValueError("Empty string given as a distname.")
-
-        distname_valid = set(distname) <= self.VALID_DISTNAME_CHARS
-        if not distname_valid:
-            raise ValueError(
-                f"Invalid distname: {repr(distname)}. Distnames should "
-                f"contain only ASCII letters, numbers, underscores, and "
-                f"periods."
-            )
 
         self._distname = distname
 
@@ -1106,7 +1101,13 @@ class WheelFile:
     # goes through, the wheel is installable. Of course there are other
     # requirements.
     def validate(self):
-        raise NotImplementedError
+        distname_valid = set(self.distname) <= self.VALID_DISTNAME_CHARS
+        if not distname_valid:
+            raise ValueError(
+                f"Invalid distname: {repr(self.distname)}. Distnames should "
+                f"contain only ASCII letters, numbers, underscores, and "
+                f"periods."
+            )
 
     # TODO: return a list of defects & negligences present in the wheel file
     # TODO: maybe it's a good idea to put it outside this class?
