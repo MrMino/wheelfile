@@ -1081,11 +1081,13 @@ class WheelFile:
 
     # TODO: raise if there are multiple dist-info dirs
     def _read_dist_info(self):
+        # Actually, if there are multiple dist-info dirs we could just set meta
+        # attribs to None
         raise NotImplementedError
 
     @property
-    def filename(self) -> Optional[str]:
-        return self._zip.filename
+    def filename(self) -> str:
+        return self._zip.filename or str(self._generated_filename)
 
     @property
     def distname(self) -> str:
