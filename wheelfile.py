@@ -935,11 +935,11 @@ class WheelFile:
 
         if isinstance(file_or_path, Path):
             if file_or_path.is_dir():
-                filename = self._pick_filename(
+                self._generated_filename = self._generate_filename(
                     distname, version, build_tag,
                     language_tag, abi_tag, platform_tag
                 )
-                file_or_path /= filename
+                file_or_path /= self._generated_filename
 
         # TODO: This should happen only after initialization of metas is done
         self._pick_a_distname(file_or_path, given_distname=distname)
@@ -957,24 +957,35 @@ class WheelFile:
             self.validate()
 
     @staticmethod
-    def _pick_filename(
-        distname, version, build, langver, abi, platform
+    def _generate_filename(
+        distname: Optional[str],
+        version: Optional[Union[str, Version]],
+        build_tag: Optional[Union[str, int]],
+        language_tag: Optional[str],
+        abi_tag: Optional[str],
+        platform_tag: Optional[str]
     ) -> Path:
-        # TODO: Walrus a witness up and put it into exception message
-        if any(value is None
-               for param, value in locals().items()
-               if param != 'build'):
+        version = str(version)
+        if (distname is None
+                or version is None
+                or language_tag is None
+                or abi_tag is None
+                or platform_tag is None):
             raise ValueError(
                 "Missing arguments: if no path is specified, or given path is "
                 "a directory, all arguments corresponding to the name scheme "
                 "must be given."
             )
-        if build is not None:
-            return Path(
-                f'{distname}-{version}-{build}-{langver}-{abi}-{platform}.whl'
-            )
+
+        if build_tag is None:
+            segments = [distname, version,
+                        language_tag, abi_tag, platform_tag]
         else:
-            return Path(f'{distname}-{version}-{langver}-{abi}-{platform}.whl')
+            segments = [distname, version, str(build_tag),
+                        language_tag, abi_tag, platform_tag]
+
+        filename = '-'.join(segments) + '.whl'
+        return Path(filename)
 
     def _pick_a_distname(self, file_or_path: Union[Path, BinaryIO],
                          given_distname: Union[None, str]):
