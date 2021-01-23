@@ -1057,10 +1057,6 @@ class WheelFile:
                     f"No distname provided and the inferred filename does not "
                     f"contain a proper distname substring: {filename}"
                 )
-
-        if distname == '':
-            raise ValueError("Empty string given as a distname.")
-
         self._distname = distname
 
     def _pick_a_version(
@@ -1156,6 +1152,9 @@ class WheelFile:
     # goes through, the wheel is installable. Of course there are other
     # requirements.
     def validate(self):
+        if self.distname == '':
+            raise ValueError("Distname cannot be an empty string.")
+
         distname_valid = set(self.distname) <= self.VALID_DISTNAME_CHARS
         if not distname_valid:
             raise ValueError(
