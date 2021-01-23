@@ -940,17 +940,21 @@ class WheelFile:
 
         if self._is_unnamed_or_directory(file_or_path):
             self._require_distname_and_version(distname, version)
+            assert distname is not None and version is not None  # For Mypy
+
             language_tag = language_tag or 'py3'
             abi_tag = abi_tag or 'none'
             platform_tag = platform_tag or 'any'
 
-        if isinstance(file_or_path, Path):
-            if file_or_path.is_dir():
-                self._generated_filename = self._generate_filename(
-                    distname, version, build_tag,
-                    language_tag, abi_tag, platform_tag
-                )
+            self._generated_filename = self._generate_filename(
+                distname, version, build_tag,
+                language_tag, abi_tag, platform_tag
+            )
+            if isinstance(file_or_path, Path):
                 file_or_path /= self._generated_filename
+
+        else:
+            self._generated_filename = ''
 
         # TODO: This should happen only after initialization of metas is done
         filename = self._get_filename(file_or_path)
@@ -993,13 +997,13 @@ class WheelFile:
 
     @staticmethod
     def _generate_filename(
-        distname: Optional[str],
-        version: Optional[Union[str, Version]],
+        distname: str,
+        version: Union[str, Version],
         build_tag: Optional[Union[str, int]],
-        language_tag: Optional[str],
-        abi_tag: Optional[str],
-        platform_tag: Optional[str]
-    ) -> Path:
+        language_tag: str,
+        abi_tag: str,
+        platform_tag: str
+    ) -> str:
         version = str(version)
         if (distname is None
                 or version is None
@@ -1020,7 +1024,7 @@ class WheelFile:
                         language_tag, abi_tag, platform_tag]
 
         filename = '-'.join(segments) + '.whl'
-        return Path(filename)
+        return filename
 
     @classmethod
     def _get_filename(cls, file_or_path: Union[BinaryIO, Path]) -> str:
@@ -1113,7 +1117,7 @@ class WheelFile:
 
     @property
     def filename(self) -> str:
-        return self._zip.filename or str(self._generated_filename)
+        return self._zip.filename or self._generated_filename
 
     @property
     def distname(self) -> str:
