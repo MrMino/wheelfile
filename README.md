@@ -30,6 +30,10 @@ in the initial implementation.
 </td>
 <td style="border: none">
 
+```
+pip install wheelfile
+```
+
 ```py
 from wheelfile import WheelFile, __version__
 
