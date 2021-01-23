@@ -1164,6 +1164,11 @@ class WheelFile:
     # TODO: test every check
     # TODO: check filename segments are not empty
     def validate(self):
+        if self.filename is not None and not self.filename.endswith('.whl'):
+            raise ValueError(
+                f"Filename must end with '.whl': {repr(self.filename)}"
+            )
+
         if self.distname == '':
             raise ValueError("Distname cannot be an empty string.")
 
