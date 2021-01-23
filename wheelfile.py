@@ -664,6 +664,26 @@ class WheelFile:
         Version of the distribution. Either given to __init__() explicitly or
         inferred from its file_or_path argument.
 
+    build_tag : Optional[int]
+        Distribution's build number. Either given to __init__() explicitly or
+        inferred from its file_or_path argument, otherwise `None` in lazy mode.
+
+    language_tag : str
+        Interpretter implementation compatibility specifier. See PEP-425 for
+        the full specification. Either given to __init__() explicitly or
+        inferred from its file_or_path argument otherwise an empty string in
+        lazy mode.
+
+    abi_tag : str
+        ABI compatibility specifier. See PEP-425 for the full specification.
+        Either given to __init__() explicitly or inferred from its file_or_path
+        argument, otherwise an empty string in lazy mode.
+
+    platform_tag : str
+        Platform compatibility specifier. See PEP-425 for the full
+        specification. Either given to __init__() explicitly or inferred from
+        its file_or_path argument, otherwise an empty string in lazy mode.
+
     record : Optional[WheelRecord]
         Current state of .dist-info/RECORD file.
 
