@@ -1041,8 +1041,7 @@ class WheelFile:
         If given a `Path`, assumes it is a path to an actual file, not a
         directory.
         """
-        if cls._is_unnamed_or_directory(file_or_path):
-            return ''
+        assert not cls._is_unnamed_or_directory(file_or_path)
 
         # TODO: test this
         # If a file object given, ensure its a filename, not a path
