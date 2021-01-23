@@ -925,7 +925,7 @@ class WheelFile:
                 "Lazy modes are not supported yet"
             )
 
-        # These might be none in case a corrupted wheel is read in lazy mode
+        # These might be None in case a corrupted wheel is read in lazy mode
         self.wheeldata: Optional[WheelData] = None
         self.metadata: Optional[MetaData] = None
         self.record: Optional[WheelRecord] = None
