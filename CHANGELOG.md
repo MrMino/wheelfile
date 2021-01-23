@@ -12,6 +12,8 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   these methods to write files to `.data/` directory of the wheel.
 - Added `build_tag` and `language_tag`, `abi_tag`, and `platform_tag`
   parameters to `WheelFile.__init__`, with their respective properties.
+- Tag attributes mentioned above can also be inferred from the filename of the
+  specified file.
 
 ### Changed
 - Default tag set of `WheelData` class is now `['py3-none-any']`. Previously,

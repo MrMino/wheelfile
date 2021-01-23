@@ -768,6 +768,10 @@ class WheelFile:
         If any of the metadata files cannot be read due to a wrong format, they
         are considered missing.
 
+        Filename tags are only inferred if the filename contains 5 or 6
+        segments inbetween `'-'` characters. Otherwise, if any tag argument is
+        omitted, its attribute is set to an empty string.
+
         If the archive root contains a directory with a name ending with
         '.dist-info', it is considered to be _the_ metadata directory for the
         wheel, even if the given/inferred distname and version do not match its
@@ -1093,12 +1097,28 @@ class WheelFile:
                    given_language: Optional[str],
                    given_abi: Optional[str],
                    given_platform: Optional[str]):
-        self._build_tag = given_build
-        self._language_tag = given_language or 'py3'
-        self._abi_tag = given_abi or 'none'
-        self._platform_tag = given_platform or 'any'
 
-    # TODO: initialize tags
+        if filename.endswith('.whl'):
+            filename = filename[:-4]
+
+        segments = filename.split('-')
+        if not (len(segments) == 6 or len(segments) == 5):
+            segments = [''] * 5
+
+        # TODO: test this when lazy mode is ready
+        if len(segments) == 6 and given_build is None:
+            try:
+                self._build_tag = int(segments[2])
+            except ValueError:
+                # TODO: set to degenerated build number instead
+                self._build_tag = None
+        else:
+            self._build_tag = given_build
+
+        self._language_tag = given_language or segments[-3]
+        self._abi_tag = given_abi or segments[-2]
+        self._platform_tag = given_platform or segments[-1]
+
     def _initialize_dist_info(self):
         collapsed_tags = '-'.join((self._language_tag,
                                    self._abi_tag,

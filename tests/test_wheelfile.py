@@ -328,14 +328,35 @@ def named_bytesio(name: str) -> BytesIO:
 rwb_open = partial(open, mode='wb+')
 
 
+# TODO: when lazy mode is ready, test arguments priority over inference
+# TODO: when lazy mode is ready, test build number degeneration
+# TODO: when lazy mode is ready, test version degeneration
 @pytest.mark.parametrize("target_type", [str, Path, rwb_open, named_bytesio])
 class TestWheelFileAttributeInference:
     """Tests how WheelFile infers metadata from the name of its target file"""
 
     def test_infers_from_given_path(self, tmp_path, target_type):
-        path = target_type(tmp_path / "my_awesome.wheel-4.2.0-py3-none-any.whl")
+        path = target_type(
+            tmp_path / "my_awesome.wheel-4.2.0-py38-cp38d-linux_x84_64.whl"
+        )
         wf = WheelFile(path, 'w')
-        assert wf.distname == "my_awesome.wheel" and str(wf.version) == '4.2.0'
+        assert (wf.distname == "my_awesome.wheel"
+                and str(wf.version) == '4.2.0'
+                and wf.language_tag == 'py38'
+                and wf.abi_tag == 'cp38d'
+                and wf.platform_tag == 'linux_x84_64')
+
+    def test_infers_from_given_path_with_build_tag(self, tmp_path, target_type):
+        path = target_type(
+            tmp_path / "my_awesome.wheel-1.2.3.dev0-5-ip37-cp38d-win32.whl"
+        )
+        wf = WheelFile(path, 'w')
+        assert (wf.distname == "my_awesome.wheel"
+                and str(wf.version) == '1.2.3.dev0'
+                and wf.build_tag == 5
+                and wf.language_tag == 'ip37'
+                and wf.abi_tag == 'cp38d'
+                and wf.platform_tag == 'win32')
 
     def test_if_distname_part_is_empty_raises_UDE(self, tmp_path, target_type):
         path = target_type(tmp_path / "-4.2.0-py3-none-any.whl")
@@ -373,9 +394,6 @@ def test_given_unnamed_buf_and_no_version_raises_UDE(buf):
         WheelFile(buf, 'w', distname='_')
 
 
-# TODO: as soon as there are __init__ args for the name segments, make sure
-# theres a single test for "missing arg" situation.
-# TODO: tag arguments will be optional - test it
 class TestWheelFileDirectoryTarget:
     """Tests how WheelFile.__init__() behaves when given a directory"""
 
@@ -409,6 +427,17 @@ class TestWheelFileDirectoryTarget:
                                       wf.language_tag,
                                       wf.abi_tag,
                                       wf.platform_tag)) + '.whl'
+            assert wf.filename == str(Path('./') / expected_name)
+        os.chdir(old_path)
+
+    def test_given_no_target_creates_file_from_args(self, tmp_path):
+        old_path = Path.cwd()
+        os.chdir(tmp_path)
+        with WheelFile(
+            mode='w', distname='my_dist', version='1.2.alpha1', build_tag=123,
+            language_tag='jp2', abi_tag='jre8', platform_tag='win32'
+        ) as wf:
+            expected_name = 'my_dist-1.2a1-123-jp2-jre8-win32.whl'
             assert wf.filename == str(Path('./') / expected_name)
         os.chdir(old_path)
 
