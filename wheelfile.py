@@ -1010,23 +1010,11 @@ class WheelFile:
         abi_tag: str,
         platform_tag: str
     ) -> str:
-        version = str(version)
-        if (distname is None
-                or version is None
-                or language_tag is None
-                or abi_tag is None
-                or platform_tag is None):
-            raise ValueError(
-                "Missing arguments: if no path is specified, or given path is "
-                "a directory, all arguments corresponding to the name scheme "
-                "must be given."
-            )
-
         if build_tag is None:
-            segments = [distname, version,
+            segments = [distname, str(version),
                         language_tag, abi_tag, platform_tag]
         else:
-            segments = [distname, version, str(build_tag),
+            segments = [distname, str(version), str(build_tag),
                         language_tag, abi_tag, platform_tag]
 
         filename = '-'.join(segments) + '.whl'
@@ -1172,6 +1160,7 @@ class WheelFile:
     # TODO: the bottom-line semantics of this method should be: if validate()
     # goes through, the wheel is installable. Of course there are other
     # requirements.
+    # TODO: check filename segments are not empty
     def validate(self):
         if self.distname == '':
             raise ValueError("Distname cannot be an empty string.")
