@@ -137,6 +137,12 @@ class TestyWheelFileInit:
                        build_tag=build_tag)
         assert wf.wheeldata.build == build_tag
 
+    def test_build_number_can_be_str(self, buf):
+        build_tag = '123'
+        wf = WheelFile(buf, 'w', distname='_', version='0',
+                       build_tag=build_tag)
+        assert wf.wheeldata.build == int(build_tag)
+
     def test_if_given_language_tag_passes_it_to_wheeldata_tags(self, buf):
         language_tag = 'ip2'
         wf = WheelFile(buf, 'w', distname='_', version='0',
@@ -190,6 +196,11 @@ class TestWheelFileAttributes:
         build_tag = 123
         wf = WheelFile(buf, 'w', distname='_', version='0', build_tag=build_tag)
         assert wf.build_tag == build_tag
+
+    def test_given_str_build_tag_stores_int_in_build_tag_attr(self, buf):
+        build_tag = '123'
+        wf = WheelFile(buf, 'w', distname='_', version='0', build_tag=build_tag)
+        assert wf.build_tag == int(build_tag)
 
     def test_given_language_tag_is_stored_in_language_tag_attr(self, buf):
         language_tag = 'cp3'

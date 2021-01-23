@@ -735,7 +735,7 @@ class WheelFile:
         *,
         distname: Optional[str] = None,
         version: Optional[Union[str, Version]] = None,
-        build_tag: Optional[int] = None,
+        build_tag: Optional[Union[int, str]] = None,
         language_tag: Optional[str] = 'py3',
         abi_tag: Optional[str] = 'none',
         platform_tag: Optional[str] = 'any'
@@ -930,6 +930,10 @@ class WheelFile:
 
         if isinstance(file_or_path, str):
             file_or_path = Path(file_or_path)
+
+        # TODO if value error, set build_tag to degenerated version, that
+        # compares with Version in a way that makes Version the higher one.
+        build_tag = int(build_tag) if build_tag is not None else None
 
         if isinstance(file_or_path, Path):
             if file_or_path.is_dir():
