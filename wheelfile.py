@@ -942,27 +942,29 @@ class WheelFile:
             self._require_distname_and_version(distname, version)
             assert distname is not None and version is not None  # For Mypy
 
-            language_tag = language_tag or 'py3'
-            abi_tag = abi_tag or 'none'
-            platform_tag = platform_tag or 'any'
+            self._distname = distname
+            self._version = Version(str(version))
+            self._build_tag = build_tag
+            self._language_tag = language_tag or 'py3'
+            self._abi_tag = abi_tag or 'none'
+            self._platform_tag = platform_tag or 'any'
 
             self._generated_filename = self._generate_filename(
-                distname, version, build_tag,
-                language_tag, abi_tag, platform_tag
+                self._distname, self._version, self._build_tag,
+                self._language_tag, self._abi_tag, self._platform_tag
             )
-            if isinstance(file_or_path, Path):
-                file_or_path /= self._generated_filename
 
         else:
+            filename = self._get_filename(file_or_path)
+            self._pick_a_distname(filename, given_distname=distname)
+            self._pick_a_version(filename, given_version=version)
+            self._pick_tags(
+                filename, build_tag, language_tag, abi_tag, platform_tag
+            )
             self._generated_filename = ''
 
-        # TODO: This should happen only after initialization of metas is done
-        filename = self._get_filename(file_or_path)
-        self._pick_a_distname(filename, given_distname=distname)
-        self._pick_a_version(filename, given_version=version)
-        self._pick_tags(
-            filename, build_tag, language_tag, abi_tag, platform_tag
-        )
+        if isinstance(file_or_path, Path):
+            file_or_path /= self._generated_filename
 
         self._zip = ZipFile(file_or_path, mode)
 
