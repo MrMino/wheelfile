@@ -687,39 +687,39 @@ class WheelFile:
     record : Optional[WheelRecord]
         Current state of .dist-info/RECORD file.
 
-        When modifying other files in the archive, the record is written on
-        each operation & on close().
+        When reading wheels in lazy mode, if the file does not exist or is
+        misformatted, this attribute becomes None.
 
-        In lazy mode, this is only the case when using refresh_record() and
-        write_record(), and if the file does not exist or is misformatted, this
-        attribute becomes None. In such cases, calling refresh_record() creates
-        it from scratch().
-
-        In non-lazy modes, this file is always created/read & validated on
+        In non-lazy modes this file is always read & validated on
         initialization.
+        In write and exclusive-write modes, written to the archive on close().
 
     metadata : Optional[MetaData]
         Current state of .dist-info/METADATA file.
 
-        Follows the same semantics as 'record'. Values from 'distname' and
-        'version' are used to provide required arguments when the file is
-        created from scratch by __init__().
+        Values from `distname` and `version` are used to provide required
+        arguments when the file is created from scratch by `__init__()`.
 
-        In standard modes, when changing data contained by the object this
-        property returns, the file is being written only on close(). In order
-        to write it beforehand, use write_metadata().
+        When reading wheels in lazy mode, if the file does not exist or is
+        misformatted, this attribute becomes None.
 
-        When using lazy mode, the data is not being written to the archive on
-        close().
+        In non-lazy modes this file is always read & validated on
+        initialization.
+        In write and exclusive-write modes, written to the archive on close().
 
     wheeldata : Optional[WheelData]
         Current state of .dist-info/WHEELDATA file.
 
-        Follows the same semantics as 'metadata'. Consult docstring of
-        WheelData class for the default values used.
+        Values from `build_tag`, `language_tag`, `abi_tag`, `platform_tag`, or
+        their substitutes inferred from the filename are used to initialize
+        this object.
 
-        Use write_wheeldata() after editting it, in order to write it before
-        close(), or - in lazy mode - to write the archive data at all.
+        When reading wheels in lazy mode, if the file does not exist or is
+        misformatted, this attribute becomes None.
+
+        In non-lazy modes this file is always read & validated on
+        initialization.
+        In write and exclusive-write modes, written to the archive on close().
     """
     VALID_DISTNAME_CHARS = set(ascii_letters + digits + '._')
 
@@ -763,9 +763,7 @@ class WheelFile:
 
         In lazy mode, if the opened file does not contain WHEEL, METADATA, or
         RECORD (which is optional as per PEP-627), the attributes corresponding
-        to the missing data structures will be set to None. In order to create
-        them, either set these attributes yourself and call their respective
-        write methods, or use fix().
+        to the missing data structures will be set to None.
 
         If any of the metadata files cannot be read due to a wrong format, they
         are considered missing.
