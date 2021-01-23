@@ -940,9 +940,12 @@ class WheelFile:
                 file_or_path /= self._generated_filename
 
         # TODO: This should happen only after initialization of metas is done
-        self._pick_a_distname(file_or_path, given_distname=distname)
-        self._pick_a_version(file_or_path, given_version=version)
-        self._pick_tags(build_tag, language_tag, abi_tag, platform_tag)
+        filename = self._get_filename(file_or_path)
+        self._pick_a_distname(filename, given_distname=distname)
+        self._pick_a_version(filename, given_version=version)
+        self._pick_tags(
+            filename, build_tag, language_tag, abi_tag, platform_tag
+        )
 
         self._zip = ZipFile(file_or_path, mode)
 
@@ -953,6 +956,14 @@ class WheelFile:
 
         if 'l' not in mode:
             self.validate()
+
+    @staticmethod
+    def _is_unnamed_or_directory(target: Union[Path, BinaryIO]) -> bool:
+        return (
+            (getattr(target, 'name', None) is None)
+            or
+            (isinstance(target, Path) and target.is_dir())
+        )
 
     @staticmethod
     def _generate_filename(
@@ -985,20 +996,31 @@ class WheelFile:
         filename = '-'.join(segments) + '.whl'
         return Path(filename)
 
-    def _pick_a_distname(self, file_or_path: Union[Path, BinaryIO],
-                         given_distname: Union[None, str]):
+    @classmethod
+    def _get_filename(cls, file_or_path: Union[BinaryIO, Path]) -> str:
+        """Return a filename from file obj or a path.
+
+        If given file, the asumption is that the filename is within the value
+        of its `name` attribute.
+        If given a `Path`, assumes it is a path to an actual file, not a
+        directory.
+        """
+        if cls._is_unnamed_or_directory(file_or_path):
+            return ''
+
+        # TODO: test this
+        # If a file object given, ensure its a filename, not a path
+        if isinstance(file_or_path, Path):
+            return file_or_path.name
+        else:
+            # File objects contain full path in ther name attribute
+            filename = Path(file_or_path.name).name
+            return filename
+
+    def _pick_a_distname(self, filename: str, given_distname: Union[None, str]):
         if given_distname is not None:
             distname = given_distname
         else:
-            filename = getattr(file_or_path, 'name', None)
-            if filename is None:
-                raise UnnamedDistributionError(
-                    "No distname provided and an unnamed object given."
-                )
-
-            if not isinstance(file_or_path, Path):
-                filename = Path(filename).name
-
             distname = filename.split('-')[0]
             if distname == '':
                 raise UnnamedDistributionError(
@@ -1011,8 +1033,9 @@ class WheelFile:
 
         self._distname = distname
 
-    def _pick_a_version(self, file_or_path: Union[str, Path, BinaryIO],
-                        given_version: Union[None, str, Version]):
+    def _pick_a_version(
+        self, filename: str, given_version: Union[None, str, Version]
+    ):
         if isinstance(given_version, Version):
             # We've got a valid object here, nothing else to do
             self._version = given_version
@@ -1021,16 +1044,6 @@ class WheelFile:
         if isinstance(given_version, str):
             version = given_version
         else:
-            filename = getattr(file_or_path, 'name', None)
-
-            if filename is None:
-                raise UnnamedDistributionError(
-                    "No version provided and an unnamed object given."
-                )
-
-            # Ensure we're getting a filename, not a path
-            filename = Path(filename).name
-
             name_segments = filename.split('-')
 
             if len(name_segments) < 2 or name_segments[1] == '':
@@ -1047,6 +1060,7 @@ class WheelFile:
 
     # TODO: infer from filename or given args instead of hardcoded value
     def _pick_tags(self,
+                   filename: str,
                    given_build: Optional[int],
                    given_language: Optional[str],
                    given_abi: Optional[str],
