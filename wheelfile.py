@@ -1160,18 +1160,6 @@ class WheelFile:
             return first_broken
         raise NotImplementedError("Check if RECORD is correct here")
 
-    def write_metadata(self):
-        # Requires rewrite functionality
-        raise NotImplementedError()
-
-    def write_wheeldata(self):
-        # Requires rewrite functionality
-        raise NotImplementedError()
-
-    def write_record(self):
-        # Requires rewrite functionality
-        raise NotImplementedError()
-
     # TODO: if arcname is None, refresh everything (incl. deleted files)
     # TODO: docstring - mention that this does not write record to archive and
     # that the record itself is optional
