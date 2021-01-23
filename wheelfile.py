@@ -736,9 +736,9 @@ class WheelFile:
         distname: Optional[str] = None,
         version: Optional[Union[str, Version]] = None,
         build_tag: Optional[Union[int, str]] = None,
-        language_tag: Optional[str] = 'py3',
-        abi_tag: Optional[str] = 'none',
-        platform_tag: Optional[str] = 'any'
+        language_tag: Optional[str] = None,
+        abi_tag: Optional[str] = None,
+        platform_tag: Optional[str] = None
     ) -> None:
         """Open or create a wheel file.
 
@@ -863,10 +863,11 @@ class WheelFile:
             between distributions targetted at different versions of
             interpreters.
 
-            The values given should be in the same form as the ones appearing
+            The given value should be in the same form as the ones appearing
             in wheels' filenames.
 
-            Defaults to `'py3'`.
+            Defaults to `'py3'`, but only if an unnamed or a directory target
+            was given.
 
         abi_tag
             In distributions that utilize compiled binaries, specifies the
@@ -876,7 +877,8 @@ class WheelFile:
             The given value should be in the same form as the ones appearing
             in wheels' filenames.
 
-            Defaults to `'none'`.
+            Defaults to `'none'`, but only if an unnamed or a directory target
+            was given.
 
         platform_tag
             Used to specify platforms that the distribution is compatible with.
@@ -884,7 +886,8 @@ class WheelFile:
             The given value should be in the same form as the ones appearing
             in wheels' filenames.
 
-            Defaults to `'any'`.
+            Defaults to `'any'`, but only if an unnamed or a directory target
+            was given.
 
         Raises
         ------
@@ -935,6 +938,12 @@ class WheelFile:
         # compares with Version in a way that makes Version the higher one.
         build_tag = int(build_tag) if build_tag is not None else None
 
+        if self._is_unnamed_or_directory(file_or_path):
+            self._require_distname_and_version(distname, version)
+            language_tag = language_tag or 'py3'
+            abi_tag = abi_tag or 'none'
+            platform_tag = platform_tag or 'any'
+
         if isinstance(file_or_path, Path):
             if file_or_path.is_dir():
                 self._generated_filename = self._generate_filename(
@@ -968,6 +977,19 @@ class WheelFile:
             or
             (isinstance(target, Path) and target.is_dir())
         )
+
+    @staticmethod
+    def _require_distname_and_version(
+        distname: Optional[str], version: Optional[Union[str, Version]]
+    ):
+        if distname is None:
+            raise UnnamedDistributionError(
+                "No distname provided and an unnamed object given."
+            )
+        if version is None:
+            raise UnnamedDistributionError(
+                "No version provided and an unnamed object given."
+            )
 
     @staticmethod
     def _generate_filename(
