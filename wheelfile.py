@@ -1074,7 +1074,9 @@ class WheelFile:
             self._version = Version(version)
         except InvalidVersion as e:
             # TODO: assign degenerated version instead
-            raise ValueError(f"Invalid version: {repr(version)}.") from e
+            raise ValueError(
+                f"Filename contains invalid version: {repr(version)}."
+            ) from e
 
     def _pick_tags(self,
                    filename: str,
