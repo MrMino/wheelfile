@@ -631,12 +631,11 @@ class UnnamedDistributionError(BadWheelFileError):
     """Distribution name cannot be deduced from arguments."""
 
 
+# TODO: write_distinfo and read_distinfo
 # TODO: prevent arbitrary writes to METADATA, WHEEL, and RECORD - or make sure
 # the writes are reflected internally
 # TODO: prevent adding .dist-info directories if there's one already there
-# TODO: add attributes docstrings: distribution, tags, etc
 # TODO: ensure distname and varsion have no weird characters (!slashes!)
-# TODO: properties for build tag, python tag, abi tag, platform tag?
 # TODO: debug propery, as with ZipFile.debug
 # TODO: comment property
 # TODO: compression level arguments - is compression even supported by the spec?
@@ -645,6 +644,7 @@ class UnnamedDistributionError(BadWheelFileError):
 # TODO: better repr
 # TODO: docstrings
 # TODO: properties for rest of the naming convention parts
+# TODO: comparison operators for comparing version + build number
 class WheelFile:
     """An archive that follows the wheel specification.
 
@@ -725,9 +725,7 @@ class WheelFile:
 
     # TODO: implement lazy mode
     # TODO: in lazy mode, log reading/missing metadata errors
-    # TODO: expand compatibility tags, put them into wheeldata
     # TODO: warn on 'w' modes if filename does not end with .whl
-    # TODO: arguments for build, tags, pyver, and abi, with sensible defaults
     def __init__(
         self,
         file_or_path: Union[str, Path, BinaryIO] = './',
@@ -1075,9 +1073,9 @@ class WheelFile:
         try:
             self._version = Version(version)
         except InvalidVersion as e:
+            # TODO: assign degenerated version instead
             raise ValueError(f"Invalid version: {repr(version)}.") from e
 
-    # TODO: infer from filename or given args instead of hardcoded value
     def _pick_tags(self,
                    filename: str,
                    given_build: Optional[int],
@@ -1155,11 +1153,13 @@ class WheelFile:
     # TODO: actually, having two .data directories doesn't seem like a big
     # deal, it could be just unpacked in the same place rest of the contents
     # of the wheel are
-    # TODO: use lint()
+    # TODO: use lint()?
     # TODO: ensure there are no synonym files for metadata (maybe others?)
     # TODO: the bottom-line semantics of this method should be: if validate()
     # goes through, the wheel is installable. Of course there are other
     # requirements.
+    # TODO: custom exception
+    # TODO: test every check
     # TODO: check filename segments are not empty
     def validate(self):
         if self.distname == '':
