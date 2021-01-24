@@ -650,6 +650,9 @@ class WheelFile:
 
     Used to read, create, validate, or modify *.whl files.
 
+    Can be used as a context manager, in which case `close()` is called upon
+    exiting the context.
+
     Attributes
     ----------
     filename : str
