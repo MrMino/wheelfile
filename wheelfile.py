@@ -931,11 +931,6 @@ class WheelFile:
                 "Append mode is not supported yet"
             )
 
-        if 'r' in mode:
-            raise NotImplementedError(
-                "Nontruncating modes are not supported yet"
-            )
-
         if 'l' in mode:
             raise NotImplementedError(
                 "Lazy modes are not supported yet"
@@ -993,6 +988,7 @@ class WheelFile:
         if 'w' in mode or 'x' in mode:
             self._initialize_distinfo()
         else:
+            self._distinfo_prefix = self._find_distinfo_prefix()
             self._read_distinfo()
 
         if 'l' not in mode:
@@ -1134,11 +1130,46 @@ class WheelFile:
         self.metadata = MetaData(name=self.distname, version=self.version)
         self.record = WheelRecord()
 
-    # TODO: raise if there are multiple dist-info dirs
+    # TODO: test edge cases related to bad contents
+    # TODO: should "bad content" exceptions be saved for validate()?
+    # TODO: the try...excepts should use something stricter than "Exception"
     def _read_distinfo(self):
-        # Actually, if there are multiple dist-info dirs we could just set meta
-        # attribs to None
-        raise NotImplementedError
+        try:
+            metadata = self.zipfile.read(self._distinfo_path('METADATA'))
+            self.metadata = MetaData.from_str(metadata.decode('utf-8'))
+        except Exception:
+            self.metadata = None
+
+        try:
+            wheeldata = self.zipfile.read(self._distinfo_path('WHEEL'))
+            self.wheeldata = WheelData.from_str(wheeldata.decode('utf-8'))
+        except Exception:
+            self.metadata = None
+
+        try:
+            record = self.zipfile.read(self._distinfo_path('RECORD'))
+            self.record = WheelRecord.from_str(record.decode('utf-8'))
+        except Exception:
+            self.record = None
+
+    # TODO: check what are the common bugs with wheels and implement them here
+    # TODO: test behavior if no candidates found
+    def _find_distinfo_prefix(self):
+        # TODO: this could use a walrus
+        candidates = {path.split('/')[0] for path in self.zipfile.namelist()}
+        candidates = {name for name in candidates
+                      if name.endswith('.dist-info')}
+        # TODO: log them onto debug
+        if len(candidates) > 1:
+            raise BadWheelFileError(
+                "Multiple .dist-info directories found in the archive."
+            )
+        if len(candidates) == 0:
+            raise BadWheelFileError(
+                "Archive does not contain any .dist-info directory."
+            )
+
+        return candidates.pop()[:-len('dist-info')]
 
     @property
     def filename(self) -> str:
@@ -1198,6 +1229,22 @@ class WheelFile:
                 f"Invalid distname: {repr(self.distname)}. Distnames should "
                 f"contain only ASCII letters, numbers, underscores, and "
                 f"periods."
+            )
+
+        if self.metadata is None:
+            raise ValueError(
+                "METADATA file is not present in the archive or is corrupted."
+            )
+
+        if self.wheeldata is None:
+            raise ValueError(
+                "WHEEL file is not present in the archive or is corrupted."
+            )
+
+        # TODO: make this optional
+        if self.record is None:
+            raise ValueError(
+                "RECORD file is not present in the archive or is corrupted."
             )
 
     # TODO: return a list of defects & negligences present in the wheel file

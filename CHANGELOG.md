@@ -8,6 +8,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 ### Added
+- Read mode (`'r'`) now works.
 - Added `write_data` and `writestr_data` methods to `WheelFile` class. Use
   these methods to write files to `.data/` directory of the wheel.
 - Added `build_tag` and `language_tag`, `abi_tag`, and `platform_tag`
