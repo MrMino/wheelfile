@@ -20,6 +20,12 @@ from typing import Optional, Union, List, Dict, IO, BinaryIO
 __version__ = '0.0.1'
 
 
+# TODO: idea: Corrupted class: denotes that something is present, but could not
+# be parsed. Would take a type and contents to parse, compare falsely to
+# the objects of given type, and not compare with anything else.
+# Validate would raise errors with messages about parsing if it finds something
+# corrupted, and about missing file otherwise.
+
 # TODO: change AssertionErrors to custom exceptions?
 # TODO: idea - install wheel - w/ INSTALLER file
 # TODO: idea - wheel from an installed distribution?
@@ -64,6 +70,7 @@ def _slots_from_params(func):
 # TODO: as_dict?
 # TODO: ensure name is the same as wheelfile namepath
 # TODO: PEP-643 - v2.2
+# TODO: don't raise invalid version, assign a degenerated version object instead
 class MetaData:
     """Implements Wheel Metadata format v2.1.
 
@@ -1341,6 +1348,7 @@ class WheelFile:
         return self._zip.fp is None
 
     # TODO: compression args?
+    # TODO: docstring
     def write(self,
               filename: Union[str, Path],
               arcname: Optional[str] = None) -> None:
@@ -1354,6 +1362,7 @@ class WheelFile:
         self.refresh_record(arcname)
 
     # TODO: compression args?
+    # TODO: docstring
     def writestr(self,
                  zinfo_or_arcname: Union[ZipInfo, str],
                  data: Union[bytes, str]) -> None:
