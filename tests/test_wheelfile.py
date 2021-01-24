@@ -64,6 +64,9 @@ class TestyWheelFileInit:
         file_obj = open(real_path, 'wb+')
         WheelFile(file_obj, 'w').close()
 
+    # This one fails because refresh_record() reads from the zipfile.
+    # The only way it could work is if the record calculation is performed on
+    # the data passed directly to the method, not from the zipfile.
     @pytest.mark.skip  # Because WheelFile.__del__ shows tb
     @pytest.mark.xfail
     def test_target_can_be_binary_wb_file_obj(self, real_path):
