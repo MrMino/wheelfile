@@ -975,9 +975,9 @@ class WheelFile:
         self._zip = ZipFile(file_or_path, mode)
 
         if 'w' in mode or 'x' in mode:
-            self._initialize_dist_info()
+            self._initialize_distinfo()
         else:
-            self._read_dist_info()
+            self._read_distinfo()
 
         if 'l' not in mode:
             self.validate()
@@ -1110,7 +1110,7 @@ class WheelFile:
         self._abi_tag = given_abi or segments[-2]
         self._platform_tag = given_platform or segments[-1]
 
-    def _initialize_dist_info(self):
+    def _initialize_distinfo(self):
         collapsed_tags = '-'.join((self._language_tag,
                                    self._abi_tag,
                                    self._platform_tag))
@@ -1119,7 +1119,7 @@ class WheelFile:
         self.record = WheelRecord()
 
     # TODO: raise if there are multiple dist-info dirs
-    def _read_dist_info(self):
+    def _read_distinfo(self):
         # Actually, if there are multiple dist-info dirs we could just set meta
         # attribs to None
         raise NotImplementedError
