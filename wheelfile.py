@@ -388,8 +388,18 @@ class MetaData:
 
     def __eq__(self, other):
         if isinstance(other, MetaData):
-            return all(getattr(self, f) == getattr(other, f)
-                       for f in self.__slots__)
+            # Having None as a description is the same as having an empty string
+            # in it. The former is put there by having an Optional[str]
+            # argument, the latter is there due to semantics of email-style
+            # parsing.
+            # Ensure these two values compare equally in the description.
+            mine = '' if self.description is None else self.description
+            theirs = '' if other.description is None else other.description
+            descriptions_equal = (mine == theirs)
+
+            return (all(getattr(self, field) == getattr(other, field)
+                        for field in self.__slots__ if field != 'description')
+                    and descriptions_equal)
         else:
             return NotImplemented
 

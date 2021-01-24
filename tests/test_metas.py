@@ -38,6 +38,9 @@ class TestMetadata:
     def test_basic_from_str(self, metadata):
         assert str(MetaData.from_str(str(metadata))) == str(metadata)
 
+    def test_to_and_fro_str_objects_are_equal(self, metadata):
+        assert metadata == MetaData.from_str(str(metadata))
+
     def test_metadata_version_is_2_1(self, metadata):
         assert metadata.metadata_version == '2.1'
 

@@ -20,6 +20,12 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 - Default tag set of `WheelData` class is now `['py3-none-any']`. Previously,
   universal tag (`"py2.py3-none-any"`) was used.
+- Fixed issues with comparing `MetaData` objects that have empty descriptions.
+  After parsing a metadata text with empty payload, the returned object has an
+  empty string inside description, instead of `None`, which is used by
+  `MetaData.__init__` to denote that no description was provided. This means
+  that these two values are the effectively the same thing in this context.
+  `MetaData.__eq__` now refelcts that.
 
 ## [0.0.1] - 2021-01-16
 ### Added
