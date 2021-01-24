@@ -974,6 +974,9 @@ class WheelFile:
         # litters empty and corrupted wheels if any arg is wrong.
         self._zip = ZipFile(file_or_path, mode)
 
+        # Used by _distinfo_path
+        self._distinfo_prefix: Optional[str] = None
+
         if 'w' in mode or 'x' in mode:
             self._initialize_distinfo()
         else:
@@ -1231,9 +1234,12 @@ class WheelFile:
             self.record.update(arcname, zf)
 
     def _distinfo_path(self, filename: str, *, kind='dist-info') -> str:
-        name = canonicalize_name(self.distname).replace("-", "_")
-        version = str(self.version).replace("-", "_")
-        return f"{name}-{version}.{kind}/{filename}"
+        if self._distinfo_prefix is None:
+            name = canonicalize_name(self.distname).replace("-", "_")
+            version = str(self.version).replace("-", "_")
+            self._distinfo_prefix = f"{name}-{version}."
+
+        return f"{self._distinfo_prefix}{kind}/{filename}"
 
     # TODO: lazy mode - do not write anything in lazy mode
     # TODO: docstring
