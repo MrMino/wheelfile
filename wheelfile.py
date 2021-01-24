@@ -968,6 +968,8 @@ class WheelFile:
         if isinstance(file_or_path, Path):
             file_or_path /= self._generated_filename
 
+        # FIXME: the file is opened before validating the arguments, so this
+        # litters empty and corrupted wheels if any arg is wrong.
         self._zip = ZipFile(file_or_path, mode)
 
         if 'w' in mode or 'x' in mode:
