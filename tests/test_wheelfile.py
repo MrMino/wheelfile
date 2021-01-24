@@ -479,3 +479,6 @@ class TestWheelFileDistDataWrite:
         wf.writestr_data('section', filename, contents)
 
         assert wf.zipfile.read(expected_arcpath) == contents
+
+    def test_mode_is_written_to_mode_attribute(self, wf):
+        assert wf.mode == 'w'

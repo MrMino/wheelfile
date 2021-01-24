@@ -14,6 +14,8 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   parameters to `WheelFile.__init__`, with their respective properties.
 - Tag attributes mentioned above can also be inferred from the filename of the
   specified file.
+- Accessing the mode with which the wheelfile was opened is now possible using
+  `mode` attribute.
 
 ### Changed
 - Default tag set of `WheelData` class is now `['py3-none-any']`. Previously,
