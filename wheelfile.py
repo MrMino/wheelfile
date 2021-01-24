@@ -1250,14 +1250,15 @@ class WheelFile:
         if self.closed:
             return
 
-        if self.metadata is not None:
-            self.writestr(self._distinfo_path("METADATA"),
-                          str(self.metadata).encode())
-        if self.wheeldata is not None:
-            self.writestr(self._distinfo_path("WHEEL"),
-                          str(self.wheeldata).encode())
-        self._zip.writestr(self._distinfo_path("RECORD"),
-                           str(self.record).encode())
+        if 'r' not in self.mode:
+            if self.metadata is not None:
+                self.writestr(self._distinfo_path("METADATA"),
+                              str(self.metadata).encode())
+            if self.wheeldata is not None:
+                self.writestr(self._distinfo_path("WHEEL"),
+                              str(self.wheeldata).encode())
+            self._zip.writestr(self._distinfo_path("RECORD"),
+                               str(self.record).encode())
 
         self._zip.close()
 
