@@ -8,6 +8,13 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 ### Added
+- Nothing yet
+
+### Changed
+- Nothing yet
+
+## [0.0.2] - 2021-01-24
+### Added
 - Read mode (`'r'`) now works.
 - Added `write_data` and `writestr_data` methods to `WheelFile` class. Use
   these methods to write files to `.data/` directory of the wheel.
@@ -33,5 +40,6 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - First working version of the library.
 - It's possible to create wheels from scratch.
 
-[unreleased]: https://github.com/mrmino/wheelfile/compare/v0.0.1...HEAD
+[Unreleased]: https://github.com/mrmino/wheelfile/compare/v0.0.2...HEAD
+[0.0.2]: https://github.com/mrmino/wheelfile/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/mrmino/wheelfile/releases/tags/v0.0.1
