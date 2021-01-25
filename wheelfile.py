@@ -587,12 +587,12 @@ class WheelRecord:
         return buf.getvalue()
 
     @classmethod
-    def from_str(self, s) -> 'WheelRecord':
+    def from_str(cls, s) -> 'WheelRecord':
         record = WheelRecord()
         buf = io.StringIO(s)
-        reader = csv.DictReader(buf, self._RecordEntry._fields)
+        reader = csv.DictReader(buf, cls._RecordEntry._fields)
         for row in reader:
-            entry = self._RecordEntry(**row)
+            entry = cls._RecordEntry(**row)
             record._records[entry.path] = entry
         return record
 
