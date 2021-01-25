@@ -542,6 +542,7 @@ class WheelData:
             return NotImplemented
 
 
+# TODO: add_entry method, that raises if entry for a path already exists
 # TODO: leave out hashes of *.pyc files?
 class WheelRecord:
     """Contains logic for creation and modification of RECORD files.
