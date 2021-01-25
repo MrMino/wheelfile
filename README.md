@@ -3,15 +3,14 @@
 <table style="border: none">
 <tr style="border: none">
 <td style="border: none">
-<h1 style='border-bottom-style: none' align="center"> Wheelfile
-🔪🧀</h1>
+<h1 style='border-bottom-style: none' align="center"> Wheelfile 🔪🧀</h1>
 
 This library aims to make it dead simple to create a format-compliant [.whl
 file (wheel)](https://pythonwheels.com/). It aims to provide an API comparable
 to [zipfile](https://docs.python.org/3/library/zipfile.html). Use this if you
 wish to inspect or create wheels in your code.
 
-For a quick look, see example on the right, which packages wheelfile
+For a quick look, see the example on the right, which packages the wheelfile
 module itself into a wheel 🤸.
 
 #### What's the difference between this and [wheel](https://pypi.org/project/wheel/)?
@@ -29,6 +28,11 @@ in the initial implementation.
 
 </td>
 <td style="border: none">
+
+<br/>
+<img src="https://img.shields.io/pypi/v/wheelfile?style=for-the-badge"/>
+<br/>
+<br/>
 
 ```
 pip install wheelfile
@@ -52,6 +56,9 @@ with WheelFile(mode='w', **spec) as wf:
 
 # 🧀
 ```
+
+<br/>
+<br/>
 
 </td>
 </tr>
