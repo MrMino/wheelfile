@@ -30,7 +30,11 @@ in the initial implementation.
 <td style="border: none">
 
 <br/>
+
+<a href="https://pypi.org/project/wheelfile/#history">
 <img src="https://img.shields.io/pypi/v/wheelfile?style=for-the-badge"/>
+</a>
+
 <br/>
 <br/>
 
