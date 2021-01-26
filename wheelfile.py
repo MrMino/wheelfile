@@ -556,7 +556,7 @@ class WheelRecord:
     HASH_ALGO = hashlib.sha256
     HASH_BUF_SIZE = 65536
 
-    _RecordEntry = namedtuple('Record', 'path hash size')
+    _RecordEntry = namedtuple('_RecordEntry', 'path hash size')
 
     def __init__(self):
         self._records: Dict[str, self._RecordEntry] = {}
