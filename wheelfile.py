@@ -1310,11 +1310,26 @@ class WheelFile:
         return f"{self._distinfo_prefix}{kind}/{filename}"
 
     # TODO: lazy mode - do not write anything in lazy mode
-    # TODO: docstring
-    # TODO: use validate()
+    # TODO: use validate(), add possible raised exceptions to the docstring
     # TODO: ensure there are no writing handles open in zipfile before writing
     # meta
     def close(self) -> None:
+        """Finalize and close the file.
+
+        Writes the rest of the necessary data to the archive, performs one last
+        validation of the contents (unless the file is open in lazy mode), and
+        closes the file.
+
+        There must not be any handles left open for the zip contents, i.e. all
+        objects returned by `open()` or `.zip.open()` must be closed before
+        calling this subroutine.
+
+        Raises
+        ------
+        RuntimeError
+            If there are unclosed content handles.
+        """
+
         if self.closed:
             return
 
