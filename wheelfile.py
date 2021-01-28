@@ -1391,10 +1391,24 @@ class WheelFile:
         self.refresh_record(arcname)
 
     # TODO: compression args?
-    # TODO: docstring
     def writestr(self,
                  zinfo_or_arcname: Union[ZipInfo, str],
                  data: Union[bytes, str]) -> None:
+        """Write given data into the wheel under the given path.
+
+        Updates the wheel record, if the record is being kept.
+
+        Parameters
+        ----------
+        zinfo_or_arcname
+            Specifies the path in the archive under which the data will be
+            stored.
+
+        data
+            The data that will be writen into the archive. If it's a string, it
+            is encoded as UTF-8 first.
+        """
+
         # XXX: ZipFile.writestr() does not normalize arcpaths the same way
         #      ZipFile.write() does, and so this method won't do that either
 
