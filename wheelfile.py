@@ -1364,10 +1364,23 @@ class WheelFile:
         return self._zip.fp is None
 
     # TODO: compression args?
-    # TODO: docstring
     def write(self,
               filename: Union[str, Path],
               arcname: Optional[str] = None) -> None:
+        """Add the file to the wheel.
+
+        Updates the wheel record, if the record is being kept.
+
+        Parameters
+        ----------
+        filename
+            Path to the file to add.
+
+        arcname
+            Path in the archive to assign the file into. If not given,
+            `filename` will be used instead. In both cases, the leading path
+            separators and the drive letter (if any) will be removed.
+        """
         self._zip.write(filename, arcname=arcname)
 
         # The arcname given to write may not be the same as the arcname
