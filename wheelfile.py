@@ -1422,9 +1422,31 @@ class WheelFile:
         self.refresh_record(arcname)
 
     # TODO: compression args?
-    # TODO: docstring
     def write_data(self, filename: Union[str, Path],
                    section: str, arcname: Optional[str] = None) -> None:
+        """Write a file to the .data directory under a specified section.
+
+        This method is a handy shortcut for writing into
+        `<dist>-<version>.data/`, such that you dont have to generate the path
+        yourself.
+
+        Updates the wheel record, if the record is being kept.
+
+        Parameters
+        ----------
+        filename
+            Path to the file to add.
+
+        section
+            Name of the section, i.e. the directory inside `.data/` that the
+            file should be put into. Sections have special meaning, see PEP-427.
+            Cannot contain any slashes, nor be empty.
+
+        arcname
+            Path in the archive to assign the file into, relative to the
+            directory of the specified data section. If left empty, filename is
+            used. Leading slashes are stripped.
+        """
         self._check_section(section)
 
         if isinstance(filename, str):
