@@ -650,6 +650,7 @@ class UnnamedDistributionError(BadWheelFileError):
 
 
 # TODO: write_distinfo and read_distinfo
+# TODO: read_data?
 # TODO: prevent arbitrary writes to METADATA, WHEEL, and RECORD - or make sure
 # the writes are reflected internally
 # TODO: prevent adding .dist-info directories if there's one already there
@@ -1422,6 +1423,8 @@ class WheelFile:
         self.refresh_record(arcname)
 
     # TODO: compression args?
+    # TODO: write letter should be stripped from the arcname the same way
+    # ZipInfo.from_file does it
     def write_data(self, filename: Union[str, Path],
                    section: str, arcname: Optional[str] = None) -> None:
         """Write a file to the .data directory under a specified section.
