@@ -1463,10 +1463,33 @@ class WheelFile:
         self.write(filename, arcname)
 
     # TODO: compression args?
-    # TODO: docstring
     def writestr_data(self, section: str,
                       zinfo_or_arcname: Union[ZipInfo, str],
                       data: Union[bytes, str]) -> None:
+        """Write given data to the .data directory under a specified section.
+
+        This method is a handy shortcut for writing into
+        `<dist>-<version>.data/`, such that you dont have to generate the path
+        yourself.
+
+        Updates the wheel record, if the record is being kept.
+
+        Parameters
+        ----------
+        section
+            Name of the section, i.e. the directory inside `.data/` that the
+            file should be put into. Sections have special meaning, see PEP-427.
+            Cannot contain any slashes, nor be empty.
+
+        zinfo_or_arcname
+            Specifies the path in the archive under which the data will be
+            stored. This is relative to the path of the section directory.
+            Leading slashes are stripped.
+
+        data
+            The data that will be writen into the archive. If it's a string, it
+            is encoded as UTF-8 first.
+        """
         self._check_section(section)
 
         arcname = (
