@@ -1423,7 +1423,7 @@ class WheelFile:
         self.refresh_record(arcname)
 
     # TODO: compression args?
-    # TODO: write letter should be stripped from the arcname the same way
+    # TODO: drive letter should be stripped from the arcname the same way
     # ZipInfo.from_file does it
     def write_data(self, filename: Union[str, Path],
                    section: str, arcname: Optional[str] = None) -> None:
@@ -1463,6 +1463,8 @@ class WheelFile:
         self.write(filename, arcname)
 
     # TODO: compression args?
+    # TODO: drive letter should be stripped from the arcname the same way
+    # ZipInfo.from_file does it
     def writestr_data(self, section: str,
                       zinfo_or_arcname: Union[ZipInfo, str],
                       data: Union[bytes, str]) -> None:
