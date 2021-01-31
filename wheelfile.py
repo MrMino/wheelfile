@@ -1262,7 +1262,7 @@ class WheelFile:
     # list of error & lint objects, that have facilities to check a WheelFile
     # object and fix it.
     def lint(self):
-        raise NotImplementedError
+        raise NotImplementedError()
 
     # TODO: fix everything we can without guessing
     # TODO: provide sensible defaults
@@ -1270,7 +1270,7 @@ class WheelFile:
     # TODO: base the fixes on the return value of lint()?
     def fix(self) -> str:
         # Requires rewrite feature
-        raise NotImplementedError
+        raise NotImplementedError()
 
     # TODO: ensure RECORD is correct, if it exists
     # TODO: for the first wrong record found, return its arcpath
