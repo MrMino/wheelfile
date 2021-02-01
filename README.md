@@ -34,6 +34,9 @@ in the initial implementation.
 <a href="https://pypi.org/project/wheelfile/#history">
 <img src="https://img.shields.io/pypi/v/wheelfile?style=for-the-badge"/>
 </a>
+<a href="https://wheelfile.readthedocs.io/en/latest/">
+<img src="https://readthedocs.org/projects/wheelfile/badge/?version=latest&style=for-the-badge"/>
+</a>
 
 <br/>
 <br/>
