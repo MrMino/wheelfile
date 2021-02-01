@@ -7,4 +7,3 @@ mypy
 
 # Documentation
 sphinx
-furo
