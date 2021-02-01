@@ -1,4 +1,10 @@
 -r requirements.txt
+
+# Tests
 pre-commit
 pytest
 mypy
+
+# Documentation
+sphinx
+furo
