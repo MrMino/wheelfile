@@ -667,7 +667,7 @@ class UnnamedDistributionError(BadWheelFileError):
 class WheelFile:
     """An archive that follows the wheel specification.
 
-    Used to read, create, validate, or modify *.whl files.
+    Used to read, create, validate, or modify `.whl` files.
 
     Can be used as a context manager, in which case `close()` is called upon
     exiting the context.
