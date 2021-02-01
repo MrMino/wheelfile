@@ -1,3 +1,6 @@
+# Documentation
+docs-out
+
 # Built packages
 *.tar.gz
 *.whl
