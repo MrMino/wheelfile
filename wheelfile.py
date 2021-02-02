@@ -790,13 +790,14 @@ class WheelFile:
         stored in a read-only property of the same name.
 
         If lazy mode is not specified:
+
             - In read and append modes, the file is validated using validate().
-            Contents of metadata files inside .dist-info directory are read and
-            converted into their respective object representations (see
-            "metadata", "wheeldata", and "record" attributes).
+              Contents of metadata files inside .dist-info directory are read
+              and converted into their respective object representations (see
+              "metadata", "wheeldata", and "record" attributes).
             - In write and exclusive-write modes, object representations for
-            each metadata file are created from scratch. They will be written
-            to each of their respective .dist-info/ files on close().
+              each metadata file are created from scratch. They will be written
+              to each of their respective .dist-info/ files on close().
 
         To skip the validation, e.g. if you wish to fix a misformated wheel,
         use lazy mode ('l' - see description of the "mode" parameter).
@@ -823,16 +824,17 @@ class WheelFile:
 
         There are currently 2 classes of errors which completely prevent a well
         formatted zip file from being read by this class:
+
             - Unknown/incorrect distribution name/version - when the naming
-            scheme is violated in a way that prevents inferring these values
-            and the user hasn't provided these values, or provided ones that
-            do not conform to the specifications. In such case, the scope of
-            functioning features of this class would be limited to that of a
-            standard ZipFile, and is therefore unsupported.
+              scheme is violated in a way that prevents inferring these values
+              and the user hasn't provided these values, or provided ones that
+              do not conform to the specifications. In such case, the scope of
+              functioning features of this class would be limited to that of a
+              standard ZipFile, and is therefore unsupported.
             - When there are multiple .data or .dist-info directories. This
-            would mean that the class would have to guess which are the genuine
-            ones - and we refuse the temptation to do that (see "The Zen of
-            Python").
+              would mean that the class would have to guess which are the
+              genuine ones - and we refuse the temptation to do that (see "The
+              Zen of Python").
 
         In other words, this class is liberal in what it accepts, but very
         conservative in what it does (A.K.A. the robustness principle).
