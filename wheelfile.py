@@ -1,3 +1,20 @@
+"""API for handling ".whl" files.
+
+Use :class:`WheelFile` to create or read a wheel.
+
+Managing metadata is done via `metadata`, `wheeldata`, and `record` attributes.
+See :class:`MetaData`, :class:`WheelData`, and :class:`WheelRecord` for
+documentation on the objects returned by these attributes.
+
+Example
+-------
+Here's how to create a simple package under a specific directory path::
+
+    with WheelFile('path/to/directory/', mode='w'
+                   distname="mywheel", version="1") as wf:
+        wf.write('path/to/a/module.py', arcname="mywheel.py")
+"""
+
 # We do not target python2.
 # Which python3 versions should we target? 3.6+ seems like a good idea.
 import csv
