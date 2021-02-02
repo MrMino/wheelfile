@@ -4,7 +4,7 @@ Use :class:`WheelFile` to create or read a wheel.
 
 Managing metadata is done via `metadata`, `wheeldata`, and `record` attributes.
 See :class:`MetaData`, :class:`WheelData`, and :class:`WheelRecord` for
-documentation on the objects returned by these attributes.
+documentation of the objects returned by these attributes.
 
 Example
 -------
