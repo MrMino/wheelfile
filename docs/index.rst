@@ -3,6 +3,13 @@ wheelfile
 
 .. automodule:: wheelfile
 
+Installation
+------------
+
+To be able to use the module, you have to install it first via pip::
+
+    pip install wheelfile
+
 Main class
 ----------
 .. autoclass:: WheelFile
