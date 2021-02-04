@@ -6,7 +6,7 @@ wheelfile
 Installation
 ------------
 
-To be able to use the module, you have to install it first via pip::
+To be able to use the module, you have to install it first::
 
     pip install wheelfile
 
