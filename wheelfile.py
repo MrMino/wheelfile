@@ -29,6 +29,7 @@ from packaging.tags import parse_tag
 from packaging.utils import canonicalize_name
 from packaging.version import Version, InvalidVersion
 from email.message import EmailMessage
+from email.policy import EmailPolicy
 from email import message_from_string
 from zipfile import ZipFile, ZipInfo
 
@@ -380,7 +381,7 @@ class MetaData:
         return field_name.lower().replace('-', '_')
 
     def __str__(self) -> str:
-        m = EmailMessage()
+        m = EmailMessage(EmailPolicy(max_line_length=None))
         m.add_header("Metadata-Version", self.metadata_version)
         for attr_name in self.__slots__:
             content = getattr(self, attr_name)
