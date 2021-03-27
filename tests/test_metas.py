@@ -1,7 +1,8 @@
 import pytest
 
 from wheelfile import (__version__ as lib_version,
-                       WheelData, MetaData, WheelRecord)
+                       WheelData, MetaData, WheelRecord,
+                       UnsupportedHashTypeError)
 from packaging.version import Version
 from textwrap import dedent
 from io import BytesIO
@@ -298,8 +299,7 @@ class TestWheelRecord:
 
     def test_after_adding_a_file_its_hash_is_available(self, record):
         buf = BytesIO(bytes(1000))
-        expected_hash = ('sha256=541b3e9daa09b20bf85fa273e5cbd'
-                         '3e80185aa4ec298e765db87742b70138a53')
+        expected_hash = 'sha256=VBs-naoJsgv4X6Jz5cvT6AGFqk7CmOdl24d0K3ATilM'
         record.update('file', buf)
         assert record.hash_of('file') == expected_hash
 
@@ -309,8 +309,7 @@ class TestWheelRecord:
     def test_stringifies_to_proper_format(self, record):
         size = 1000
         buf = BytesIO(bytes(size))
-        expected_hash = ('sha256=541b3e9daa09b20bf85fa273e5cbd'
-                         '3e80185aa4ec298e765db87742b70138a53')
+        expected_hash = 'sha256=VBs-naoJsgv4X6Jz5cvT6AGFqk7CmOdl24d0K3ATilM'
         record.update('file', buf)
         buf.seek(0)
         record.update('another/file', buf)
@@ -354,3 +353,12 @@ class TestWheelRecord:
         wr = WheelRecord()
         wr.update('some/particular/path', BytesIO(bytes(1)))
         assert 'some/particular/path' in wr
+
+    def test_throws_with_unknown_hash(self):
+        with pytest.raises(UnsupportedHashTypeError):
+            WheelRecord(hash_algo='frobnots')
+
+    @pytest.mark.parametrize("hash_algo", ('md5', 'sha1'))
+    def test_throw_with_bad_hash(self, hash_algo):
+        with pytest.raises(UnsupportedHashTypeError):
+            WheelRecord(hash_algo=hash_algo)
