@@ -11,7 +11,8 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - Nothing yet
 
 ### Changed
-- Nothing yet
+- Fixed an issue breaking causing long METADATA lines to be broken into
+  multiple shorter lines
 
 ## [0.0.2] - 2021-01-24
 ### Added
