@@ -18,7 +18,7 @@ with WheelFile(mode='w', **spec) as wf:
     wf.metadata.description = Path('./README.md').read_text()
     wf.metadata.description_content_type = 'text/markdown'
 
-    wf.metadata.keywords = 'wheel packages packaging pip build distutils'
+    wf.metadata.keywords = 'wheel,packaging,pip,build,distutils'
     wf.metadata.classifiers = [
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
