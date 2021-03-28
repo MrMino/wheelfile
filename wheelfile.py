@@ -576,8 +576,8 @@ class WheelRecord:
 
     _RecordEntry = namedtuple('_RecordEntry', 'path hash size')
 
-    def __init__(self, hash_algo: str='sha256'):
-        self._records: Dict[str, self._RecordEntry] = {}
+    def __init__(self, hash_algo: str = 'sha256'):
+        self._records: Dict[str, WheelRecord._RecordEntry] = {}
         self._hash_algo = ""
         self.hash_algo = hash_algo
 
@@ -590,7 +590,9 @@ class WheelRecord:
     def hash_algo(self, value: str):
         # per PEP-376
         if value not in hashlib.algorithms_guaranteed:
-            raise UnsupportedHashTypeError(f"{value} is not a valid record hash")
+            raise UnsupportedHashTypeError(
+                f"{value} is not a valid record hash"
+            )
         # per PEP 427
         if value in ('md5', 'sha1'):
             raise UnsupportedHashTypeError(f"{value} is a forbidden hash type")
@@ -682,7 +684,6 @@ class WheelRecord:
         (base64.urlsafe_b64encode(digest) with trailing = removed).
         """
         return base64.urlsafe_b64encode(data).rstrip(b"=").decode('ascii')
-        
 
     def __eq__(self, other):
         if isinstance(other, WheelRecord):
@@ -693,8 +694,10 @@ class WheelRecord:
     def __contains__(self, path):
         return path in self._records
 
+
 class UnsupportedHashTypeError(ValueError):
     """The given hash name is not allowed by the spec."""
+
 
 class BadWheelFileError(ValueError):
     """The given file cannot be interpreted as a wheel nor fixed."""
