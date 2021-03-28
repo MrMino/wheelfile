@@ -13,6 +13,8 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 - Fixed an issue breaking causing long METADATA lines to be broken into
   multiple shorter lines
+- Fixed the production of RECORD files to encode file hashes with base64
+  per PEP 376
 
 ## [0.0.2] - 2021-01-24
 ### Added

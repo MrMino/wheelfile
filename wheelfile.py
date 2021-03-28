@@ -20,6 +20,7 @@ Here's how to create a simple package under a specific directory path::
 import csv
 import io
 import hashlib
+import base64
 
 from string import ascii_letters, digits
 from pathlib import Path
@@ -571,13 +572,34 @@ class WheelRecord:
     "The .dist-info directory" section of PEP-427, and
     https://packaging.python.org/specifications/recording-installed-packages/.
     """
-    HASH_ALGO = hashlib.sha256
     HASH_BUF_SIZE = 65536
 
     _RecordEntry = namedtuple('_RecordEntry', 'path hash size')
 
-    def __init__(self):
+    def __init__(self, hash_algo: str='sha256'):
         self._records: Dict[str, self._RecordEntry] = {}
+        self._hash_algo = ""
+        self.hash_algo = hash_algo
+
+    @property
+    def hash_algo(self) -> str:
+        """Hash algorithm to use to generate RECORD file entries"""
+        return self._hash_algo
+
+    @hash_algo.setter
+    def hash_algo(self, value: str):
+        # per PEP-376
+        if value not in hashlib.algorithms_guaranteed:
+            raise UnsupportedHashTypeError(f"{value} is not a valid record hash")
+        # per PEP 427
+        if value in ('md5', 'sha1'):
+            raise UnsupportedHashTypeError(f"{value} is a forbidden hash type")
+
+        # PEP-427 says the RECORD hash must be sha256 or better.  Does that mean
+        # hashes such as sha224 are forbidden as well though not specifically
+        # called out?
+
+        self._hash_algo = value
 
     def hash_of(self, arcpath) -> str:
         """Return the hash of a file in the archive this RECORD describes
@@ -591,10 +613,10 @@ class WheelRecord:
         Returns
         -------
         str
-            String in the form <algorithm>=<hexstr>, where algorithm is the
+            String in the form <algorithm>=<base64_str>, where algorithm is the
             name of the hashing agorithm used to generate the hash (see
-            HASH_ALGO), and hexstr is a string containing a hexified version of
-            the hash.
+            hash_algo), and base64_str is a string containing a base64 encoded
+            version of the hash with any trailing '=' removed.
         """
         return self._records[arcpath].hash
 
@@ -636,18 +658,31 @@ class WheelRecord:
     def remove(self, arcpath: str):
         del self._records[arcpath]
 
-    @classmethod
-    def _entry(cls, arcpath: str, buf: IO[bytes]) -> _RecordEntry:
+    def _entry(self, arcpath: str, buf: IO[bytes]) -> _RecordEntry:
         size = 0
-        hasher = cls.HASH_ALGO()
+        hasher = getattr(hashlib, self.hash_algo)()
         while True:
-            data = buf.read(cls.HASH_BUF_SIZE)
+            data = buf.read(self.HASH_BUF_SIZE)
             size += len(data)
             if not data:
                 break
             hasher.update(data)
-        hash_hex = hasher.name + '=' + hasher.hexdigest()
-        return cls._RecordEntry(arcpath, hash_hex, size)
+        hash_entry = f"{hasher.name}={self._hash_encoder(hasher.digest())}"
+        return self._RecordEntry(arcpath, hash_entry, size)
+
+    @staticmethod
+    def _hash_encoder(data: bytes) -> str:
+        """
+        Encode a file hash per PEP 376 spec
+
+        From the spec:
+        The hash is either the empty string or the hash algorithm as named in
+        hashlib.algorithms_guaranteed, followed by the equals character =,
+        followed by the urlsafe-base64-nopad encoding of the digest
+        (base64.urlsafe_b64encode(digest) with trailing = removed).
+        """
+        return base64.urlsafe_b64encode(data).rstrip(b"=").decode('ascii')
+        
 
     def __eq__(self, other):
         if isinstance(other, WheelRecord):
@@ -658,6 +693,8 @@ class WheelRecord:
     def __contains__(self, path):
         return path in self._records
 
+class UnsupportedHashTypeError(ValueError):
+    """The given hash name is not allowed by the spec."""
 
 class BadWheelFileError(ValueError):
     """The given file cannot be interpreted as a wheel nor fixed."""
