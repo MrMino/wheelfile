@@ -11,6 +11,14 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - Nothing yet
 
 ### Changed
+- Nothing yet
+
+## [0.0.3] - 2021-03-28
+
+Big thanks to [e2thenegpii](https://github.com/e2thenegpii) for their
+contributions - both of the fixes below came from them.
+
+### Changed
 - Fixed an issue breaking causing long METADATA lines to be broken into
   multiple shorter lines
 - Fixed the production of RECORD files to encode file hashes with base64
@@ -43,6 +51,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - First working version of the library.
 - It's possible to create wheels from scratch.
 
-[Unreleased]: https://github.com/mrmino/wheelfile/compare/v0.0.2...HEAD
+[Unreleased]: https://github.com/mrmino/wheelfile/compare/v0.0.3...HEAD
+[0.0.3]: https://github.com/mrmino/wheelfile/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/mrmino/wheelfile/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/mrmino/wheelfile/releases/tags/v0.0.1

@@ -36,7 +36,7 @@ from zipfile import ZipFile, ZipInfo
 
 from typing import Optional, Union, List, Dict, IO, BinaryIO
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 
 # TODO: idea: Corrupted class: denotes that something is present, but could not
