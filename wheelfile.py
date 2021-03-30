@@ -1435,7 +1435,8 @@ class WheelFile:
     # TODO: compression args?
     def write(self,
               filename: Union[str, Path],
-              arcname: Optional[str] = None) -> None:
+              arcname: Optional[str] = None,
+              recursive: bool = False) -> None:
         """Add the file to the wheel.
 
         Updates the wheel record, if the record is being kept.

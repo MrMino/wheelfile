@@ -487,3 +487,8 @@ class TestWheelFileDistDataWrite:
 
     def test_mode_is_written_to_mode_attribute(self, wf):
         assert wf.mode == 'w'
+
+
+class TestWheelFileRecursiveWrite:
+    def test_write_has_recursive_arg(self, wf, tmp_path):
+        wf.write(tmp_path, recursive=True)
