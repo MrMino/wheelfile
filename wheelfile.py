@@ -1436,7 +1436,7 @@ class WheelFile:
     def write(self,
               filename: Union[str, Path],
               arcname: Optional[str] = None,
-              recursive: bool = False) -> None:
+              recursive: bool = True) -> None:
         """Add the file to the wheel.
 
         Updates the wheel record, if the record is being kept.
