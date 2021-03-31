@@ -492,3 +492,6 @@ class TestWheelFileDistDataWrite:
 class TestWheelFileRecursiveWrite:
     def test_write_has_recursive_arg(self, wf, tmp_path):
         wf.write(tmp_path, recursive=True)
+
+    def test_recursive_write_does_not_break_on_files(self, wf, tmp_file):
+        wf.write(tmp_file, recursive=True)
