@@ -1447,9 +1447,9 @@ class WheelFile:
             Path to the file or directory to add.
 
         arcname
-            Path in the archive to assign the file into. If not given,
-            `filename` will be used instead. In both cases, the leading path
-            separators and the drive letter (if any) will be removed.
+            Path in the archive to assign the file/directory into. If not
+            given, `filename` will be used instead. In both cases, the leading
+            path separators and the drive letter (if any) will be removed.
 
         recursive
             When True, if given path leads to a directory, all of its contents
@@ -1524,9 +1524,9 @@ class WheelFile:
             Cannot contain any slashes, nor be empty.
 
         arcname
-            Path in the archive to assign the file into, relative to the
-            directory of the specified data section. If left empty, filename is
-            used. Leading slashes are stripped.
+            Path in the archive to assign the file/directory into, relative to
+            the directory of the specified data section. If left empty,
+            filename is used. Leading slashes are stripped.
 
         recursive
             When True, if given path leads to a directory, all of its contents
