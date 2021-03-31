@@ -1503,7 +1503,8 @@ class WheelFile:
     # TODO: drive letter should be stripped from the arcname the same way
     # ZipInfo.from_file does it
     def write_data(self, filename: Union[str, Path],
-                   section: str, arcname: Optional[str] = None) -> None:
+                   section: str, arcname: Optional[str] = None,
+                   recursive: bool = True) -> None:
         """Write a file to the .data directory under a specified section.
 
         This method is a handy shortcut for writing into

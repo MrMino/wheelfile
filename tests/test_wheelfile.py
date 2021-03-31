@@ -495,3 +495,9 @@ class TestWheelFileRecursiveWrite:
 
     def test_recursive_write_does_not_break_on_files(self, wf, tmp_file):
         wf.write(tmp_file, recursive=True)
+
+    def test_write_data_has_recursive_arg(self, wf, tmp_path):
+        wf.write_data(tmp_path, 'section', recursive=True)
+
+    def test_recursive_write_data_does_not_break_on_files(self, wf, tmp_file):
+        wf.write_data(tmp_file, 'section', recursive=True)
