@@ -1433,6 +1433,7 @@ class WheelFile:
         return self._zip.fp is None
 
     # TODO: compression args?
+    # TODO: symlinks?
     def write(self,
               filename: Union[str, Path],
               arcname: Optional[str] = None,
@@ -1501,6 +1502,7 @@ class WheelFile:
 
     # TODO: compression args?
     # TODO: drive letter should be stripped from the arcname the same way
+    # TODO: symlinks?
     # ZipInfo.from_file does it
     def write_data(self, filename: Union[str, Path],
                    section: str, arcname: Optional[str] = None,
