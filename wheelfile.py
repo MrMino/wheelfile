@@ -19,6 +19,7 @@ Here's how to create a simple package under a specific directory path::
 # Which python3 versions should we target? 3.6+ seems like a good idea.
 import csv
 import io
+import sys
 import hashlib
 import base64
 
@@ -32,7 +33,11 @@ from packaging.version import Version, InvalidVersion
 from email.message import EmailMessage
 from email.policy import EmailPolicy
 from email import message_from_string
-from zipfile import ZipFile, ZipInfo
+
+if sys.version_info >= (3,8):
+    from zipfile import ZipFile, ZipInfo
+else:
+    from zipfile38 import ZipFile, ZipInfo
 
 from typing import Optional, Union, List, Dict, IO, BinaryIO
 
