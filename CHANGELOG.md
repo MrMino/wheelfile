@@ -11,7 +11,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - Nothing yet
 
 ### Changed
-- Nothing yet
+- Backported support to python 3.6
 
 ## [0.0.3] - 2021-03-28
 

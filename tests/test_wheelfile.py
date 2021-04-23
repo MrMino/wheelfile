@@ -1,13 +1,18 @@
 import pytest
 
 import os
+import sys
 
 from functools import partial
 from wheelfile import WheelFile, UnnamedDistributionError, BadWheelFileError
 from io import BytesIO
 from packaging.version import Version
 from pathlib import Path
-from zipfile import ZipFile, Path as ZipPath, ZipInfo
+
+if sys.version_info >= (3,8):
+    from zipfile import ZipFile, ZipInfo, Path as ZipPath
+else:
+    from zipfile38 import ZipFile, ZipInfo, Path as ZipPath
 
 
 def test_UnnamedDistributionError_is_BadWheelFileError():
