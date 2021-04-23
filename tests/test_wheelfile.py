@@ -9,7 +9,7 @@ from io import BytesIO
 from packaging.version import Version
 from pathlib import Path
 
-if sys.version_info >= (3,8):
+if sys.version_info >= (3, 8):
     from zipfile import ZipFile, ZipInfo, Path as ZipPath
 else:
     from zipfile38 import ZipFile, ZipInfo, Path as ZipPath

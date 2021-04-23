@@ -34,7 +34,7 @@ from email.message import EmailMessage
 from email.policy import EmailPolicy
 from email import message_from_string
 
-if sys.version_info >= (3,8):
+if sys.version_info >= (3, 8):
     from zipfile import ZipFile, ZipInfo
 else:
     from zipfile38 import ZipFile, ZipInfo

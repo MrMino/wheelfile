@@ -5,7 +5,7 @@ import sys
 from io import BytesIO
 from wheelfile import WheelFile
 
-if sys.version_info >= (3,8):
+if sys.version_info >= (3, 8):
     from zipfile import ZipFile, Path as ZipPath
 else:
     from zipfile38 import ZipFile, Path as ZipPath
