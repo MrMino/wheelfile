@@ -1437,7 +1437,7 @@ class WheelFile:
     def write(self,
               filename: Union[str, Path],
               arcname: Optional[str] = None,
-              recursive: bool = True) -> None:
+              *, recursive: bool = True) -> None:
         """Add the file to the wheel.
 
         Updates the wheel record, if the record is being kept.
@@ -1453,9 +1453,9 @@ class WheelFile:
             path separators and the drive letter (if any) will be removed.
 
         recursive
-            When True, if given path leads to a directory, all of its contents
-            are going to be added into the archive, including contents of its
-            subdirectories.
+            Keyword only. When True, if given path leads to a directory, all of
+            its contents are going to be added into the archive, including
+            contents of its subdirectories.
 
             If its False, only a directory entry is going to be added, without
             any of tis contents.
@@ -1506,7 +1506,7 @@ class WheelFile:
     # ZipInfo.from_file does it
     def write_data(self, filename: Union[str, Path],
                    section: str, arcname: Optional[str] = None,
-                   recursive: bool = True) -> None:
+                   *, recursive: bool = True) -> None:
         """Write a file to the .data directory under a specified section.
 
         This method is a handy shortcut for writing into
@@ -1531,9 +1531,9 @@ class WheelFile:
             filename is used. Leading slashes are stripped.
 
         recursive
-            When True, if given path leads to a directory, all of its contents
-            are going to be added into the archive, including contents of its
-            subdirectories.
+            Keyword only. When True, if given path leads to a directory, all of
+            its contents are going to be added into the archive, including
+            contents of its subdirectories.
 
             If its False, only a directory entry is going to be added, without
             any of tis contents.
