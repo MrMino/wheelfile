@@ -1465,7 +1465,7 @@ class WheelFile:
 
         # The arcname given to write may not be the same as the arcname
         # actually used by ZipFile, and for RECORD we need the latter
-        # FIXME: this means that ZipInfo.from_file is called twice
+        # FIXME: this means that ZipInfo.from_file is called twice, wastefully
         arcname = ZipInfo.from_file(filename, arcname).filename
 
         self.refresh_record(arcname)
