@@ -501,3 +501,47 @@ class TestWheelFileRecursiveWrite:
 
     def test_recursive_write_data_does_not_break_on_files(self, wf, tmp_file):
         wf.write_data(tmp_file, 'section', recursive=True)
+
+    @pytest.fixture
+    def path_tree(self, tmp_path):
+        """The directory tree root is the first item in the list."""
+        d = tmp_path
+        tree = [
+            d / 'file',
+            d / 'empty_dir' / '',
+
+            d / 'dir_a' / '',
+            d / 'dir_a' / 'subdir_a',
+            d / 'dir_a' / 'subdir_a' / '1_file',
+            d / 'dir_a' / 'subdir_a' / '2_file',
+
+            d / 'dir_b',
+            d / 'dir_b' / 'subdir_b_1' / '',
+            d / 'dir_b' / 'subdir_b_1' / 'file',
+            d / 'dir_b' / 'subdir_b_2' / '',
+            d / 'dir_b' / 'subdir_b_2' / 'file',
+        ]
+
+        for path in tree:
+            if path.stem.endswith('file'):
+                path.write_text('contents')
+            else:
+                path.mkdir()
+
+        tree = [d] + tree
+
+        return [str(p) + '/' if p.is_dir() else str(p) for p in tree]
+
+    def test_write_recursive_writes_all_files_in_the_tree(self, wf, path_tree):
+        directory = path_tree[0]
+        wf.write(directory, recursive=True)
+        expected_tree = [pth.lstrip('/') for pth in path_tree]
+        assert set(wf.zipfile.namelist()) == set(expected_tree)
+
+    def test_write_recursive_writes_with_proper_arcname(self, wf, path_tree):
+        directory = path_tree[0]
+        custom_arcname = "something/different"
+        wf.write(directory, arcname=custom_arcname, recursive=True)
+        assert all(
+            path.startswith(custom_arcname) for path in wf.zipfile.namelist()
+        )
