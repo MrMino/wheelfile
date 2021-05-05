@@ -1473,8 +1473,12 @@ class WheelFile:
             common_root = str(filename)
             root_arcname = arcname
             for root, dirs, files in os.walk(filename):
+                # For reproducibility, sort directories, so that os.walk
+                # traverses them in a defined order.
+                dirs.sort()
+
                 dirs = [d + '/' for d in dirs]
-                for name in dirs + files:
+                for name in sorted(dirs + files):
                     filepath = os.path.join(root, name)
                     arcpath = self._os_walk_path_to_arcpath(
                         common_root, root, name, root_arcname
