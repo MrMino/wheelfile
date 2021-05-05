@@ -1490,6 +1490,13 @@ class WheelFile:
                                  stem: str, arcname: Optional[str]):
         if arcname is None:
             arcname = prefix
+
+        # Ensure that os.path.join will not get an absolute path after cutting
+        # 'prefix' out of 'directory'.
+        # Otherwise cutting out 'prefix' might've left out leading '/', which
+        # would make os.path.join below ignore 'arcname'.
+        prefix = prefix.rstrip(os.sep) + os.sep
+
         path = os.path.join(arcname, directory[len(prefix):], stem)
         return path
 
