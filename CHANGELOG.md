@@ -14,7 +14,8 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 - `WheelFile.write` and `WheelFile.write_data` are recursive by default.
-- Backported support to python 3.6
+- Backported support to python 3.6 (thanks,
+  [e2thenegpii](https://github.com/e2thenegpii)!)
 
 ## [0.0.3] - 2021-03-28
 
