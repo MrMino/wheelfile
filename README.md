@@ -55,6 +55,7 @@ spec = {
 
 requirements = [
     'packaging ~= 20.8'
+    'zipfile38 ; python_version<"3.8"'
 ]
 
 with WheelFile(mode='w', **spec) as wf:
