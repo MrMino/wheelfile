@@ -17,6 +17,7 @@ Here's how to create a simple package under a specific directory path::
 
 # We do not target python2.
 # Which python3 versions should we target? 3.6+ seems like a good idea.
+import os
 import csv
 import io
 import sys
@@ -1433,9 +1434,11 @@ class WheelFile:
         return self._zip.fp is None
 
     # TODO: compression args?
+    # TODO: symlinks?
     def write(self,
               filename: Union[str, Path],
-              arcname: Optional[str] = None) -> None:
+              arcname: Optional[str] = None,
+              *, recursive: bool = True) -> None:
         """Add the file to the wheel.
 
         Updates the wheel record, if the record is being kept.
@@ -1443,21 +1446,62 @@ class WheelFile:
         Parameters
         ----------
         filename
-            Path to the file to add.
+            Path to the file or directory to add.
 
         arcname
-            Path in the archive to assign the file into. If not given,
-            `filename` will be used instead. In both cases, the leading path
-            separators and the drive letter (if any) will be removed.
+            Path in the archive to assign the file/directory into. If not
+            given, `filename` will be used instead. In both cases, the leading
+            path separators and the drive letter (if any) will be removed.
+
+        recursive
+            Keyword only. When True, if given path leads to a directory, all of
+            its contents are going to be added into the archive, including
+            contents of its subdirectories.
+
+            If its False, only a directory entry is going to be added, without
+            any of tis contents.
         """
         self._zip.write(filename, arcname=arcname)
 
         # The arcname given to write may not be the same as the arcname
         # actually used by ZipFile, and for RECORD we need the latter
-        # FIXME: this means that ZipInfo.from_file is called twice
+        # FIXME: this means that ZipInfo.from_file is called twice, wastefully
         arcname = ZipInfo.from_file(filename, arcname).filename
-
         self.refresh_record(arcname)
+
+        if recursive:
+            common_root = str(filename)
+            root_arcname = arcname
+            for root, dirs, files in os.walk(filename):
+                # For reproducibility, sort directories, so that os.walk
+                # traverses them in a defined order.
+                dirs.sort()
+
+                dirs = [d + '/' for d in dirs]
+                for name in sorted(dirs + files):
+                    filepath = os.path.join(root, name)
+                    arcpath = self._os_walk_path_to_arcpath(
+                        common_root, root, name, root_arcname
+                    )
+                    self._zip.write(filepath, arcname=arcpath)
+
+                    arcname = ZipInfo.from_file(filepath, arcpath).filename
+                    self.refresh_record(arcname)
+
+    @staticmethod
+    def _os_walk_path_to_arcpath(prefix: str, directory: str,
+                                 stem: str, arcname: Optional[str]):
+        if arcname is None:
+            arcname = prefix
+
+        # Ensure that os.path.join will not get an absolute path after cutting
+        # 'prefix' out of 'directory'.
+        # Otherwise cutting out 'prefix' might've left out leading '/', which
+        # would make os.path.join below ignore 'arcname'.
+        prefix = prefix.rstrip(os.sep) + os.sep
+
+        path = os.path.join(arcname, directory[len(prefix):], stem)
+        return path
 
     # TODO: compression args?
     def writestr(self,
@@ -1492,9 +1536,11 @@ class WheelFile:
 
     # TODO: compression args?
     # TODO: drive letter should be stripped from the arcname the same way
+    # TODO: symlinks?
     # ZipInfo.from_file does it
     def write_data(self, filename: Union[str, Path],
-                   section: str, arcname: Optional[str] = None) -> None:
+                   section: str, arcname: Optional[str] = None,
+                   *, recursive: bool = True) -> None:
         """Write a file to the .data directory under a specified section.
 
         This method is a handy shortcut for writing into
@@ -1506,7 +1552,7 @@ class WheelFile:
         Parameters
         ----------
         filename
-            Path to the file to add.
+            Path to the file or directory to add.
 
         section
             Name of the section, i.e. the directory inside `.data/` that the
@@ -1514,9 +1560,17 @@ class WheelFile:
             Cannot contain any slashes, nor be empty.
 
         arcname
-            Path in the archive to assign the file into, relative to the
-            directory of the specified data section. If left empty, filename is
-            used. Leading slashes are stripped.
+            Path in the archive to assign the file/directory into, relative to
+            the directory of the specified data section. If left empty,
+            filename is used. Leading slashes are stripped.
+
+        recursive
+            Keyword only. When True, if given path leads to a directory, all of
+            its contents are going to be added into the archive, including
+            contents of its subdirectories.
+
+            If its False, only a directory entry is going to be added, without
+            any of tis contents.
         """
         self._check_section(section)
 
@@ -1528,7 +1582,7 @@ class WheelFile:
         arcname = self._distinfo_path(section + '/' + arcname.lstrip('/'),
                                       kind='data')
 
-        self.write(filename, arcname)
+        self.write(filename, arcname, recursive=recursive)
 
     # TODO: compression args?
     # TODO: drive letter should be stripped from the arcname the same way
