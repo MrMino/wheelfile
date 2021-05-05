@@ -19,6 +19,8 @@ module itself into a wheel 🤸.
 by setuptools and has its own CLI, but no stable API. The goal of Wheelfile is
 to provide a simple API.
 
+Wheelfile does not depend on Wheel.
+
 ## Ackonwledgements
 
 Thanks to [Paul Moore](https://github.com/pfmoore) for providing
