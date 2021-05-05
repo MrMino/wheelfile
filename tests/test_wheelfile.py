@@ -556,3 +556,13 @@ class TestWheelFileRecursiveWrite:
         expected_tree = [archive_root + pth[len(directory):]
                          for pth in path_tree]
         assert set(wf.zipfile.namelist()) == set(expected_tree)
+
+    def test_write_data_writes_non_recursively_when_asked(self, wf, path_tree):
+        directory = path_tree[0]
+        directory_name = os.path.basename(directory.rstrip('/'))
+        archive_root = '_-0.data/test/' + directory_name + '/'
+
+        wf.write_data(directory, section="test", recursive=False)
+
+        expected_tree = [archive_root]
+        assert wf.zipfile.namelist() == expected_tree

@@ -1579,7 +1579,7 @@ class WheelFile:
         arcname = self._distinfo_path(section + '/' + arcname.lstrip('/'),
                                       kind='data')
 
-        self.write(filename, arcname)
+        self.write(filename, arcname, recursive=recursive)
 
     # TODO: compression args?
     # TODO: drive letter should be stripped from the arcname the same way
