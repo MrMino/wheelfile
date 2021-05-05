@@ -808,7 +808,7 @@ class WheelFile:
         In write and exclusive-write modes, written to the archive on close().
 
     closed : bool
-        True if the underlying `ZipFile` object is open, false otherwise.
+        True if the underlying `ZipFile` object is closed, false otherwise.
     """
     VALID_DISTNAME_CHARS = set(ascii_letters + digits + '._')
 
