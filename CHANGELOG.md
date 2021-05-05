@@ -8,9 +8,12 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 ### Added
-- Nothing yet
+- `WheelFile.write` and `WheelFile.write_data` now accept a `recursive`
+  keyword-only argument, which makes both of them recursively add the whole
+  directory subtree, if the `filename` argument was pointing at one.
 
 ### Changed
+- `WheelFile.write` and `WheelFile.write_data` are recursive by default.
 - Backported support to python 3.6
 
 ## [0.0.3] - 2021-03-28
