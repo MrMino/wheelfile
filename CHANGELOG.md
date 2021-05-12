@@ -10,6 +10,11 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 Nothing yet.
 
+## [0.0.5] - 2021-05-12
+### Fixed
+- Added `ZipInfo38` requirement - v0.0.4 has been released without it by
+  mistake.
+
 ## [0.0.4] - 2021-05-05
 ### Added
 - `WheelFile.write` and `WheelFile.write_data` now accept a `recursive`
@@ -59,7 +64,8 @@ contributions - both of the fixes below came from them.
 - First working version of the library.
 - It's possible to create wheels from scratch.
 
-[Unreleased]: https://github.com/mrmino/wheelfile/compare/v0.0.4...HEAD
+[Unreleased]: https://github.com/mrmino/wheelfile/compare/v0.0.5...HEAD
+[0.0.5]: https://github.com/mrmino/wheelfile/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/mrmino/wheelfile/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/mrmino/wheelfile/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/mrmino/wheelfile/compare/v0.0.1...v0.0.2

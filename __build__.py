@@ -6,9 +6,7 @@ spec = {
     'version': __version__
 }
 
-requirements = [
-    'packaging ~= 20.8'
-]
+requirements = Path('./requirements.txt').read_text().splitlines()
 
 with WheelFile(mode='w', **spec) as wf:
     wf.metadata.requires_dists = requirements
