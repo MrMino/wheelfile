@@ -1452,6 +1452,7 @@ class WheelFile:
 
     # TODO: compression args?
     # TODO: symlinks?
+    # TODO: use shutil.copyfileobj same way ZipFile.write does
     def write(self,
               filename: Union[str, Path],
               arcname: Optional[str] = None,
@@ -1478,13 +1479,7 @@ class WheelFile:
             If its False, only a directory entry is going to be added, without
             any of tis contents.
         """
-        self._zip.write(filename, arcname=arcname)
-
-        # The arcname given to write may not be the same as the arcname
-        # actually used by ZipFile, and for RECORD we need the latter
-        # FIXME: this means that ZipInfo.from_file is called twice, wastefully
-        arcname = ZipInfo.from_file(filename, arcname).filename
-        self.refresh_record(arcname)
+        self._write_to_zip(filename, arcname)
 
         if recursive:
             common_root = str(filename)
@@ -1500,10 +1495,17 @@ class WheelFile:
                     arcpath = self._os_walk_path_to_arcpath(
                         common_root, root, name, root_arcname
                     )
-                    self._zip.write(filepath, arcname=arcpath)
+                    self._write_to_zip(filepath, arcpath)
 
-                    arcname = ZipInfo.from_file(filepath, arcpath).filename
-                    self.refresh_record(arcname)
+    def _write_to_zip(self, filename, arcname):
+        zinfo = ZipInfo.from_file(filename, arcname)
+        if zinfo.is_dir():
+            data = b''
+        else:
+            with open(filename, 'br') as f:
+                data = f.read()
+        self._zip.writestr(zinfo, data)
+        self.refresh_record(zinfo.filename)
 
     @staticmethod
     def _os_walk_path_to_arcpath(prefix: str, directory: str,
