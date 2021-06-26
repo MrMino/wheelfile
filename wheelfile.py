@@ -1033,7 +1033,8 @@ class WheelFile:
             assert distname is not None and version is not None  # For Mypy
 
             self._distname = distname
-            self._version = Version(str(version))
+            self._version = (version if isinstance(version, Version)
+                             else Version(version))
             self._build_tag = build_tag
             self._language_tag = language_tag or 'py3'
             self._abi_tag = abi_tag or 'none'
@@ -1154,6 +1155,10 @@ class WheelFile:
 
         if isinstance(given_version, str):
             version = given_version
+        elif given_version is not None:
+            raise TypeError(
+                "'version' must be either packaging.Version or a string"
+            )
         else:
             name_segments = filename.split('-')
 

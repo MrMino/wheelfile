@@ -172,6 +172,14 @@ class TestyWheelFileInit:
     def test_wheeldata_tag_defaults_to_py3_none_any(self, wf):
         assert wf.wheeldata.tags == ['py3-none-any']
 
+    def test_can_be_given_version_as_int(self, buf):
+        with pytest.raises(TypeError):
+            WheelFile(buf, mode='w', distname='wheel', version=1)
+
+    def test_given_an_int_version_raises_type_error_on_buf(self, tmp_path):
+        with pytest.raises(TypeError):
+            WheelFile(tmp_path, mode='w', distname='wheel', version=1)
+
 
 class TestWheelFileAttributes:
 
