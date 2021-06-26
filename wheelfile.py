@@ -1030,28 +1030,21 @@ class WheelFile:
 
         if self._is_unnamed_or_directory(file_or_path):
             self._require_distname_and_version(distname, version)
+
+        filename = self._get_filename(file_or_path)
+        self._pick_a_distname(filename, given_distname=distname)
+        self._pick_a_version(filename, given_version=version)
+        self._pick_tags(
+            filename, build_tag, language_tag, abi_tag, platform_tag
+        )
+
+        if self._is_unnamed_or_directory(file_or_path):
             assert distname is not None and version is not None  # For Mypy
-
-            self._distname = distname
-            self._version = (version if isinstance(version, Version)
-                             else Version(version))
-            self._build_tag = build_tag
-            self._language_tag = language_tag or 'py3'
-            self._abi_tag = abi_tag or 'none'
-            self._platform_tag = platform_tag or 'any'
-
             self._generated_filename = self._generate_filename(
                 self._distname, self._version, self._build_tag,
                 self._language_tag, self._abi_tag, self._platform_tag
             )
-
         else:
-            filename = self._get_filename(file_or_path)
-            self._pick_a_distname(filename, given_distname=distname)
-            self._pick_a_version(filename, given_version=version)
-            self._pick_tags(
-                filename, build_tag, language_tag, abi_tag, platform_tag
-            )
             self._generated_filename = ''
 
         if isinstance(file_or_path, Path):
@@ -1114,15 +1107,19 @@ class WheelFile:
         return filename
 
     @classmethod
-    def _get_filename(cls, file_or_path: Union[BinaryIO, Path]) -> str:
+    def _get_filename(
+        cls, file_or_path: Union[BinaryIO, Path]
+    ) -> Optional[str]:
         """Return a filename from file obj or a path.
 
         If given file, the asumption is that the filename is within the value
         of its `name` attribute.
         If given a `Path`, assumes it is a path to an actual file, not a
         directory.
+        If given an unnamed object, this returns None.
         """
-        assert not cls._is_unnamed_or_directory(file_or_path)
+        if cls._is_unnamed_or_directory(file_or_path):
+            return None
 
         # TODO: test this
         # If a file object given, ensure its a filename, not a path
@@ -1133,10 +1130,15 @@ class WheelFile:
             filename = Path(file_or_path.name).name
             return filename
 
-    def _pick_a_distname(self, filename: str, given_distname: Union[None, str]):
+    def _pick_a_distname(self, filename: Optional[str],
+                         given_distname: Union[None, str]):
+        # filename == None means an unnamed object was given
+        assert filename is not None or given_distname is not None
+
         if given_distname is not None:
             distname = given_distname
         else:
+            assert filename is not None  # For MyPy
             distname = filename.split('-')[0]
             if distname == '':
                 raise UnnamedDistributionError(
@@ -1146,20 +1148,23 @@ class WheelFile:
         self._distname = distname
 
     def _pick_a_version(
-        self, filename: str, given_version: Union[None, str, Version]
+        self, filename: Optional[str], given_version: Union[None, str, Version]
     ):
+        # filename == None means an unnamed object was given
+        assert filename is not None or given_version is not None
+
         if isinstance(given_version, Version):
             # We've got a valid object here, nothing else to do
             self._version = given_version
             return
-
-        if isinstance(given_version, str):
+        elif isinstance(given_version, str):
             version = given_version
         elif given_version is not None:
             raise TypeError(
                 "'version' must be either packaging.Version or a string"
             )
         else:
+            assert filename is not None  # For MyPy
             name_segments = filename.split('-')
 
             if len(name_segments) < 2 or name_segments[1] == '':
@@ -1178,11 +1183,18 @@ class WheelFile:
             ) from e
 
     def _pick_tags(self,
-                   filename: str,
+                   filename: Optional[str],
                    given_build: Optional[int],
                    given_language: Optional[str],
                    given_abi: Optional[str],
                    given_platform: Optional[str]):
+        # filename == None means an unnamed object was given
+        if filename is None:
+            self._build_tag = given_build
+            self._language_tag = given_language or 'py3'
+            self._abi_tag = given_abi or 'none'
+            self._platform_tag = given_platform or 'any'
+            return
 
         if filename.endswith('.whl'):
             filename = filename[:-4]
