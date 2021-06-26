@@ -7,8 +7,16 @@ This project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Added
-Nothing yet.
+### Changed
+- Parts of `WheelFile.__init__` have been refactored for parity between "named"
+  and "unnamed" modes, i.e. it no longer raises different exceptions based on
+  whether it is given a file, path to a directory, path to a file, or an io
+  buffer.
+
+### Fixed
+- `WheelFile` no longer accepts arguments of types other than `Version` and
+  `str` in its `version` argument, when an io buffer is given. `TypeError` is
+  raised instead.
 
 ## [0.0.5] - 2021-05-12
 ### Fixed
