@@ -91,11 +91,11 @@ def test_build_reproducibility(tmp_path):
     (tmp_path/"package").mkdir()
     (tmp_path/"package"/"file").mkdir()
 
-    wf1 = WheelFile(tmp_path/"1.whl", 'w', distname="wheel1", version='1')
+    wf1 = WheelFile(tmp_path/"1.whl", 'w', distname="mywheel", version='1')
     wf1.write(tmp_path/"package")
     wf1.close()
 
-    wf2 = WheelFile(tmp_path/"2.whl", 'w', distname='wheel2', version='1')
+    wf2 = WheelFile(tmp_path/"2.whl", 'w', distname='mywheel', version='1')
     wf2.write(tmp_path/"package")
     wf2.close()
 
