@@ -21,6 +21,7 @@ import os
 import csv
 import io
 import sys
+import time
 import hashlib
 import base64
 
@@ -1499,6 +1500,7 @@ class WheelFile:
 
     def _write_to_zip(self, filename, arcname):
         zinfo = ZipInfo.from_file(filename, arcname)
+        zinfo.date_time = time.gmtime(os.path.getmtime(filename))
         if zinfo.is_dir():
             data = b''
         else:

@@ -85,7 +85,6 @@ class TestLongMetadataLine:
         assert f"Requires-Dist: {self.long_requirement}" in metadata.read_text()
 
 
-@pytest.mark.xfail
 def test_build_reproducibility(tmp_path):
     """Two wheels made from the same set of files should be the same"""
     (tmp_path/"package").mkdir()
