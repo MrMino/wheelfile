@@ -80,6 +80,6 @@ class TestLongMetadataLine:
         return ZipPath(wheel, f'{self.distname}-{self.version}.dist-info/')
 
     def test_metadata_is_from_wheelfile(self, distinfo, wheelfile):
-        "Test long lines in METADATA aren't split to multiple shorter lines"
+        """Test long lines in METADATA aren't split to multiple shorter lines"""
         metadata = distinfo / 'METADATA'
         assert f"Requires-Dist: {self.long_requirement}" in metadata.read_text()
