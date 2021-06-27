@@ -334,6 +334,14 @@ class TestWheelFileWrites:
         wf.write(tmp_file, "/////this/should/be/stripped")
         assert "this/should/be/stripped" in wf.record
 
+    def test_writes_preserve_mtime(self, wf, tmp_file):
+        tmp_file.touch()
+        # 1600000000 is September 2020
+        os.utime(tmp_file, (1600000000, 1600000000))
+
+        wf.write(tmp_file, arcname='file')
+        wf.zipfile.getinfo('file')
+
 
 def named_bytesio(name: str) -> BytesIO:
     bio = BytesIO()
