@@ -342,6 +342,12 @@ class TestWheelFileWrites:
         wf.write(tmp_file, arcname='file')
         wf.zipfile.getinfo('file')
 
+    def test_write_has_normalize_arg(self, wf, tmp_file):
+        wf.write(tmp_file, normalize=True)
+
+    def test_write_data_has_normalize_arg(self, wf, tmp_file):
+        wf.write_data(tmp_file, section='test', normalize=True)
+
 
 def named_bytesio(name: str) -> BytesIO:
     bio = BytesIO()

@@ -1457,7 +1457,7 @@ class WheelFile:
     def write(self,
               filename: Union[str, Path],
               arcname: Optional[str] = None,
-              *, recursive: bool = True) -> None:
+              *, recursive: bool = True, normalize: bool = True) -> None:
         """Add the file to the wheel.
 
         Updates the wheel record, if the record is being kept.
@@ -1561,7 +1561,7 @@ class WheelFile:
     # ZipInfo.from_file does it
     def write_data(self, filename: Union[str, Path],
                    section: str, arcname: Optional[str] = None,
-                   *, recursive: bool = True) -> None:
+                   *, recursive: bool = True, normalize: bool = True) -> None:
         """Write a file to the .data directory under a specified section.
 
         This method is a handy shortcut for writing into
