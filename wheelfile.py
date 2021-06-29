@@ -1498,6 +1498,8 @@ class WheelFile:
                 users try to update/remove the distribution from their
                 environment.
         """
+        if resolve and arcname is None:
+            arcname = os.path.basename(os.path.abspath(filename))
         self._write_to_zip(filename, arcname)
 
         if recursive:
@@ -1639,7 +1641,7 @@ class WheelFile:
         arcname = self._distinfo_path(section + '/' + arcname.lstrip('/'),
                                       kind='data')
 
-        self.write(filename, arcname, recursive=recursive)
+        self.write(filename, arcname, recursive=recursive, resolve=resolve)
 
     # TODO: compression args?
     # TODO: drive letter should be stripped from the arcname the same way

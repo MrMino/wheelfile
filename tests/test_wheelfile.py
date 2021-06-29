@@ -322,7 +322,7 @@ class TestWheelFileWrites:
     def test_write_adds_file_to_archive(self, wf, tmp_file):
         tmp_file.write_text("contents")
         wf.write(tmp_file)
-        arc_file = ZipPath(wf.zipfile, str(tmp_file).lstrip('/'))
+        arc_file = ZipPath(wf.zipfile, str(tmp_file.name).lstrip('/'))
 
         assert arc_file.read_text() == tmp_file.read_text()
 
@@ -347,6 +347,33 @@ class TestWheelFileWrites:
 
     def test_write_data_has_resolve_arg(self, wf, tmp_file):
         wf.write_data(tmp_file, section='test', resolve=True)
+
+    @pytest.fixture
+    def spaghetti_path(self, tmp_path):
+        (tmp_path/'s'/'p'/'a'/'g'/'h'/'e'/'t'/'t'/'i').mkdir(parents=True)
+        return tmp_path
+
+    def test_write_resolves_paths(self, wf, spaghetti_path):
+        path = (spaghetti_path / 's/p/a/g/h/e/t/t/i/../../../t/t/i/file')
+        path.touch()
+        wf.write(path, resolve=True)
+        assert wf.zipfile.namelist() == ['file']
+
+    def test_write_data_resolves_paths(self, wf, spaghetti_path):
+        path = (spaghetti_path / 's/p/a/g/h/e/t/t/i/../../../t/t/i/file')
+        path.touch()
+        wf.write_data(path, 'section', resolve=True)
+        data_path = wf.distname + '-' + str(wf.version) + '.data'
+        assert wf.zipfile.namelist() == [data_path + '/section/file']
+
+    def test_write_doesnt_resolve_when_given_arcname(self, wf, tmp_file):
+        wf.write(tmp_file, arcname='not_resolved', resolve=True)
+        assert wf.zipfile.namelist() == ['not_resolved']
+
+    def test_write_data_doesnt_resolve_when_given_arcname(self, wf, tmp_file):
+        wf.write_data(tmp_file, 'section', arcname='not_resolved', resolve=True)
+        data_path = wf.distname + '-' + str(wf.version) + '.data'
+        assert wf.zipfile.namelist() == [data_path + '/section/not_resolved']
 
 
 def named_bytesio(name: str) -> BytesIO:
@@ -556,7 +583,7 @@ class TestWheelFileRecursiveWrite:
 
     def test_write_recursive_writes_all_files_in_the_tree(self, wf, path_tree):
         directory = path_tree[0]
-        wf.write(directory, recursive=True)
+        wf.write(directory, recursive=True, resolve=False)
         expected_tree = [pth.lstrip('/') for pth in path_tree]
         assert set(wf.zipfile.namelist()) == set(expected_tree)
 
