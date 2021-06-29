@@ -1479,6 +1479,24 @@ class WheelFile:
 
             If its False, only a directory entry is going to be added, without
             any of its contents.
+
+        resolve
+            Keyword only. When True, and no `arcname` is given, the path given
+            to `filename` will not be used as the arcname (as is the case with
+            `ZipFile.write`), but only the name of the file that it points to
+            will be used.
+
+            For example, if you set `filename` to `../some/other/dir/file`,
+            `file` entry will be written in the archive root.
+
+            Has no effect when set to False or when `arcname` is given.
+
+            .. warning::
+                This prevents adding an unresolved path to the wheel by
+                accident. Setting this to False might lead to `./` or `../`
+                being added to the wheel, which will lead to loss of data when
+                users try to update/remove the distribution from their
+                environment.
         """
         self._write_to_zip(filename, arcname)
 
@@ -1592,6 +1610,24 @@ class WheelFile:
 
             If its False, only a directory entry is going to be added, without
             any of tis contents.
+
+        resolve
+            Keyword only. When True, and no `arcname` is given, the path given
+            to `filename` will not be used as the arcname (as is the case with
+            `ZipFile.write`), but only the name of the file that it points to
+            will be used.
+
+            For example, if you set `filename` to `../some/other/dir/file`,
+            `file` entry will be written in the archive root.
+
+            Has no effect when set to False or when `arcname` is given.
+
+            .. warning::
+                This prevents adding an unresolved path to the wheel by
+                accident. Setting this to False might lead to `./` or `../`
+                being added to the wheel, which will lead to loss of data when
+                users try to update/remove the distribution from their
+                environment.
         """
         self._check_section(section)
 
