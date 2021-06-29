@@ -15,8 +15,9 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 - Since `WheelFile.write` and `WheelFile.write_data` methods have `resolve`
-  argument set to `True` by default now, absolute paths are no longer being put
-  verbatim into the archive, only the filenames they point to.
+  argument set to `True` by default now, paths are no longer being put verbatim
+  into the archive, only the filenames they point to. Set `resolve` to `False`
+  to get the old behavior, the one exhibited by `ZipFile.write`.
 - Parts of `WheelFile.__init__` have been refactored for parity between "named"
   and "unnamed" modes, i.e. it no longer raises different exceptions based on
   whether it is given a file, path to a directory, path to a file, or an io
