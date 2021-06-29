@@ -1478,7 +1478,7 @@ class WheelFile:
             contents of its subdirectories.
 
             If its False, only a directory entry is going to be added, without
-            any of tis contents.
+            any of its contents.
         """
         self._write_to_zip(filename, arcname)
 
