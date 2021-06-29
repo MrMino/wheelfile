@@ -7,7 +7,16 @@ This project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- `WheelFile.write` and `WheelFile.write_data` now have a new, keyword-only
+  `resolve` argument, that substitutes the default `arcname` with the name of
+  the file the path in `filename` points to. This is set to `True` by default
+  now.
+
 ### Changed
+- Since `WheelFile.write` and `WheelFile.write_data` methods have `resolve`
+  argument set to `True` by default now, absolute paths are no longer being put
+  verbatim into the archive, only the filenames they point to.
 - Parts of `WheelFile.__init__` have been refactored for parity between "named"
   and "unnamed" modes, i.e. it no longer raises different exceptions based on
   whether it is given a file, path to a directory, path to a file, or an io
