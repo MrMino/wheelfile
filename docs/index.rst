@@ -39,4 +39,4 @@ Exceptions
 
 Utilities
 ---------
-.. autofunc:: resolved
+.. autofunction:: resolved
