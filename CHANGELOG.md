@@ -12,6 +12,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   `resolve` argument, that substitutes the default `arcname` with the name of
   the file the path in `filename` points to. This is set to `True` by default
   now.
+- New `resolved` utility function.
 
 ### Changed
 - `WheelMeta` no longer prohibits reading metadata in versions other than v2.1.
