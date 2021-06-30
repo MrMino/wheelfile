@@ -439,7 +439,10 @@ class MetaData:
     @classmethod
     def from_str(cls, s: str) -> 'MetaData':
         m = message_from_string(s)
-        assert m['Metadata-Version'] == cls._metadata_version
+
+        # TODO: validate this when the rest of the versions are implemented
+        # assert m['Metadata-Version'] == cls._metadata_version
+
         del m['Metadata-Version']
 
         args = {}
