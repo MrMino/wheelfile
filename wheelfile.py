@@ -717,6 +717,34 @@ class UnnamedDistributionError(BadWheelFileError):
     """Distribution name cannot be deduced from arguments."""
 
 
+def resolved(path: Union[str, Path]) -> str:
+    """Get the name of the file or directory the path points to.
+
+    This is a convenience function over the functionality provided by
+    `resolve` argument of `WheelFile.write` and similar methods. Since
+    `resolve=True` is ignored when `arcname` is given, it is impossible to add
+    arbitrary prefix to `arcname` without resolving the path first - and this
+    is what this function provides.
+
+    Using this, you can have both custom `arcname` prefix and the "resolve"
+    functionality, like so::
+
+        wf = WheelFile(...)
+        wf.write(some_path, arcname="arc/dir/" + resolved(some_path))
+
+    Parameters
+    ----------
+    path
+        Path to resolve.
+
+
+    Returns
+    -------
+        The name of the file or directory the `path` points to.
+    """
+    return os.path.basename(os.path.abspath(path))
+
+
 # TODO: write_distinfo and read_distinfo
 # TODO: read_data?
 # TODO: prevent arbitrary writes to METADATA, WHEEL, and RECORD - or make sure
@@ -1502,7 +1530,7 @@ class WheelFile:
                 environment.
         """
         if resolve and arcname is None:
-            arcname = os.path.basename(os.path.abspath(filename))
+            arcname = resolved(filename)
         self._write_to_zip(filename, arcname)
 
         if recursive:

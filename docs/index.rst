@@ -35,3 +35,8 @@ Exceptions
 .. autoexception:: BadWheelFileError
 
 .. autoexception:: UnnamedDistributionError
+
+
+Utilities
+---------
+.. autofunc:: resolved
