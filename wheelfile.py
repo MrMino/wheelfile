@@ -740,6 +740,7 @@ def resolved(path: Union[str, Path]) -> str:
 
     Returns
     -------
+    str
         The name of the file or directory the `path` points to.
     """
     return os.path.basename(os.path.abspath(path))
