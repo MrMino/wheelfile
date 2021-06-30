@@ -330,7 +330,10 @@ class MetaData:
         self.summary = summary
         self.description = description
         self.description_content_type = description_content_type
-        self.keywords = keywords or []
+        if keywords is None:
+            keywords = []
+        self.keywords = (keywords if isinstance(keywords, list)
+                         else keywords.split(','))
         self.classifiers = classifiers or []
 
         self.author = author

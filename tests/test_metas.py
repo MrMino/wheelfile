@@ -174,9 +174,14 @@ class TestMetadata:
             [field for field in MetaData.__slots__] + ['metadata_version']
         ) == 24
 
-    @pytest.mark.skip
-    def test_keywords_param_accepts_both_a_list_and_comman_separated_str(self):
-        pass
+    def test_keywords_param_accepts_comma_separated_str(self):
+        metadata = MetaData(name='name', version='1.2.3', keywords='a,b,c')
+        assert metadata.keywords == ['a', 'b', 'c']
+
+    def test_keywords_param_accepts_list(self):
+        metadata = MetaData(name='name', version='1.2.3',
+                            keywords=['a', 'b', 'c'])
+        assert metadata.keywords == ['a', 'b', 'c']
 
 
 class TestWheelData:
