@@ -14,6 +14,8 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   now.
 
 ### Changed
+- `WheelMeta` no longer prohibits reading metadata in versions other than v2.1.
+  It uses `2.1` afterwards, and its still not changeable though.
 - Since `WheelFile.write` and `WheelFile.write_data` methods have `resolve`
   argument set to `True` by default now, paths are no longer being put verbatim
   into the archive, only the filenames they point to. Set `resolve` to `False`
