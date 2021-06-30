@@ -34,6 +34,8 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - `WheelFile` no longer accepts arguments of types other than `Version` and
   `str` in its `version` argument, when an io buffer is given. `TypeError` is
   raised instead.
+- `MetaData` started accepting keywords given via single string (comma
+  separated). Previously this support was documented, but missing.
 
 ## [0.0.5] - 2021-05-12
 ### Fixed
