@@ -1734,7 +1734,7 @@ class WheelFile:
         This is a shorthand for `write(...)` with `arcname` prefixed with
         the `.dist-info` path. It also ensures that the metadata files critical
         to the wheel correctnes (i.e. the ones written into archive on
-        `close()`) aren't being pre-writen.
+        `close()`) aren't being pre-written.
 
         Parameters
         ----------
