@@ -1725,6 +1725,75 @@ class WheelFile:
 
         self.writestr(arcname, data)
 
+    # TODO: Lazy mode should permit writing meta here
+    def write_distinfo(self, filename: Union[str, Path],
+                       arcname: Optional[str] = None,
+                       *, recursive: bool = True, resolve: bool = True) -> None:
+        """Write a file to `.dist-info` directory in the wheel.
+
+        This is a shorthand for `write(...)` with `arcname` prefixed with
+        the `.dist-info` path. It also ensures that the metadata files critical
+        to the wheel correctnes (i.e. the ones written into archive on
+        `close()`) aren't being pre-writen.
+
+        Parameters
+        ----------
+        filename
+            Path to the file or directory to add.
+
+        arcname
+            Path in the archive to assign the file/directory into. If not
+            given, `filename` will be used instead. In both cases, the leading
+            path separators and the drive letter (if any) will be removed.
+
+            This parameter will be prefixed with proper `.dist-info` path
+            automatically.
+
+        recursive
+            Keyword only. When True, if given path leads to a directory, all of
+            its contents are going to be added into the archive, including
+            contents of its subdirectories.
+
+            If its False, only a directory entry is going to be added, without
+            any of its contents.
+
+        resolve
+            Keyword only. When True, and no `arcname` is given, the path given
+            to `filename` will not be used as the arcname (as is the case with
+            `ZipFile.write`), but only the name of the file that it points to
+            will be used.
+
+            For example, if you set `filename` to `../some/other/dir/file`,
+            `file` entry will be written in the `.dist-info` directory.
+
+            Has no effect when set to False or when `arcname` is given.
+
+        Raises
+        ------
+        ProhibitedWriteError
+            Raised if the write would result with duplicated `WHEEL`,
+            `METADATA`, or `RECORD` files after `close()` is called.
+        """
+        if resolve and arcname is None:
+            arcname = resolved(filename)
+        elif arcname is None:
+            arcname = str(filename)
+
+        if arcname == '':
+            raise ProhibitedWriteError(
+                "Empty arcname - write would result in duplicating zip entry "
+                "for .dist-info directory."
+            )
+
+        if arcname in {"WHEEL", "METADATA", "RECORD"}:
+            raise ProhibitedWriteError(
+                f"Write would result in a duplicated metadata file: {arcname}."
+            )
+
+        arcname = self._distinfo_path(arcname)
+
+        self.write(filename, arcname=arcname, recursive=recursive)
+
     @staticmethod
     def _check_section(section):
         if section == '':

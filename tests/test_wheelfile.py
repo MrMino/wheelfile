@@ -4,7 +4,12 @@ import os
 import sys
 
 from functools import partial
-from wheelfile import WheelFile, UnnamedDistributionError, BadWheelFileError
+from wheelfile import (
+    WheelFile,
+    UnnamedDistributionError,
+    BadWheelFileError,
+    ProhibitedWriteError
+)
 from io import BytesIO
 from packaging.version import Version
 from pathlib import Path
@@ -374,6 +379,52 @@ class TestWheelFileWrites:
         wf.write_data(tmp_file, 'section', arcname='not_resolved', resolve=True)
         data_path = wf.distname + '-' + str(wf.version) + '.data'
         assert wf.zipfile.namelist() == [data_path + '/section/not_resolved']
+
+    def test_write_distinfo_writes_to_the_right_arcname(self, wf, tmp_file):
+        wf.write_distinfo(tmp_file)
+        di_arcpath = wf.distname + '-' + str(wf.version) + '.dist-info'
+        assert wf.zipfile.namelist() == [di_arcpath + '/' + tmp_file.name]
+
+    def test_write_distinfo_resolve_arg(self, wf, tmp_file):
+        wf.write_distinfo(tmp_file, resolve=False)
+        di_arcpath = wf.distname + '-' + str(wf.version) + '.dist-info'
+        assert wf.zipfile.namelist() == [di_arcpath + str(tmp_file)]
+
+    def test_write_distinfo_recursive(self, wf, tmp_path):
+        (tmp_path / 'file').touch()
+        wf.write_distinfo(tmp_path, recursive=True)
+        di_arcpath = wf.distname + '-' + str(wf.version) + '.dist-info'
+        assert set(wf.zipfile.namelist()) == {
+            di_arcpath + '/' + tmp_path.name + '/',
+            di_arcpath + '/' + tmp_path.name + '/file'
+        }
+
+    def test_write_distinfo_non_recursive(self, wf, tmp_path):
+        (tmp_path / 'file').touch()
+        wf.write_distinfo(tmp_path, recursive=False)
+        di_arcpath = wf.distname + '-' + str(wf.version) + '.dist-info'
+        assert wf.zipfile.namelist() == [di_arcpath + '/' + tmp_path.name + '/']
+
+    def test_write_distinfo_arcpath(self, wf, tmp_file):
+        wf.write_distinfo(tmp_file, arcname='custom_filename')
+        di_arcpath = wf.distname + '-' + str(wf.version) + '.dist-info'
+        assert wf.zipfile.namelist() == [di_arcpath + '/custom_filename']
+
+    @pytest.mark.parametrize('filename', ('WHEEL', 'METADATA', 'RECORD'))
+    def test_write_distinfo_doesnt_permit_writing_metadata(self, wf,
+                                                           tmp_path, filename):
+        (tmp_path/filename).touch()
+        with pytest.raises(ProhibitedWriteError):
+            wf.write_distinfo(tmp_path/filename)
+
+    def test_write_distinfo_doesnt_permit_empty_arcname(self, wf, tmp_file):
+        with pytest.raises(ProhibitedWriteError):
+            wf.write_distinfo(tmp_file, arcname='')
+
+    @pytest.mark.xfail
+    def test_write_distinfo_doesnt_permit_backing_out(self, wf, tmp_file):
+        with pytest.raises(ValueError):
+            wf.write_distinfo(tmp_file, arcname='../file')
 
 
 def named_bytesio(name: str) -> BytesIO:
