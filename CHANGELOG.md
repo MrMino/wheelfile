@@ -7,6 +7,18 @@ This project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+Nothing yet
+
+## [0.0.6] - 2021-07-01
+
+*This release introduces backwards-incompatible changes in `WheelFile.write`.*
+Overall, it makes the method safer and easier to use. One will no longer create
+a wheel-bomb by calling `write('./')`.
+
+If you were passing relative paths as `filename` without setting `arcname`, you
+probably want to set `resolve=False` for retaining compatibility with this
+release. See the "Changed" section.
+
 ### Added
 - `WheelFile.write` and `WheelFile.write_data` now have a new, keyword-only
   `resolve` argument, that substitutes the default `arcname` with the name of
@@ -39,6 +51,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   raised instead.
 - `MetaData` started accepting keywords given via single string (comma
   separated). Previously this support was documented, but missing.
+- The `wheelfile` package itself should now have the keywords set properly ;).
 
 ## [0.0.5] - 2021-05-12
 ### Fixed
@@ -94,7 +107,8 @@ contributions - both of the fixes below came from them.
 - First working version of the library.
 - It's possible to create wheels from scratch.
 
-[Unreleased]: https://github.com/mrmino/wheelfile/compare/v0.0.5...HEAD
+[Unreleased]: https://github.com/mrmino/wheelfile/compare/v0.0.6...HEAD
+[0.0.6]: https://github.com/mrmino/wheelfile/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/mrmino/wheelfile/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/mrmino/wheelfile/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/mrmino/wheelfile/compare/v0.0.2...v0.0.3

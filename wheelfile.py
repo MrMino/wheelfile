@@ -43,7 +43,7 @@ else:
 
 from typing import Optional, Union, List, Dict, IO, BinaryIO
 
-__version__ = '0.0.5'
+__version__ = '0.0.6'
 
 
 # TODO: idea: Corrupted class: denotes that something is present, but could not
