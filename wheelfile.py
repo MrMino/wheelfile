@@ -720,6 +720,10 @@ class UnnamedDistributionError(BadWheelFileError):
     """Distribution name cannot be deduced from arguments."""
 
 
+class ProhibitedWriteError(ValueError):
+    """Writing into given arcname would result in a corrupted package."""
+
+
 def resolved(path: Union[str, Path]) -> str:
     """Get the name of the file or directory the path points to.
 

@@ -36,6 +36,8 @@ Exceptions
 
 .. autoexception:: UnnamedDistributionError
 
+.. autoexception:: ProhibitedWriteError
+
 
 Utilities
 ---------
