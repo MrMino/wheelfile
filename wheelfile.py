@@ -1794,6 +1794,10 @@ class WheelFile:
 
         self.write(filename, arcname=arcname, recursive=recursive)
 
+    # TODO: implement me
+    def writestr_distinfo(self):
+        raise NotImplementedError
+
     @staticmethod
     def _check_section(section):
         if section == '':

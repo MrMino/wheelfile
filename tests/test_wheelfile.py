@@ -426,6 +426,34 @@ class TestWheelFileWrites:
         with pytest.raises(ValueError):
             wf.write_distinfo(tmp_file, arcname='../file')
 
+    @pytest.mark.xfail
+    @pytest.mark.parametrize('filename', ('WHEEL', 'METADATA', 'RECORD'))
+    def test_write_doesnt_permit_writing_metadata(self, wf, tmp_path, filename):
+        (tmp_path/filename).touch()
+        with pytest.raises(ProhibitedWriteError):
+            wf.write(tmp_path/filename)
+
+    @pytest.mark.xfail
+    @pytest.mark.parametrize('filename', ('WHEEL', 'METADATA', 'RECORD'))
+    def test_writestr_doesnt_permit_writing_metadata(self, wf, tmp_path,
+                                                     filename):
+        (tmp_path/filename).touch()
+        with pytest.raises(ProhibitedWriteError):
+            wf.writestr(tmp_path/filename, b'')
+
+    @pytest.mark.xfail
+    def test_writestr_distinfo(self, wf):
+        wf.writestr_distinfo()
+
+    @pytest.mark.xfail
+    @pytest.mark.parametrize('filename', ('WHEEL', 'METADATA', 'RECORD'))
+    def test_writestr_distinfo_doesnt_permit_writing_metadata(
+        self, wf, tmp_path, filename
+    ):
+        (tmp_path/filename).touch()
+        with pytest.raises(ProhibitedWriteError):
+            wf.writestr(tmp_path/filename, b'')
+
 
 def named_bytesio(name: str) -> BytesIO:
     bio = BytesIO()
