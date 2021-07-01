@@ -12,6 +12,8 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   `resolve` argument, that substitutes the default `arcname` with the name of
   the file the path in `filename` points to. This is set to `True` by default
   now.
+- New `WheelFile.write_distinfo` method, as a safe shorthand for writing to
+  `.dist-info/`.
 - New `resolved` utility function.
 - New `ProhibitedWriteError` exception class.
 
