@@ -1616,8 +1616,8 @@ class WheelFile:
 
     # TODO: compression args?
     # TODO: drive letter should be stripped from the arcname the same way
-    # TODO: symlinks?
     # ZipInfo.from_file does it
+    # TODO: symlinks?
     def write_data(self, filename: Union[str, Path],
                    section: str, arcname: Optional[str] = None,
                    *, recursive: bool = True, resolve: bool = True) -> None:
