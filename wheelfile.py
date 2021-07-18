@@ -1287,7 +1287,7 @@ class WheelFile:
         except Exception:
             self.record = None
 
-    # TODO: check what are the common bugs with wheels and implement them here
+    # TODO: check what are the common bugs with wheels and implement checks here
     # TODO: test behavior if no candidates found
     def _find_distinfo_prefix(self):
         # TODO: this could use a walrus
