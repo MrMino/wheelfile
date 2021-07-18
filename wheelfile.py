@@ -1022,6 +1022,14 @@ class WheelFile:
             Defaults to `'any'`, but only if an unnamed or a directory target
             was given.
 
+        distinfo_dirname
+            Name of the ``.dist-info`` directory inside the archive wheel,
+            without the trailing slash.
+
+        data_dirname
+            Name of the ``.data`` directory inside the archive wheel, without
+            the trailing slash.
+
         Raises
         ------
         UnnamedDistributionError
@@ -1094,7 +1102,7 @@ class WheelFile:
         # litters empty and corrupted wheels if any arg is wrong.
         self._zip = ZipFile(file_or_path, mode)
 
-        # Used by _distinfo_path
+        # Used by distinfo_dirname, data_dirname, and _distinfo_path
         self._distinfo_prefix: Optional[str] = None
 
         if 'w' in mode or 'x' in mode:
@@ -1333,6 +1341,14 @@ class WheelFile:
     @property
     def platform_tag(self) -> str:
         return self._platform_tag
+
+    @property
+    def distinfo_dirname(self):
+        return self._distinfo_path("", kind="dist-info")[:-1]
+
+    @property
+    def data_dirname(self):
+        return self._distinfo_path("", kind="data")[:-1]
 
     # TODO: validate naming conventions, metadata, etc.
     # TODO: use testwheel()

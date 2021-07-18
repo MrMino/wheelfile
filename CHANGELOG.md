@@ -7,7 +7,8 @@ This project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-Nothing yet
+### Added
+- `distinfo_dirname` and `data_dirname` properties, for easier browsing.
 
 ## [0.0.6] - 2021-07-01
 

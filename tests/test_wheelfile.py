@@ -242,6 +242,14 @@ class TestWheelFileAttributes:
                        platform_tag=platform_tag)
         assert wf.platform_tag == platform_tag
 
+    def test_distinfo_dirname(self, buf):
+        wf = WheelFile(buf, distname="first.part", version="1.2.3", mode='w')
+        assert wf.distinfo_dirname == "first_part-1.2.3.dist-info"
+
+    def test_data_dirname(self, buf):
+        wf = WheelFile(buf, distname="first.part", version="1.2.3", mode='w')
+        assert wf.data_dirname == "first_part-1.2.3.data"
+
 
 class TestWheelFileClose:
 
