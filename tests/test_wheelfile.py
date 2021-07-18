@@ -54,6 +54,7 @@ def test_can_work_on_in_memory_bufs(buf):
 
 
 class TestyWheelFileInit:
+
     def empty_wheel_bytes(self, name, version):
         buf = BytesIO()
         with WheelFile(buf, 'w', name, version):
