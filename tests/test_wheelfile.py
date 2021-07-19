@@ -706,3 +706,18 @@ class TestWheelFileRefreshRecord:
         wf.writestr('directory/', b'')
         wf.refresh_record('directory/')
         assert str(wf.record) == ''
+
+
+class TestWheelFileNameList:
+    def test_after_init_is_empty(self, wf):
+        assert wf.namelist() == []
+
+    def test_after_writing_contains_the_arcpath_of_written_file(self, wf):
+        arcpath = 'this/is/a/file'
+        wf.writestr(arcpath, b'contents')
+        assert wf.namelist() == [arcpath]
+
+    @pytest.mark.parametrize("meta_file", ['METADATA', 'RECORD', 'WHEEL'])
+    def test_after_closing_does_not_contain_meta_files(self, wf, meta_file):
+        wf.close()
+        assert (wf.distinfo_dirname + '/' + meta_file) not in wf.namelist()

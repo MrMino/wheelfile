@@ -20,6 +20,9 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   entries in `RECORD`, making them incompatible with this release.
 
 ### Added
+- Implemented `WheelFile.namelist()`, which, similarily to `ZipFile.namelist()`,
+  returns a list of archive members, but omits the metadata files which should
+  not be written manually: `RECORD`, `WHEEL` and `METADATA`.
 - `RecordContainsDirectoryError` exception class.
 - `distinfo_dirname` and `data_dirname` properties, for easier browsing.
 

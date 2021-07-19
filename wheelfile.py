@@ -1853,10 +1853,14 @@ class WheelFile:
     def zipfile(self) -> ZipFile:
         return self._zip
 
-    # TODO: return a list of paths where files would be installed by this wheel
-    # This probably means utilizing INSTALL_SCHEMES from distutils.install
     def namelist(self) -> List[str]:
-        raise NotImplementedError()
+        """Return a list of wheel members by name, omit metadata files.
+
+        Same as ``ZipFile.namelist()``, but omits ``RECORD``, ``METADATA``, and
+        ``WHEEL`` files.
+        """
+        skip = [self._distinfo_path(n) for n in ("WHEEL", "METADATA", "RECORD")]
+        return [name for name in self.zipfile.namelist() if name not in skip]
 
     # TODO: return a handle w/ record refresh semantics
     def open(self, path) -> IO:
