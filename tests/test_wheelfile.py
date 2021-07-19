@@ -703,3 +703,11 @@ class TestWheelFileRecursiveWrite:
 
         expected_tree = [archive_root]
         assert wf.zipfile.namelist() == expected_tree
+
+
+class TestWheelFileRefreshRecord:
+
+    def test_silently_skips_directories(self, wf):
+        wf.writestr('directory/', b'')
+        wf.refresh_record('directory/')
+        assert str(wf.record) == ''
