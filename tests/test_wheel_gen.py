@@ -98,3 +98,18 @@ def test_build_reproducibility(tmp_path):
         contents_wf2 = f.read()
 
     assert contents_wf1 == contents_wf2
+
+
+class TestWritesDoNotMisformatRecordWithDirEntries:
+
+    def test_recursive_writes_dont_misformat_record(self, tmp_path, buf):
+        (tmp_path/"dir1").mkdir()
+        written_dir = (tmp_path/"dir1"/"dir2")
+        written_dir.mkdir()
+
+        wf = WheelFile(buf, 'w', distname='mywheel', version='1')
+        wf.write(tmp_path/"dir1", recursive=True)
+        wf.close()
+
+        wf = WheelFile(buf, 'r', distname='mywheel', version='1')
+        assert str(written_dir) not in str(wf.record)
