@@ -7,6 +7,9 @@ This project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+Nothing yet
+
+## [0.0.7] - 2021-07-19
 ### Changed
 - Default compression method is now set to `zipfile.ZIP_DEFLATED`.
 - Wheels with directory entries in their `RECORD` files will now make
@@ -14,14 +17,15 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - Lazy mode is now allowed, in a very limited version - most methods will still
   raise exceptions, even when the documentation states that lazy mode
   suppresses them.
-- In anticipation of an actual implementation, `WheelFile.open()` raises
-  `NotImplementedError` now, as it should. Previously only a `def ...: pass`
-  stub was present.
 
   Use it by specifying `l` in the `mode` argument, e.g.
   `WheelFile("path/to/wheel", mode='rl')`.  This may be used to read wheels
   generated with previous version of wheelfile, which generated directory
   entries in `RECORD`, making them incompatible with this release.
+
+- In anticipation of an actual implementation, `WheelFile.open()` raises
+  `NotImplementedError` now, as it should. Previously only a `def ...: pass`
+  stub was present.
 
 ### Added
 - Implemented `WheelFile.namelist()`, which, similarily to `ZipFile.namelist()`,
@@ -136,7 +140,8 @@ contributions - both of the fixes below came from them.
 - First working version of the library.
 - It's possible to create wheels from scratch.
 
-[Unreleased]: https://github.com/mrmino/wheelfile/compare/v0.0.6...HEAD
+[Unreleased]: https://github.com/mrmino/wheelfile/compare/v0.0.7...HEAD
+[0.0.7]: https://github.com/mrmino/wheelfile/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/mrmino/wheelfile/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/mrmino/wheelfile/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/mrmino/wheelfile/compare/v0.0.3...v0.0.4
