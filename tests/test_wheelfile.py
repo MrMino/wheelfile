@@ -53,7 +53,7 @@ def test_can_work_on_in_memory_bufs(buf):
     assert buf.tell() != 0
 
 
-class TestyWheelFileInit:
+class TestWheelFileInit:
 
     def empty_wheel_bytes(self, name, version):
         buf = BytesIO()
