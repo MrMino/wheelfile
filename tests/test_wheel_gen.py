@@ -2,7 +2,6 @@ import pytest
 
 import sys
 
-from io import BytesIO
 from wheelfile import WheelFile
 
 if sys.version_info >= (3, 8):
@@ -15,22 +14,18 @@ class TestEmptyWheelStructure:
     distname = 'my_dist'
     version = '1.0.0'
 
-    @pytest.fixture(scope='class')
-    def buf(self):
-        return BytesIO()
-
-    @pytest.fixture(scope='class')
+    @pytest.fixture
     def wheelfile(self, buf):
         wf = WheelFile(buf, 'w', distname=self.distname, version=self.version)
         wf.close()
         return wf
 
-    @pytest.fixture(scope='class')
+    @pytest.fixture
     def wheel(self, wheelfile, buf):
         assert not buf.closed
         return ZipFile(buf)
 
-    @pytest.fixture(scope='class')
+    @pytest.fixture
     def distinfo(self, wheel):
         return ZipPath(wheel, f'{self.distname}-{self.version}.dist-info/')
 
@@ -59,23 +54,19 @@ class TestLongMetadataLine:
 
     long_requirement = "a" * 400
 
-    @pytest.fixture(scope='class')
-    def buf(self):
-        return BytesIO()
-
-    @pytest.fixture(scope='class')
+    @pytest.fixture
     def wheelfile(self, buf):
         wf = WheelFile(buf, 'w', distname=self.distname, version=self.version)
         wf.metadata.requires_dists = [self.long_requirement]
         wf.close()
         return wf
 
-    @pytest.fixture(scope='class')
+    @pytest.fixture
     def wheel(self, wheelfile, buf):
         assert not buf.closed
         return ZipFile(buf)
 
-    @pytest.fixture(scope='class')
+    @pytest.fixture
     def distinfo(self, wheel):
         return ZipPath(wheel, f'{self.distname}-{self.version}.dist-info/')
 

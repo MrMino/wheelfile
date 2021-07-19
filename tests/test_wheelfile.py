@@ -29,11 +29,6 @@ def test_BadWheelFileError_is_ValueError():
 
 
 @pytest.fixture
-def buf():
-    return BytesIO()
-
-
-@pytest.fixture
 def wf(buf):
     wf = WheelFile(buf, 'w', distname='_', version='0')
     yield wf
