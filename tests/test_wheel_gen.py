@@ -11,6 +11,7 @@ else:
 
 
 class TestEmptyWheelStructure:
+
     distname = 'my_dist'
     version = '1.0.0'
 
@@ -49,6 +50,7 @@ class TestEmptyWheelStructure:
 
 
 class TestLongMetadataLine:
+
     distname = 'my_dist'
     version = '1.0.0'
 
