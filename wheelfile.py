@@ -1577,13 +1577,6 @@ class WheelFile:
             `file` entry will be written in the archive root.
 
             Has no effect when set to False or when `arcname` is given.
-
-            .. warning::
-                This prevents adding an unresolved path to the wheel by
-                accident. Setting this to False might lead to `./` or `../`
-                being added to the wheel, which will lead to loss of data when
-                users try to update/remove the distribution from their
-                environment.
         """
         if resolve and arcname is None:
             arcname = resolved(filename)
@@ -1710,13 +1703,6 @@ class WheelFile:
             `file` entry will be written in the archive root.
 
             Has no effect when set to False or when `arcname` is given.
-
-            .. warning::
-                This prevents adding an unresolved path to the wheel by
-                accident. Setting this to False might lead to `./` or `../`
-                being added to the wheel, which will lead to loss of data when
-                users try to update/remove the distribution from their
-                environment.
         """
         self._check_section(section)
 
