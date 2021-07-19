@@ -15,9 +15,9 @@ from packaging.version import Version
 from pathlib import Path
 
 if sys.version_info >= (3, 8):
-    from zipfile import ZipFile, ZipInfo, Path as ZipPath
+    from zipfile import ZipFile, ZipInfo, Path as ZipPath, ZIP_DEFLATED
 else:
-    from zipfile38 import ZipFile, ZipInfo, Path as ZipPath
+    from zipfile38 import ZipFile, ZipInfo, Path as ZipPath, ZIP_DEFLATED
 
 
 def test_UnnamedDistributionError_is_BadWheelFileError():
@@ -180,6 +180,15 @@ class TestWheelFileInit:
     def test_given_an_int_version_raises_type_error_on_buf(self, tmp_path):
         with pytest.raises(TypeError):
             WheelFile(tmp_path, mode='w', distname='wheel', version=1)
+
+    @pytest.mark.skip
+    def test_passes_zipfile_kwargs_to_zipfile(self, buf, zfarg):
+        argument_to_pass_to_zipfile = zfarg
+        WheelFile(buf, mode='w', distname='_', version='0',
+                  **argument_to_pass_to_zipfile)
+
+    def test_default_compression_method(self, wf):
+        assert wf.zipfile.compression == ZIP_DEFLATED
 
 
 class TestWheelFileAttributes:

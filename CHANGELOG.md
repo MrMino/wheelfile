@@ -8,6 +8,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 ### Changed
+- Default compression method is now set to `zipfile.ZIP_DEFLATED`.
 - Wheels with directory entries in their `RECORD` files will now make
   `WheelFile` raise `RecordContainsDirectoryError`.
 - Lazy mode is now allowed, in a very limited version - most methods will still

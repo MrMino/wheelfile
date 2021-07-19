@@ -1136,7 +1136,8 @@ class WheelFile:
 
         # FIXME: the file is opened before validating the arguments, so this
         # litters empty and corrupted wheels if any arg is wrong.
-        self._zip = zipfile.ZipFile(file_or_path, mode.strip('l'))
+        self._zip = zipfile.ZipFile(file_or_path, mode.strip('l'),
+                                    compression=zipfile.ZIP_DEFLATED)
 
         # Used by distinfo_dirname, data_dirname, and _distinfo_path
         self._distinfo_prefix: Optional[str] = None
