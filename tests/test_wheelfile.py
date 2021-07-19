@@ -721,3 +721,20 @@ class TestWheelFileNameList:
     def test_after_closing_does_not_contain_meta_files(self, wf, meta_file):
         wf.close()
         assert (wf.distinfo_dirname + '/' + meta_file) not in wf.namelist()
+
+
+class TestWheelFileInfoList:
+    def test_after_init_is_empty(self, wf):
+        assert wf.infolist() == []
+
+    def test_after_writing_contains_the_arcpath_of_written_file(self, wf):
+        arcpath = 'this/is/a/file'
+        wf.writestr(arcpath, b'contents')
+        infolist = wf.infolist()
+        assert len(infolist) == 1 and infolist[0].filename == arcpath
+
+    @pytest.mark.parametrize("meta_file", ['METADATA', 'RECORD', 'WHEEL'])
+    def test_after_closing_does_not_contain_meta_files(self, wf, meta_file):
+        wf.close()
+        infolist_arcpaths = [zi.filename for zi in wf.infolist()]
+        assert (wf.distinfo_dirname + '/' + meta_file) not in infolist_arcpaths

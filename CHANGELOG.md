@@ -26,6 +26,9 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - Implemented `WheelFile.namelist()`, which, similarily to `ZipFile.namelist()`,
   returns a list of archive members, but omits the metadata files which should
   not be written manually: `RECORD`, `WHEEL` and `METADATA`.
+- Added `WheelFile.infolist()`. Similarily to the `namelist()` above - it
+  returns a `ZipInfo` for each member, but omits the ones corresponding to
+  metadata files.
 - `RecordContainsDirectoryError` exception class.
 - `distinfo_dirname` and `data_dirname` properties, for easier browsing.
 

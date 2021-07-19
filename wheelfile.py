@@ -1862,6 +1862,15 @@ class WheelFile:
         skip = [self._distinfo_path(n) for n in ("WHEEL", "METADATA", "RECORD")]
         return [name for name in self.zipfile.namelist() if name not in skip]
 
+    def infolist(self) -> List[ZipInfo]:
+        """Return a list of ``ZipInfo`` objects for each wheel member.
+
+        Same as ``ZipFile.infolist()``, but omits objects corresponding to
+        ``RECORD``, ``METADATA``, and ``WHEEL`` files.
+        """
+        skip = [self._distinfo_path(n) for n in ("WHEEL", "METADATA", "RECORD")]
+        return [zi for zi in self.zipfile.infolist() if zi.filename not in skip]
+
     # TODO: return a handle w/ record refresh semantics
     def open(self, path) -> IO:
         raise NotImplementedError()
