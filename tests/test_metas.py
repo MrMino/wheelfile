@@ -2,7 +2,9 @@ import pytest
 
 from wheelfile import (__version__ as lib_version,
                        WheelData, MetaData, WheelRecord,
-                       UnsupportedHashTypeError)
+                       UnsupportedHashTypeError,
+                       RecordContainsDirectoryError,
+                       )
 from packaging.version import Version
 from textwrap import dedent
 from io import BytesIO
@@ -367,3 +369,13 @@ class TestWheelRecord:
     def test_throw_with_bad_hash(self, hash_algo):
         with pytest.raises(UnsupportedHashTypeError):
             WheelRecord(hash_algo=hash_algo)
+
+    def test_update_throws_on_directory_entry(self):
+        with pytest.raises(RecordContainsDirectoryError):
+            wr = WheelRecord()
+            wr.update('path/to/a/directory/', BytesIO(bytes(1)))
+
+    def test_from_str_throws_on_directory_entry(self):
+        with pytest.raises(RecordContainsDirectoryError):
+            record_str = "./,sha256=whatever,0"
+            WheelRecord.from_str(record_str)

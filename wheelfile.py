@@ -651,6 +651,13 @@ class WheelRecord:
         reader = csv.DictReader(buf, cls._RecordEntry._fields)
         for row in reader:
             entry = cls._RecordEntry(**row)
+
+            if entry.path.endswith("/"):
+                raise RecordContainsDirectoryError(
+                    "RECORD of this wheel contains an entry with for a "
+                    "directory: {repr(entry.path)}."
+                )
+
             record._records[entry.path] = entry
         return record
 
@@ -659,9 +666,17 @@ class WheelRecord:
 
         Parameters
         ----------
+        arcpath
+            Path in the archive of the file that the entry describes.
+
         buf
             Buffer from which the data will be read in HASH_BUF_SIZE chunks.
             Must be fresh, i.e. seek(0)-ed.
+
+        Raises
+        ------
+        RecordContainsDirectoryError
+            If ``arcpath`` is a path to a directory.
         """
         assert buf.tell() == 0, (
             f"Stale buffer given - current position: {buf.tell()}."
@@ -670,6 +685,12 @@ class WheelRecord:
             f"Attempt to add an entry for a RECORD file to the RECORD: "
             f"{repr(arcpath)}."
         )
+
+        if arcpath.endswith("/"):
+            raise RecordContainsDirectoryError(
+                f"Attempt to add an entry for a directory: {repr(arcpath)}"
+            )
+
         self._records[arcpath] = self._entry(arcpath, buf)
 
     def remove(self, arcpath: str):
@@ -712,6 +733,10 @@ class WheelRecord:
 
 class UnsupportedHashTypeError(ValueError):
     """The given hash name is not allowed by the spec."""
+
+
+class RecordContainsDirectoryError(ValueError):
+    """Record contains an entry path that ends with a slash (a directory)."""
 
 
 class BadWheelFileError(ValueError):
@@ -1434,6 +1459,11 @@ class WheelFile:
         # RECORD file is optional
         if self.record is None:
             return
+
+        # Adding directories to record is bad
+        if str(arcname).endswith('/'):
+            return
+
         if isinstance(arcname, Path):
             arcname = str(arcname)
         if self.closed:

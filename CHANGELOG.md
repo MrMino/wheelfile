@@ -7,10 +7,17 @@ This project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Wheels with directory entries in their `RECORD` files will now make
+  `WheelFile` raise `RecordContainsDirectoryError`.
+
 ### Added
+- `RecordContainsDirectoryError` exception class.
 - `distinfo_dirname` and `data_dirname` properties, for easier browsing.
 
 ### Fixed
+- Wheel contents written using `write(..., recursive=True)` no longer contain
+  entries corresponding to directories in their `RECORD`.
 - Removed a bunch of cosmetic mistakes from exception messages.
 
 ## [0.0.6] - 2021-07-01
