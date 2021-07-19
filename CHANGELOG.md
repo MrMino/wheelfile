@@ -10,7 +10,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 - Wheels with directory entries in their `RECORD` files will now make
   `WheelFile` raise `RecordContainsDirectoryError`.
-- Lazy mode is now allowed, in a very limitted version - most methods will still
+- Lazy mode is now allowed, in a very limited version - most methods will still
   raise exceptions, even when the documentation states that lazy mode
   suppresses them.
 - In anticipation of an actual implementation, `WheelFile.open()` raises
