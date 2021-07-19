@@ -81,7 +81,7 @@ class TestLongMetadataLine:
 def test_build_reproducibility(tmp_path):
     """Two wheels made from the same set of files should be the same"""
     (tmp_path/"package").mkdir()
-    (tmp_path/"package"/"file").mkdir()
+    (tmp_path/"package"/"file").touch()
 
     wf1 = WheelFile(tmp_path/"1.whl", 'w', distname="mywheel", version='1')
     wf1.write(tmp_path/"package")
