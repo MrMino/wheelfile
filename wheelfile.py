@@ -1097,6 +1097,7 @@ class WheelFile:
                 "documentation states lazy mode will suppress them."
             ))
 
+        # TODO: this should be read-only prop
         self.mode = mode
 
         # These might be None in case a corrupted wheel is read in lazy mode
