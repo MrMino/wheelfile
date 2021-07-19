@@ -1864,4 +1864,4 @@ class WheelFile:
 
     # TODO: return a handle w/ record refresh semantics
     def open(self, path) -> IO:
-        pass
+        raise NotImplementedError()

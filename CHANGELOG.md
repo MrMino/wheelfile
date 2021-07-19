@@ -13,6 +13,9 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - Lazy mode is now allowed, in a very limitted version - most methods will still
   raise exceptions, even when the documentation states that lazy mode
   suppresses them.
+- In anticipation of an actual implementation, `WheelFile.open()` raises
+  `NotImplementedError` now, as it should. Previously only a `def ...: pass`
+  stub was present.
 
   Use it by specifying `l` in the `mode` argument, e.g.
   `WheelFile("path/to/wheel", mode='rl')`.  This may be used to read wheels
