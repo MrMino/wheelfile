@@ -46,6 +46,11 @@ from typing import Optional, Union, List, Dict, IO, BinaryIO
 __version__ = '0.0.6'
 
 
+# TODO: ensure that writing into `file/` arcname and then into `file/not/really`
+# fails.
+# TODO: the file-directory confusion should also be checked on the WheelRecord
+# level, and inside WheelFile.validate()
+
 # TODO: idea: Corrupted class: denotes that something is present, but could not
 # be parsed. Would take a type and contents to parse, compare falsely to
 # the objects of given type, and not compare with anything else.
@@ -1392,6 +1397,7 @@ class WheelFile:
     # TODO: custom exception
     # TODO: test every check
     # TODO: check filename segments are not empty
+    # TODO: !in lazy mode, return exception objects instead of raising them!
     def validate(self):
         if self.filename is not None and not self.filename.endswith('.whl'):
             raise ValueError(
