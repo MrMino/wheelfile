@@ -38,9 +38,9 @@ from email.policy import EmailPolicy
 from email import message_from_string
 
 if sys.version_info >= (3, 8):
-    from zipfile import ZipFile, ZipInfo
+    import zipfile
 else:
-    from zipfile38 import ZipFile, ZipInfo
+    import zipfile38 as zipfile
 
 from typing import Optional, Union, List, Dict, IO, BinaryIO
 
@@ -1136,7 +1136,7 @@ class WheelFile:
 
         # FIXME: the file is opened before validating the arguments, so this
         # litters empty and corrupted wheels if any arg is wrong.
-        self._zip = ZipFile(file_or_path, mode.strip('l'))
+        self._zip = zipfile.ZipFile(file_or_path, mode.strip('l'))
 
         # Used by distinfo_dirname, data_dirname, and _distinfo_path
         self._distinfo_prefix: Optional[str] = None
@@ -1609,7 +1609,7 @@ class WheelFile:
                     self._write_to_zip(filepath, arcpath)
 
     def _write_to_zip(self, filename, arcname):
-        zinfo = ZipInfo.from_file(filename, arcname)
+        zinfo = zipfile.ZipInfo.from_file(filename, arcname)
         zinfo.date_time = time.gmtime(os.path.getmtime(filename))
         if zinfo.is_dir():
             data = b''
@@ -1636,7 +1636,7 @@ class WheelFile:
 
     # TODO: compression args?
     def writestr(self,
-                 zinfo_or_arcname: Union[ZipInfo, str],
+                 zinfo_or_arcname: Union[zipfile.ZipInfo, str],
                  data: Union[bytes, str]) -> None:
         """Write given data into the wheel under the given path.
 
@@ -1658,7 +1658,7 @@ class WheelFile:
 
         arcname = (
             zinfo_or_arcname.filename
-            if isinstance(zinfo_or_arcname, ZipInfo)
+            if isinstance(zinfo_or_arcname, zipfile.ZipInfo)
             else zinfo_or_arcname
         )
 
@@ -1730,7 +1730,7 @@ class WheelFile:
     # TODO: drive letter should be stripped from the arcname the same way
     # ZipInfo.from_file does it
     def writestr_data(self, section: str,
-                      zinfo_or_arcname: Union[ZipInfo, str],
+                      zinfo_or_arcname: Union[zipfile.ZipInfo, str],
                       data: Union[bytes, str]) -> None:
         """Write given data to the .data directory under a specified section.
 
@@ -1760,7 +1760,7 @@ class WheelFile:
 
         arcname = (
             zinfo_or_arcname.filename
-            if isinstance(zinfo_or_arcname, ZipInfo)
+            if isinstance(zinfo_or_arcname, zipfile.ZipInfo)
             else zinfo_or_arcname
         )
 
@@ -1849,10 +1849,6 @@ class WheelFile:
         if '/' in section:
             raise ValueError("Section cannot contain slashes.")
 
-    @property
-    def zipfile(self) -> ZipFile:
-        return self._zip
-
     def namelist(self) -> List[str]:
         """Return a list of wheel members by name, omit metadata files.
 
@@ -1862,7 +1858,7 @@ class WheelFile:
         skip = [self._distinfo_path(n) for n in ("WHEEL", "METADATA", "RECORD")]
         return [name for name in self.zipfile.namelist() if name not in skip]
 
-    def infolist(self) -> List[ZipInfo]:
+    def infolist(self) -> List[zipfile.ZipInfo]:
         """Return a list of ``ZipInfo`` objects for each wheel member.
 
         Same as ``ZipFile.infolist()``, but omits objects corresponding to
@@ -1870,6 +1866,10 @@ class WheelFile:
         """
         skip = [self._distinfo_path(n) for n in ("WHEEL", "METADATA", "RECORD")]
         return [zi for zi in self.zipfile.infolist() if zi.filename not in skip]
+
+    @property
+    def zipfile(self) -> zipfile.ZipFile:
+        return self._zip
 
     # TODO: return a handle w/ record refresh semantics
     def open(self, path) -> IO:
