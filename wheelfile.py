@@ -24,6 +24,7 @@ import sys
 import time
 import hashlib
 import base64
+import warnings
 
 from string import ascii_letters, digits
 from pathlib import Path
@@ -1090,9 +1091,11 @@ class WheelFile:
             )
 
         if 'l' in mode:
-            raise NotImplementedError(
-                "Lazy modes are not supported yet"
-            )
+            warnings.warn(RuntimeWarning(
+                "Lazy mode is not fully implemented yet. "
+                "Methods of this class may raise exceptions where "
+                "documentation states lazy mode will suppress them."
+            ))
 
         self.mode = mode
 
@@ -1132,7 +1135,7 @@ class WheelFile:
 
         # FIXME: the file is opened before validating the arguments, so this
         # litters empty and corrupted wheels if any arg is wrong.
-        self._zip = ZipFile(file_or_path, mode)
+        self._zip = ZipFile(file_or_path, mode.strip('l'))
 
         # Used by distinfo_dirname, data_dirname, and _distinfo_path
         self._distinfo_prefix: Optional[str] = None
