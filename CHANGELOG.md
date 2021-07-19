@@ -10,6 +10,9 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 - `distinfo_dirname` and `data_dirname` properties, for easier browsing.
 
+### Fixed
+- Removed a bunch of cosmetic mistakes from exception messages.
+
 ## [0.0.6] - 2021-07-01
 
 *This release introduces backwards-incompatible changes in `WheelFile.write`.*

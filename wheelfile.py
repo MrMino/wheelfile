@@ -372,7 +372,7 @@ class MetaData:
         if field_name + 's' in cls.__slots__:
             return True
         else:
-            raise ValueError(f"Unknown field: {field_name}")
+            raise ValueError(f"Unknown field: {repr(field_name)}.")
 
     @classmethod
     def _field_name(cls, attribute_name: str) -> str:
@@ -604,11 +604,13 @@ class WheelRecord:
         # per PEP-376
         if value not in hashlib.algorithms_guaranteed:
             raise UnsupportedHashTypeError(
-                f"{value} is not a valid record hash"
+                f"{repr(value)} is not a valid record hash."
             )
         # per PEP 427
         if value in ('md5', 'sha1'):
-            raise UnsupportedHashTypeError(f"{value} is a forbidden hash type")
+            raise UnsupportedHashTypeError(
+                f"{repr(value)} is a forbidden hash type."
+            )
 
         # PEP-427 says the RECORD hash must be sha256 or better.  Does that mean
         # hashes such as sha224 are forbidden as well though not specifically
@@ -666,7 +668,7 @@ class WheelRecord:
         )
         assert not arcpath.endswith('.dist-info/RECORD'), (
             f"Attempt to add an entry for a RECORD file to the RECORD: "
-            f"{arcpath}."
+            f"{repr(arcpath)}."
         )
         self._records[arcpath] = self._entry(arcpath, buf)
 
@@ -1191,7 +1193,7 @@ class WheelFile:
             if distname == '':
                 raise UnnamedDistributionError(
                     f"No distname provided and the inferred filename does not "
-                    f"contain a proper distname substring: {filename}"
+                    f"contain a proper distname substring: {repr(filename)}."
                 )
         self._distname = distname
 
@@ -1209,7 +1211,7 @@ class WheelFile:
             version = given_version
         elif given_version is not None:
             raise TypeError(
-                "'version' must be either packaging.Version or a string"
+                "'version' must be either packaging.version.Version or a string"
             )
         else:
             assert filename is not None  # For MyPy
@@ -1218,7 +1220,7 @@ class WheelFile:
             if len(name_segments) < 2 or name_segments[1] == '':
                 raise UnnamedDistributionError(
                     f"No version provided and the inferred filename does not "
-                    f"contain a version segment: {filename}"
+                    f"contain a version segment: {repr(filename)}."
                 )
             version = name_segments[1]
 
