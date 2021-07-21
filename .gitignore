@@ -142,3 +142,6 @@ ENV/
 
 # pytest
 .pytest_cache/
+
+# mypy
+.mypy_cache/
