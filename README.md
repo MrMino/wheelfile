@@ -6,9 +6,9 @@
 <h1 style='border-bottom-style: none' align="center"> Wheelfile 🔪🧀</h1>
 
 This library aims to make it dead simple to create a format-compliant [.whl
-file (wheel)](https://pythonwheels.com/). It aims to provide an API comparable
-to [zipfile](https://docs.python.org/3/library/zipfile.html). Use this if you
-wish to inspect or create wheels in your code.
+file (wheel)](https://pythonwheels.com/). It provides an API comparable to
+[zipfile](https://docs.python.org/3/library/zipfile.html). Use this if you wish
+to inspect or create wheels in your code.
 
 For a quick look, see the example on the right, which packages the wheelfile
 module itself into a wheel 🤸.
