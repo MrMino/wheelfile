@@ -34,8 +34,6 @@ Here's how to create a simple package under a specific directory path::
         wf.write('path/to/a/module.py', arcname="mywheel.py")
 """
 
-# We do not target python2.
-# Which python3 versions should we target? 3.6+ seems like a good idea.
 import os
 import csv
 import io
