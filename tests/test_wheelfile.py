@@ -448,11 +448,9 @@ class TestWheelFileWrites:
 
     @pytest.mark.xfail
     @pytest.mark.parametrize('filename', ('WHEEL', 'METADATA', 'RECORD'))
-    def test_writestr_doesnt_permit_writing_metadata(self, wf, tmp_path,
-                                                     filename):
-        (tmp_path/filename).touch()
+    def test_writestr_doesnt_permit_writing_metadata(self, wf, filename):
         with pytest.raises(ProhibitedWriteError):
-            wf.writestr(tmp_path/filename, b'')
+            wf.writestr(filename, b'')
 
     @pytest.mark.xfail
     def test_writestr_distinfo(self, wf):
