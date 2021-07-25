@@ -1862,6 +1862,7 @@ class WheelFile:
 
     @staticmethod
     def _check_section(section):
+        # TODO make sure lazy mode doesn't do this
         if section == '':
             raise ValueError("Section cannot be an empty string.")
         if '/' in section:
