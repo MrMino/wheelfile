@@ -1785,7 +1785,6 @@ class WheelFile:
 
         arcname = self._distinfo_path(section + '/' + arcname.lstrip('/'),
                                       kind='data')
-
         self.writestr(arcname, data)
 
     # TODO: Lazy mode should permit writing meta here
