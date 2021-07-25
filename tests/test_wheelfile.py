@@ -470,6 +470,24 @@ class TestWheelFileWrites:
         with pytest.raises(ProhibitedWriteError):
             wf.writestr_distinfo(name + '/' + 'file', b'')
 
+    # TODO: also test write_data and write_distinfo
+    # TODO: ALSO remember to test metadata names separately - they are not
+    # inside the archive until `close()` is called, so it will not be detected.
+    @pytest.mark.xfail
+    def test_write_bails_on_writing_directories_over_files(self, wf, tmp_path):
+        file_to_write = (tmp_path/'file')
+        file_to_write.touch()
+        wf.write(file_to_write, 'file')
+        with pytest.raises(ProhibitedWriteError):
+            wf.write(file_to_write, 'file/or_is_it')
+
+    # TODO: also test writestr_data and writestr_distinfo
+    @pytest.mark.xfail
+    def test_writestr_bails_on_writing_directories_over_files(self, wf):
+        wf.writestr('file', b'')
+        with pytest.raises(ProhibitedWriteError):
+            wf.writestr('file/or_is_it', b'')
+
 
 def named_bytesio(name: str) -> BytesIO:
     bio = BytesIO()
