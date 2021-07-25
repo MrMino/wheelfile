@@ -12,6 +12,10 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   metadata files managed by this class.
 - `WheelFile.writestr_distinfo` - similar to `write_distinfo`, this is a safe
   shortcut for writing into `.dist-info` directory.
+- `WheelFile.__init__` now takes configuration arguments known from `ZipFile`:
+  `compression`, `compression`, `allowZip64`, and `strict_timestamps`. They
+  work the same way, except that they are keyword only in `WheelFile`, and the
+  default value for `compression` is `zipfile.ZIP_DEFLATED`.
 
 ## [0.0.7] - 2021-07-19
 ### Changed

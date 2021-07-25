@@ -15,9 +15,11 @@ from packaging.version import Version
 from pathlib import Path
 
 if sys.version_info >= (3, 8):
-    from zipfile import ZipFile, ZipInfo, Path as ZipPath, ZIP_DEFLATED
+    from zipfile import (ZipFile, ZipInfo, Path as ZipPath, ZIP_DEFLATED,
+                         ZIP_BZIP2)
 else:
-    from zipfile38 import ZipFile, ZipInfo, Path as ZipPath, ZIP_DEFLATED
+    from zipfile38 import (ZipFile, ZipInfo, Path as ZipPath, ZIP_DEFLATED,
+                           ZIP_BZIP2)
 
 
 def test_UnnamedDistributionError_is_BadWheelFileError():
@@ -189,6 +191,41 @@ class TestWheelFileInit:
 
     def test_default_compression_method(self, wf):
         assert wf.zipfile.compression == ZIP_DEFLATED
+
+    def test_passes_compression_arg_to_zipfile(self, buf):
+        wf = WheelFile(buf, mode='w', distname='_', version='0',
+                       compression=ZIP_BZIP2)
+        assert wf.zipfile.compression == ZIP_BZIP2
+
+    def test_passes_allowZip64_arg_to_zipfile(self, buf, tmp_file):
+        wf = WheelFile(buf, mode='w', distname='_', version='0',
+                       allowZip64=False)
+        wf.write(tmp_file, resolve=False)
+        # ZipFile.open trips when allowZip64 is forced in a zipfile that does
+        # not allow it.
+        #
+        # Exception message:
+        # "force_zip64 is True, but allowZip64 was False when opening the ZIP
+        # file."
+        with pytest.raises(ValueError, match="allowZip64 was False"):
+            assert wf.zipfile.open(str(tmp_file).lstrip('/'), mode='w',
+                                   force_zip64=True)
+
+    def test_passes_compresslevel_arg_to_zipfile(self, buf):
+        wf = WheelFile(buf, mode='w', distname='_', version='0',
+                       compresslevel=7)
+        assert wf.zipfile.compresslevel == 7
+
+    def test_passes_strict_timestamps_arg_to_zipfile(self, buf, tmp_file):
+        wf = WheelFile(buf, mode='w', distname='_', version='0',
+                       strict_timestamps=False)
+        # strict_timestamps will be propagated into ZipInfo objects created by
+        # ZipFile.
+        # Given very old timestamp, ZipInfo will set itself to 01-01-1980
+        os.utime(tmp_file, (10000000, 100000000))
+        wf.write(tmp_file, resolve=False)
+        zinfo = wf.zipfile.getinfo(str(tmp_file).lstrip('/'))
+        assert zinfo.date_time == (1980, 1, 1, 0, 0, 0)
 
 
 class TestWheelFileAttributes:

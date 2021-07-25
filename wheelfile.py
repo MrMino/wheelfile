@@ -810,7 +810,6 @@ def resolved(path: Union[str, Path]) -> str:
 # TODO: ensure distname and varsion have no weird characters (!slashes!)
 # TODO: debug propery, as with ZipFile.debug
 # TODO: comment property
-# TODO: compression level arguments - is compression even supported by the spec?
 # TODO: append mode
 # TODO: writing inexistent metadata in lazy mode
 # TODO: better repr
@@ -914,7 +913,11 @@ class WheelFile:
         build_tag: Optional[Union[int, str]] = None,
         language_tag: Optional[str] = None,
         abi_tag: Optional[str] = None,
-        platform_tag: Optional[str] = None
+        platform_tag: Optional[str] = None,
+        compression: int = zipfile.ZIP_DEFLATED,
+        allowZip64: bool = True,
+        compresslevel: int = None,
+        strict_timestamps: bool = True,
     ) -> None:
         """Open or create a wheel file.
 
@@ -1121,6 +1124,8 @@ class WheelFile:
         self.metadata: Optional[MetaData] = None
         self.record: Optional[WheelRecord] = None
 
+        self._strict_timestamps = strict_timestamps
+
         if isinstance(file_or_path, str):
             file_or_path = Path(file_or_path)
 
@@ -1153,7 +1158,10 @@ class WheelFile:
         # FIXME: the file is opened before validating the arguments, so this
         # litters empty and corrupted wheels if any arg is wrong.
         self._zip = zipfile.ZipFile(file_or_path, mode.strip('l'),
-                                    compression=zipfile.ZIP_DEFLATED)
+                                    compression=compression,
+                                    allowZip64=allowZip64,
+                                    compresslevel=compresslevel,
+                                    strict_timestamps=strict_timestamps)
 
         # Used by distinfo_dirname, data_dirname, and _distinfo_path
         self._distinfo_prefix: Optional[str] = None
@@ -1626,7 +1634,9 @@ class WheelFile:
                     self._write_to_zip(filepath, arcpath)
 
     def _write_to_zip(self, filename, arcname):
-        zinfo = zipfile.ZipInfo.from_file(filename, arcname)
+        zinfo = zipfile.ZipInfo.from_file(
+            filename, arcname, strict_timestamps=self._strict_timestamps
+        )
         if zinfo.is_dir():
             data = b''
         else:
