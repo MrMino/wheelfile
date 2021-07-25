@@ -460,6 +460,13 @@ class TestWheelFileWrites:
         wf.writestr_distinfo(arcname, data)
         assert wf.zipfile.read(wf.distinfo_dirname + '/' + arcname) == data
 
+    def test_writestr_distinfo_via_zipinfo(self, wf):
+        arcname = 'my_meta_file'
+        data = b'my data'
+        zi = ZipInfo(arcname)
+        wf.writestr_distinfo(zi, data)
+        assert wf.zipfile.read(wf.distinfo_dirname + '/' + arcname) == data
+
     @pytest.mark.parametrize('name', ('WHEEL', 'METADATA', 'RECORD'))
     def test_writestr_distinfo_doesnt_permit_writing_metadata(self, wf, name):
         with pytest.raises(ProhibitedWriteError):
