@@ -463,7 +463,6 @@ class TestWheelFileWrites:
         with pytest.raises(ProhibitedWriteError):
             wf.writestr_distinfo(name, b'')
 
-    @pytest.mark.xfail
     @pytest.mark.parametrize('name', ('WHEEL', 'METADATA', 'RECORD'))
     def test_writestr_distinfo_doesnt_permit_writing_metadata_as_dirs(self,
                                                                       wf, name):
