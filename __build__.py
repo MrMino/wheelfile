@@ -1,7 +1,8 @@
 from wheelfile import WheelFile, __version__
 from pathlib import Path
+from typing import Dict, Any
 
-spec = {
+spec: Dict[str, Any] = {
     'distname': 'wheelfile',
     'version': __version__
 }
