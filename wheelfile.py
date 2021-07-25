@@ -816,7 +816,6 @@ def resolved(path: Union[str, Path]) -> str:
 # TODO: writing inexistent metadata in lazy mode
 # TODO: better repr
 # TODO: docstrings
-# TODO: properties for rest of the naming convention parts
 # TODO: comparison operators for comparing version + build number
 class WheelFile:
     """An archive that follows the wheel specification.
