@@ -802,8 +802,9 @@ def resolved(path: Union[str, Path]) -> str:
     return os.path.basename(os.path.abspath(path))
 
 
-# TODO: write_distinfo and read_distinfo
-# TODO: read_data?
+# TODO: read
+# TODO: read_distinfo
+# TODO: read_data
 # TODO: prevent arbitrary writes to METADATA, WHEEL, and RECORD - or make sure
 # the writes are reflected internally
 # TODO: prevent adding .dist-info directories if there's one already there
