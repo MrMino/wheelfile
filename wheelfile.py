@@ -895,6 +895,14 @@ class WheelFile:
         initialization.
         In write and exclusive-write modes, written to the archive on close().
 
+    distinfo_dirname
+        Name of the ``.dist-info`` directory inside the archive wheel,
+        without the trailing slash.
+
+    data_dirname
+        Name of the ``.data`` directory inside the archive wheel, without
+        the trailing slash.
+
     closed : bool
         True if the underlying `ZipFile` object is closed, false otherwise.
     """
@@ -1074,14 +1082,6 @@ class WheelFile:
 
             Defaults to `'any'`, but only if an unnamed or a directory target
             was given.
-
-        distinfo_dirname
-            Name of the ``.dist-info`` directory inside the archive wheel,
-            without the trailing slash.
-
-        data_dirname
-            Name of the ``.data`` directory inside the archive wheel, without
-            the trailing slash.
 
         Raises
         ------
