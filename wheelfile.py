@@ -1083,6 +1083,36 @@ class WheelFile:
             Defaults to `'any'`, but only if an unnamed or a directory target
             was given.
 
+        compression
+            Compression method to use. By default `zipfile.ZIP_DEFLATED` is
+            used.
+
+            See `zipfile.ZipFile` documentation for the full description. This
+            argument differs from its `ZipFile` counterpart in that here it is
+            keyword-only, and the default value is different.
+
+        allowZip64
+            Flag used to indicate whether ZIP64 extensions should be used.
+
+            See `zipfile.ZipFile` documentation for the full description. This
+            argument differs from its `ZipFile` counterpart in that here it is
+            keyword-only.
+
+        compresslevel
+            Compression level to use when writing to the archive.
+
+            See `zipfile.ZipFile` documentation for the full description. This
+            argument differs from its `ZipFile` counterpart in that here it is
+            keyword-only
+
+        strict_timestamps
+            When `True`, files with modification times older than 1980-01-01 or
+            newer than 2107-12-31 are allowed. Keyword only.
+
+            See `zipfile.ZipFile` documentation for the full description. This
+            argument differs from its `ZipFile` counterpart in that here it is
+            keyword-only.
+
         Raises
         ------
         UnnamedDistributionError
