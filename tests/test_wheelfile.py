@@ -747,3 +747,8 @@ class TestWheelFileInfoList:
         wf.close()
         infolist_arcpaths = [zi.filename for zi in wf.infolist()]
         assert (wf.distinfo_dirname + '/' + meta_file) not in infolist_arcpaths
+
+
+@pytest.mark.parametrize('metadata_name', ['METADATA', 'RECORD', 'WHEEL'])
+def test_wheelfile_METADATA_FILENAMES(metadata_name):
+    assert metadata_name in WheelFile.METADATA_FILENAMES

@@ -901,6 +901,7 @@ class WheelFile:
         True if the underlying `ZipFile` object is closed, false otherwise.
     """
     VALID_DISTNAME_CHARS = set(ascii_letters + digits + '._')
+    METADATA_FILENAMES = {"WHEEL", "METADATA", "RECORD"}
 
     # TODO: implement lazy mode
     # TODO: in lazy mode, log reading/missing metadata errors
@@ -1847,7 +1848,7 @@ class WheelFile:
                 "for .dist-info directory."
             )
 
-        if arcname in {"WHEEL", "METADATA", "RECORD"}:
+        if arcname in self.METADATA_FILENAMES:
             raise ProhibitedWriteError(
                 f"Write would result in a duplicated metadata file: {arcname}."
             )
@@ -1874,7 +1875,7 @@ class WheelFile:
         Same as ``ZipFile.namelist()``, but omits ``RECORD``, ``METADATA``, and
         ``WHEEL`` files.
         """
-        skip = [self._distinfo_path(n) for n in ("WHEEL", "METADATA", "RECORD")]
+        skip = [self._distinfo_path(n) for n in self.METADATA_FILENAMES]
         return [name for name in self.zipfile.namelist() if name not in skip]
 
     def infolist(self) -> List[zipfile.ZipInfo]:
@@ -1883,7 +1884,7 @@ class WheelFile:
         Same as ``ZipFile.infolist()``, but omits objects corresponding to
         ``RECORD``, ``METADATA``, and ``WHEEL`` files.
         """
-        skip = [self._distinfo_path(n) for n in ("WHEEL", "METADATA", "RECORD")]
+        skip = [self._distinfo_path(n) for n in self.METADATA_FILENAMES]
         return [zi for zi in self.zipfile.infolist() if zi.filename not in skip]
 
     @property

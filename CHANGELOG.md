@@ -7,7 +7,9 @@ This project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-Nothing yet
+### Added
+- `WheelFile.METADATA_FILENAMES` - a static field with a set of names of
+  metadata files managed by this class.
 
 ## [0.0.7] - 2021-07-19
 ### Changed
