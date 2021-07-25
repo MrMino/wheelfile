@@ -442,7 +442,7 @@ class TestWheelFileWrites:
 
     def test_write_distinfo_recursive(self, wf, tmp_path):
         (tmp_path / 'file').touch()
-        wf.write_distinfo(tmp_path, recursive=True)
+        wf.write_distinfo(tmp_path, skipdir=False, recursive=True)
         di_arcpath = wf.distname + '-' + str(wf.version) + '.dist-info'
         assert set(wf.zipfile.namelist()) == {
             di_arcpath + '/' + tmp_path.name + '/',
@@ -451,7 +451,7 @@ class TestWheelFileWrites:
 
     def test_write_distinfo_non_recursive(self, wf, tmp_path):
         (tmp_path / 'file').touch()
-        wf.write_distinfo(tmp_path, recursive=False)
+        wf.write_distinfo(tmp_path, skipdir=False, recursive=False)
         di_arcpath = wf.distname + '-' + str(wf.version) + '.dist-info'
         assert wf.zipfile.namelist() == [di_arcpath + '/' + tmp_path.name + '/']
 
@@ -732,7 +732,7 @@ class TestWheelFileRecursiveWrite:
 
     def test_write_recursive_writes_all_files_in_the_tree(self, wf, path_tree):
         directory = path_tree[0]
-        wf.write(directory, recursive=True, resolve=False)
+        wf.write(directory, recursive=True, resolve=False, skipdir=False)
         expected_tree = [pth.lstrip('/') for pth in path_tree]
         assert set(wf.zipfile.namelist()) == set(expected_tree)
 
@@ -749,7 +749,7 @@ class TestWheelFileRecursiveWrite:
         directory_name = os.path.basename(directory.rstrip('/'))
         archive_root = '_-0.data/test/' + directory_name + '/'
 
-        wf.write_data(directory, section="test", recursive=True)
+        wf.write_data(directory, section="test", skipdir=False, recursive=True)
 
         expected_tree = [archive_root + pth[len(directory):]
                          for pth in path_tree]
@@ -760,7 +760,7 @@ class TestWheelFileRecursiveWrite:
         directory_name = os.path.basename(directory.rstrip('/'))
         archive_root = '_-0.data/test/' + directory_name + '/'
 
-        wf.write_data(directory, section="test", recursive=False)
+        wf.write_data(directory, section="test", skipdir=False, recursive=False)
 
         expected_tree = [archive_root]
         assert wf.zipfile.namelist() == expected_tree
@@ -809,3 +809,36 @@ class TestWheelFileInfoList:
 @pytest.mark.parametrize('metadata_name', ['METADATA', 'RECORD', 'WHEEL'])
 def test_wheelfile_METADATA_FILENAMES(metadata_name):
     assert metadata_name in WheelFile.METADATA_FILENAMES
+
+
+class TestSkipDir:
+    def test_write_skips_empty_dir_on_skipdir(self, wf, tmp_path):
+        wf.write(tmp_path, recursive=False, skipdir=True)
+        assert wf.namelist() == []
+
+    def test_write_data_skips_empty_dir_on_skipdir(self, wf, tmp_path):
+        wf.write_data(tmp_path, section='_', recursive=False, skipdir=True)
+        assert wf.namelist() == []
+
+    def test_write_distinfo_skips_empty_dir_on_skipdir(self, wf, tmp_path):
+        wf.write_distinfo(tmp_path, recursive=False, skipdir=True)
+        assert wf.namelist() == []
+
+    def test_write_doesnt_skip_dirs_if_skipdir_not_set(self, wf, tmp_path):
+        wf.write(tmp_path, recursive=False, skipdir=False)
+        expected_entry = str(tmp_path.name).lstrip('/') + '/'
+        assert wf.namelist() == [expected_entry]
+
+    def test_write_data_doesnt_skip_dirs_if_skipdir_not_set(self, wf, tmp_path):
+        wf.write_data(tmp_path, section='_', recursive=False, skipdir=False)
+        expected_entry = (wf.data_dirname + '/'
+                          + '_/'
+                          + str(tmp_path.name).lstrip('/') + '/')
+        assert wf.namelist() == [expected_entry]
+
+    def test_write_distinfo_doesnt_skip_dirs_if_skipdir_not_set(self, wf,
+                                                                tmp_path):
+        wf.write_distinfo(tmp_path, recursive=False, skipdir=False)
+        expected_entry = (wf.distinfo_dirname + '/'
+                          + str(tmp_path.name).lstrip('/') + '/')
+        assert wf.namelist() == [expected_entry]

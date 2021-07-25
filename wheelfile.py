@@ -1610,7 +1610,8 @@ class WheelFile:
     def write(self,
               filename: Union[str, Path],
               arcname: Optional[str] = None,
-              *, recursive: bool = True, resolve: bool = True) -> None:
+              *, recursive: bool = True, resolve: bool = True,
+              skipdir: bool = True) -> None:
         """Add the file to the wheel.
 
         Updates the wheel record, if the record is being kept.
@@ -1643,10 +1644,15 @@ class WheelFile:
             `file` entry will be written in the archive root.
 
             Has no effect when set to False or when `arcname` is given.
+
+        skipdir
+            Keyword only. Indicates whether directory entries should be skipped
+            in the archive. Set to `True` by default, which means that
+            attempting to write an empty directory will be silently omitted.
         """
         if resolve and arcname is None:
             arcname = resolved(filename)
-        self._write_to_zip(filename, arcname)
+        self._write_to_zip(filename, arcname, skipdir)
 
         if recursive:
             common_root = str(filename)
@@ -1662,14 +1668,17 @@ class WheelFile:
                     arcpath = self._os_walk_path_to_arcpath(
                         common_root, root, name, root_arcname
                     )
-                    self._write_to_zip(filepath, arcpath)
+                    self._write_to_zip(filepath, arcpath, skipdir)
 
-    def _write_to_zip(self, filename, arcname):
+    def _write_to_zip(self, filename, arcname, skipdir):
         zinfo = zipfile.ZipInfo.from_file(
             filename, arcname, strict_timestamps=self._strict_timestamps
         )
         if zinfo.is_dir():
-            data = b''
+            if skipdir:
+                return
+            else:
+                data = b''
         else:
             with open(filename, 'br') as f:
                 data = f.read()
@@ -1728,7 +1737,8 @@ class WheelFile:
     # TODO: symlinks?
     def write_data(self, filename: Union[str, Path],
                    section: str, arcname: Optional[str] = None,
-                   *, recursive: bool = True, resolve: bool = True) -> None:
+                   *, recursive: bool = True, resolve: bool = True,
+                   skipdir: bool = True) -> None:
         """Write a file to the .data directory under a specified section.
 
         This method is a handy shortcut for writing into
@@ -1770,6 +1780,11 @@ class WheelFile:
             `file` entry will be written in the archive root.
 
             Has no effect when set to False or when `arcname` is given.
+
+        skipdir
+            Keyword only. Indicates whether directory entries should be skipped
+            in the archive. Set to `True` by default, which means that
+            attempting to write an empty directory will be silently omitted.
         """
         self._check_section(section)
 
@@ -1781,7 +1796,8 @@ class WheelFile:
         arcname = self._distinfo_path(section + '/' + arcname.lstrip('/'),
                                       kind='data')
 
-        self.write(filename, arcname, recursive=recursive, resolve=resolve)
+        self.write(filename, arcname, recursive=recursive, resolve=resolve,
+                   skipdir=skipdir)
 
     # TODO: compression args?
     # TODO: drive letter should be stripped from the arcname the same way
@@ -1828,7 +1844,8 @@ class WheelFile:
     # TODO: Lazy mode should permit writing meta here
     def write_distinfo(self, filename: Union[str, Path],
                        arcname: Optional[str] = None,
-                       *, recursive: bool = True, resolve: bool = True) -> None:
+                       *, recursive: bool = True, resolve: bool = True,
+                       skipdir: bool = True) -> None:
         """Write a file to `.dist-info` directory in the wheel.
 
         This is a shorthand for `write(...)` with `arcname` prefixed with
@@ -1868,6 +1885,11 @@ class WheelFile:
 
             Has no effect when set to False or when `arcname` is given.
 
+        skipdir
+            Keyword only. Indicates whether directory entries should be skipped
+            in the archive. Set to `True` by default, which means that
+            attempting to write an empty directory will be silently omitted.
+
         Raises
         ------
         ProhibitedWriteError
@@ -1892,7 +1914,8 @@ class WheelFile:
 
         arcname = self._distinfo_path(arcname)
 
-        self.write(filename, arcname=arcname, recursive=recursive)
+        self.write(filename, arcname=arcname, recursive=recursive,
+                   skipdir=skipdir)
 
     def writestr_distinfo(self, zinfo_or_arcname: Union[zipfile.ZipInfo, str],
                           data: Union[bytes, str]) -> None:

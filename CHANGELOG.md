@@ -7,6 +7,17 @@ This project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Since `WheelFile` write methods now have `skipdir=True` default (see below),
+  writing recursively from a directory will no longer produce entries for
+  directories. This also means, that attempting to write an empty directory (or
+  any directory, even with `recursive=False`) is no longer possible, unless
+  `skipdir=False` is specified.
+
+  This does not apply to `writestr_*` methods - attempting to write to an
+  `arcname` ending in `/` _will_ produce an entry that is visible as a
+  directory.
+
 ### Added
 - `WheelFile.METADATA_FILENAMES` - a static field with a set of names of
   metadata files managed by this class.
@@ -16,6 +27,9 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   `compression`, `compression`, `allowZip64`, and `strict_timestamps`. They
   work the same way, except that they are keyword only in `WheelFile`, and the
   default value for `compression` is `zipfile.ZIP_DEFLATED`.
+- New `skipdir` argument in `WheelFile` write methods: `write`, `write_data`,
+  and `write_distinfo`. When `True` (which is the default`), these methods will
+  not write ZIP entries for directories into the archive.
 
 ## [0.0.7] - 2021-07-19
 ### Changed
