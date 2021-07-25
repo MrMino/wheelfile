@@ -1856,9 +1856,50 @@ class WheelFile:
 
         self.write(filename, arcname=arcname, recursive=recursive)
 
-    # TODO: implement me
-    def writestr_distinfo(self):
-        raise NotImplementedError
+    def writestr_distinfo(self, zinfo_or_arcname: Union[zipfile.ZipInfo, str],
+                          data: Union[bytes, str]) -> None:
+        """Write given data to the .dist-info directory.
+
+        This method is a handy shortcut for writing into
+        `<dist>-<version>.dist-info/`, such that you dont have to generate the
+        path yourself.
+
+        Updates the wheel record, if the record is being kept.
+
+        Does not permit writing into arcpaths of metadata files managed by this
+        class.
+
+        Parameters
+        ----------
+        zinfo_or_arcname
+            Specifies the path in the archive under which the data will be
+            stored. This is relative to the path of the section directory.
+            Leading slashes are stripped.
+
+        data
+            The data that will be writen into the archive. If it's a string, it
+            is encoded as UTF-8 first.
+
+        Raises
+        ------
+        ProhibitedWriteError
+            When attempting to write into `METADATA`, `WHEEL`, or `RECORD`.
+        """
+        arcname = (
+            zinfo_or_arcname.filename
+            if isinstance(zinfo_or_arcname, zipfile.ZipInfo)
+            else zinfo_or_arcname
+        )
+
+        # TODO don't check this in lazy mode
+        if (arcname in self.METADATA_FILENAMES
+                or arcname.split('/')[0] in self.METADATA_FILENAMES):
+            raise ProhibitedWriteError(
+                f"Write would result in a duplicated metadata file: {arcname}."
+            )
+
+        arcname = self._distinfo_path(arcname.lstrip('/'))
+        self.writestr(arcname, data)
 
     @staticmethod
     def _check_section(section):

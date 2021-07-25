@@ -10,6 +10,8 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 - `WheelFile.METADATA_FILENAMES` - a static field with a set of names of
   metadata files managed by this class.
+- `WheelFile.writestr_distinfo` - similar to `write_distinfo`, this is a safe
+  shortcut for writing into `.dist-info` directory.
 
 ## [0.0.7] - 2021-07-19
 ### Changed
