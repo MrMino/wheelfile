@@ -827,8 +827,14 @@ class WheelFile:
     Attributes
     ----------
     filename : str
-        Path to the file, if the instance was initialized with one, otherwise
-        None.
+        If initialized with:
+            - An IO buffer: the filename that the wheel would have after saving
+              it onto filesystem.
+            - A path to a directory: the path to the wheel, composed from its
+              the given path and the filename generated using the parameters
+              given to `__init__`.
+            - A path to a file: that path, even if it is not compliant with the
+              spec (in lazy mode).
 
     distname : str
         Name of the distribution (project). Either given to __init__()

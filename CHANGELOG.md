@@ -33,6 +33,9 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   and `write_distinfo`. When `True` (which is the default`), these methods will
   not write ZIP entries for directories into the archive.
 
+### Fixed
+- Docstring of the `WheelFile.filename` property, which was innacurate.
+
 ## [0.0.7] - 2021-07-19
 ### Changed
 - Default compression method is now set to `zipfile.ZIP_DEFLATED`.
