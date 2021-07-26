@@ -27,8 +27,8 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   `compression`, `compression`, `allowZip64`, and `strict_timestamps`. They
   work the same way, except that they are keyword only in `WheelFile`, and the
   default value for `compression` is `zipfile.ZIP_DEFLATED`.
-- `WheelFile` write methods now take `compress_type` argument known from
-  `ZipFile`.
+- `WheelFile` write methods now take optional `compress_type` and
+  `compresslevel` arguments known from `ZipFile`.
 - New `skipdir` argument in `WheelFile` write methods: `write`, `write_data`,
   and `write_distinfo`. When `True` (which is the default`), these methods will
   not write ZIP entries for directories into the archive.

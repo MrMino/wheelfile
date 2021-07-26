@@ -910,3 +910,54 @@ class TestZipFileRelatedArgs:
         wf.write_distinfo(tmp_file, compress_type=ZIP_BZIP2)
         arcpath = wf.distinfo_dirname + '/' + tmp_file.name
         assert wf.zipfile.getinfo(arcpath).compress_type == ZIP_BZIP2
+
+    def test_writestr_sets_the_right_compresslevel(self, wf):
+        arcname = 'file'
+        wf.writestr(arcname, b'_', compresslevel=7)
+        assert wf.zipfile.getinfo(arcname)._compresslevel == 7
+
+    def test_writestr_compresslevel_overrides_zinfo(self, wf):
+        zi = ZipInfo('_')
+        zi._compresslevel = 3
+        wf.writestr(zi, b'_', compresslevel=7)
+        assert wf.zipfile.getinfo(zi.filename)._compresslevel == 7
+
+    def test_writestr_data_sets_the_right_compresslevel(self, wf):
+        arcname = 'file'
+        wf.writestr_data('_', arcname, b'_', compresslevel=7)
+        arcpath = wf.data_dirname + '/_/' + arcname
+        assert wf.zipfile.getinfo(arcpath)._compresslevel == 7
+
+    def test_writestr_data_compresslevel_overrides_zinfo(self, wf):
+        zi = ZipInfo('_')
+        zi._compresslevel = 3
+        wf.writestr_data('_', zi, b'_', compresslevel=7)
+        arcpath = wf.data_dirname + '/_/' + zi.filename
+        assert wf.zipfile.getinfo(arcpath)._compresslevel == 7
+
+    def test_writestr_distinfo_sets_the_right_compresslevel(self, wf):
+        arcname = 'file'
+        wf.writestr_distinfo(arcname, b'_', compresslevel=7)
+        arcpath = wf.distinfo_dirname + '/' + arcname
+        assert wf.zipfile.getinfo(arcpath)._compresslevel == 7
+
+    def test_writestr_distinfo_compresslevel_overrides_zinfo(self, wf):
+        zi = ZipInfo('_')
+        zi._compresslevel = 3
+        wf.writestr_distinfo(zi, b'_', compresslevel=7)
+        arcpath = wf.distinfo_dirname + '/' + zi.filename
+        assert wf.zipfile.getinfo(arcpath)._compresslevel == 7
+
+    def test_write_sets_the_right_compresslevel(self, wf, tmp_file):
+        wf.write(tmp_file, compresslevel=7)
+        assert wf.zipfile.getinfo(tmp_file.name)._compresslevel == 7
+
+    def test_write_data_sets_the_right_compresslevel(self, wf, tmp_file):
+        wf.write_data(tmp_file, '_', compresslevel=7)
+        arcpath = wf.data_dirname + '/_/' + tmp_file.name
+        assert wf.zipfile.getinfo(arcpath)._compresslevel == 7
+
+    def test_write_distinfo_sets_the_right_compresslevel(self, wf, tmp_file):
+        wf.write_distinfo(tmp_file, compresslevel=7)
+        arcpath = wf.distinfo_dirname + '/' + tmp_file.name
+        assert wf.zipfile.getinfo(arcpath)._compresslevel == 7
