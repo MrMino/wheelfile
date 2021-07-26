@@ -925,7 +925,7 @@ class WheelFile:
         platform_tag: Optional[str] = None,
         compression: int = zipfile.ZIP_DEFLATED,
         allowZip64: bool = True,
-        compresslevel: int = None,
+        compresslevel: Optional[int] = None,
         strict_timestamps: bool = True,
     ) -> None:
         """Open or create a wheel file.
