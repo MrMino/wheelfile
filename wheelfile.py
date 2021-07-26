@@ -1604,7 +1604,6 @@ class WheelFile:
         # ZipFile.fp is set to None upon ZipFile.close()
         return self._zip.fp is None
 
-    # TODO: compression args?
     # TODO: symlinks?
     # TODO: use shutil.copyfileobj same way ZipFile.write does
     def write(self,
@@ -1713,7 +1712,6 @@ class WheelFile:
         path = os.path.join(arcname, directory[len(prefix):], stem)
         return path
 
-    # TODO: compression args?
     # TODO: Make sure fields of given ZipInfo objects are propagated
     def writestr(self,
                  zinfo_or_arcname: Union[zipfile.ZipInfo, str],
@@ -1759,7 +1757,6 @@ class WheelFile:
         self._zip.writestr(zinfo_or_arcname, data, compress_type, compresslevel)
         self.refresh_record(arcname)
 
-    # TODO: compression args?
     # TODO: drive letter should be stripped from the arcname the same way
     # ZipInfo.from_file does it
     # TODO: symlinks?
@@ -1837,7 +1834,6 @@ class WheelFile:
         self.write(filename, arcname, compress_type, compresslevel,
                    recursive=recursive, resolve=resolve, skipdir=skipdir)
 
-    # TODO: compression args?
     # TODO: drive letter should be stripped from the arcname the same way
     # ZipInfo.from_file does it
     # TODO: Make sure fields of given ZipInfo objects are propagated
