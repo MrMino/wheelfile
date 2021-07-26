@@ -16,10 +16,10 @@ from pathlib import Path
 
 if sys.version_info >= (3, 8):
     from zipfile import (ZipFile, ZipInfo, Path as ZipPath, ZIP_DEFLATED,
-                         ZIP_BZIP2)
+                         ZIP_BZIP2, ZIP_STORED)
 else:
     from zipfile38 import (ZipFile, ZipInfo, Path as ZipPath, ZIP_DEFLATED,
-                           ZIP_BZIP2)
+                           ZIP_BZIP2, ZIP_STORED)
 
 
 def test_UnnamedDistributionError_is_BadWheelFileError():
@@ -818,6 +818,13 @@ class TestSkipDir:
 
 class TestZipFileRelatedArgs:
 
+    @pytest.fixture
+    def wf(self, buf):
+        wf = WheelFile(buf, 'w', distname='_', version='0',
+                       compression=ZIP_STORED, compresslevel=1)
+        yield wf
+        wf.close()
+
     def test_passes_compression_arg_to_zipfile(self, buf):
         wf = WheelFile(buf, mode='w', distname='_', version='0',
                        compression=ZIP_BZIP2)
@@ -852,3 +859,54 @@ class TestZipFileRelatedArgs:
         wf.write(tmp_file, resolve=False)
         zinfo = wf.zipfile.getinfo(str(tmp_file).lstrip('/'))
         assert zinfo.date_time == (1980, 1, 1, 0, 0, 0)
+
+    def test_writestr_sets_the_right_compress_type(self, wf):
+        arcname = 'file'
+        wf.writestr(arcname, b'_', compress_type=ZIP_BZIP2)
+        assert wf.zipfile.getinfo(arcname).compress_type == ZIP_BZIP2
+
+    def test_writestr_compress_type_overrides_zinfo(self, wf):
+        zi = ZipInfo('_')
+        zi.compress_type = ZIP_DEFLATED
+        wf.writestr(zi, b'_', compress_type=ZIP_BZIP2)
+        assert wf.zipfile.getinfo(zi.filename).compress_type == ZIP_BZIP2
+
+    def test_writestr_data_sets_the_right_compress_type(self, wf):
+        arcname = 'file'
+        wf.writestr_data('_', arcname, b'_', compress_type=ZIP_BZIP2)
+        arcpath = wf.data_dirname + '/_/' + arcname
+        assert wf.zipfile.getinfo(arcpath).compress_type == ZIP_BZIP2
+
+    def test_writestr_data_compress_type_overrides_zinfo(self, wf):
+        zi = ZipInfo('_')
+        zi.compress_type = ZIP_DEFLATED
+        wf.writestr_data('_', zi, b'_', compress_type=ZIP_BZIP2)
+        arcpath = wf.data_dirname + '/_/' + zi.filename
+        assert wf.zipfile.getinfo(arcpath).compress_type == ZIP_BZIP2
+
+    def test_writestr_distinfo_sets_the_right_compress_type(self, wf):
+        arcname = 'file'
+        wf.writestr_distinfo(arcname, b'_', compress_type=ZIP_BZIP2)
+        arcpath = wf.distinfo_dirname + '/' + arcname
+        assert wf.zipfile.getinfo(arcpath).compress_type == ZIP_BZIP2
+
+    def test_writestr_distinfo_compress_type_overrides_zinfo(self, wf):
+        zi = ZipInfo('_')
+        zi.compress_type = ZIP_DEFLATED
+        wf.writestr_distinfo(zi, b'_', compress_type=ZIP_BZIP2)
+        arcpath = wf.distinfo_dirname + '/' + zi.filename
+        assert wf.zipfile.getinfo(arcpath).compress_type == ZIP_BZIP2
+
+    def test_write_sets_the_right_compress_type(self, wf, tmp_file):
+        wf.write(tmp_file, compress_type=ZIP_BZIP2)
+        assert wf.zipfile.getinfo(tmp_file.name).compress_type == ZIP_BZIP2
+
+    def test_write_data_sets_the_right_compress_type(self, wf, tmp_file):
+        wf.write_data(tmp_file, '_', compress_type=ZIP_BZIP2)
+        arcpath = wf.data_dirname + '/_/' + tmp_file.name
+        assert wf.zipfile.getinfo(arcpath).compress_type == ZIP_BZIP2
+
+    def test_write_distinfo_sets_the_right_compress_type(self, wf, tmp_file):
+        wf.write_distinfo(tmp_file, compress_type=ZIP_BZIP2)
+        arcpath = wf.distinfo_dirname + '/' + tmp_file.name
+        assert wf.zipfile.getinfo(arcpath).compress_type == ZIP_BZIP2

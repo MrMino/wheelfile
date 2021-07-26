@@ -1610,6 +1610,7 @@ class WheelFile:
     def write(self,
               filename: Union[str, Path],
               arcname: Optional[str] = None,
+              compress_type: Optional[int] = None,
               *, recursive: bool = True, resolve: bool = True,
               skipdir: bool = True) -> None:
         """Add the file to the wheel.
@@ -1625,6 +1626,10 @@ class WheelFile:
             Path in the archive to assign the file/directory into. If not
             given, `filename` will be used instead. In both cases, the leading
             path separators and the drive letter (if any) will be removed.
+
+        compress_type
+            Same as in `zipfile.ZipFile.write`. Overrides the `compression`
+            parameter given to `__init__`.
 
         recursive
             Keyword only. When True, if given path leads to a directory, all of
@@ -1652,7 +1657,7 @@ class WheelFile:
         """
         if resolve and arcname is None:
             arcname = resolved(filename)
-        self._write_to_zip(filename, arcname, skipdir)
+        self._write_to_zip(filename, arcname, skipdir, compress_type)
 
         if recursive:
             common_root = str(filename)
@@ -1668,9 +1673,10 @@ class WheelFile:
                     arcpath = self._os_walk_path_to_arcpath(
                         common_root, root, name, root_arcname
                     )
-                    self._write_to_zip(filepath, arcpath, skipdir)
+                    self._write_to_zip(filepath, arcpath, skipdir,
+                                       compress_type)
 
-    def _write_to_zip(self, filename, arcname, skipdir):
+    def _write_to_zip(self, filename, arcname, skipdir, compress_type):
         zinfo = zipfile.ZipInfo.from_file(
             filename, arcname, strict_timestamps=self._strict_timestamps
         )
@@ -1682,7 +1688,7 @@ class WheelFile:
         else:
             with open(filename, 'br') as f:
                 data = f.read()
-        self._zip.writestr(zinfo, data)
+        self._zip.writestr(zinfo, data, compress_type)
         self.refresh_record(zinfo.filename)
 
     @staticmethod
@@ -1701,9 +1707,11 @@ class WheelFile:
         return path
 
     # TODO: compression args?
+    # TODO: Make sure fields of given ZipInfo objects are propagated
     def writestr(self,
                  zinfo_or_arcname: Union[zipfile.ZipInfo, str],
-                 data: Union[bytes, str]) -> None:
+                 data: Union[bytes, str],
+                 compress_type: Optional[int] = None) -> None:
         """Write given data into the wheel under the given path.
 
         Updates the wheel record, if the record is being kept.
@@ -1717,6 +1725,12 @@ class WheelFile:
         data
             The data that will be writen into the archive. If it's a string, it
             is encoded as UTF-8 first.
+
+        compress_type
+            Same as in `zipfile.ZipFile.writestr`. Overrides the `compression`
+            parameter given to `__init__`. If the first parameter is a
+            `ZipInfo` object, the value its `compress_type` field is also
+            overriden.
         """
 
         # XXX: ZipFile.writestr() does not normalize arcpaths the same way
@@ -1728,7 +1742,7 @@ class WheelFile:
             else zinfo_or_arcname
         )
 
-        self._zip.writestr(zinfo_or_arcname, data)
+        self._zip.writestr(zinfo_or_arcname, data, compress_type)
         self.refresh_record(arcname)
 
     # TODO: compression args?
@@ -1737,6 +1751,7 @@ class WheelFile:
     # TODO: symlinks?
     def write_data(self, filename: Union[str, Path],
                    section: str, arcname: Optional[str] = None,
+                   compress_type: Optional[int] = None,
                    *, recursive: bool = True, resolve: bool = True,
                    skipdir: bool = True) -> None:
         """Write a file to the .data directory under a specified section.
@@ -1761,6 +1776,10 @@ class WheelFile:
             Path in the archive to assign the file/directory into, relative to
             the directory of the specified data section. If left empty,
             filename is used. Leading slashes are stripped.
+
+        compress_type
+            Same as in `zipfile.ZipFile.write`. Overrides the `compression`
+            parameter given to `__init__`.
 
         recursive
             Keyword only. When True, if given path leads to a directory, all of
@@ -1796,15 +1815,17 @@ class WheelFile:
         arcname = self._distinfo_path(section + '/' + arcname.lstrip('/'),
                                       kind='data')
 
-        self.write(filename, arcname, recursive=recursive, resolve=resolve,
-                   skipdir=skipdir)
+        self.write(filename, arcname, compress_type, recursive=recursive,
+                   resolve=resolve, skipdir=skipdir)
 
     # TODO: compression args?
     # TODO: drive letter should be stripped from the arcname the same way
     # ZipInfo.from_file does it
+    # TODO: Make sure fields of given ZipInfo objects are propagated
     def writestr_data(self, section: str,
                       zinfo_or_arcname: Union[zipfile.ZipInfo, str],
-                      data: Union[bytes, str]) -> None:
+                      data: Union[bytes, str],
+                      compress_type: Optional[int] = None) -> None:
         """Write given data to the .data directory under a specified section.
 
         This method is a handy shortcut for writing into
@@ -1828,6 +1849,12 @@ class WheelFile:
         data
             The data that will be writen into the archive. If it's a string, it
             is encoded as UTF-8 first.
+
+        compress_type
+            Same as in `zipfile.ZipFile.writestr`. Overrides the `compression`
+            parameter given to `__init__`. If the first parameter is a
+            `ZipInfo` object, the value its `compress_type` field is also
+            overriden.
         """
         self._check_section(section)
 
@@ -1839,11 +1866,13 @@ class WheelFile:
 
         arcname = self._distinfo_path(section + '/' + arcname.lstrip('/'),
                                       kind='data')
-        self.writestr(arcname, data)
+
+        self.writestr(arcname, data, compress_type)
 
     # TODO: Lazy mode should permit writing meta here
     def write_distinfo(self, filename: Union[str, Path],
                        arcname: Optional[str] = None,
+                       compress_type: Optional[int] = None,
                        *, recursive: bool = True, resolve: bool = True,
                        skipdir: bool = True) -> None:
         """Write a file to `.dist-info` directory in the wheel.
@@ -1865,6 +1894,10 @@ class WheelFile:
 
             This parameter will be prefixed with proper `.dist-info` path
             automatically.
+
+        compress_type
+            Same as in `zipfile.ZipFile.write`. Overrides the `compression`
+            parameter given to `__init__`.
 
         recursive
             Keyword only. When True, if given path leads to a directory, all of
@@ -1914,11 +1947,13 @@ class WheelFile:
 
         arcname = self._distinfo_path(arcname)
 
-        self.write(filename, arcname=arcname, recursive=recursive,
+        self.write(filename, arcname, compress_type, recursive=recursive,
                    skipdir=skipdir)
 
+    # TODO: Make sure fields of given ZipInfo objects are propagated
     def writestr_distinfo(self, zinfo_or_arcname: Union[zipfile.ZipInfo, str],
-                          data: Union[bytes, str]) -> None:
+                          data: Union[bytes, str],
+                          compress_type: Optional[int] = None) -> None:
         """Write given data to the .dist-info directory.
 
         This method is a handy shortcut for writing into
@@ -1941,6 +1976,12 @@ class WheelFile:
             The data that will be writen into the archive. If it's a string, it
             is encoded as UTF-8 first.
 
+        compress_type
+            Same as in `zipfile.ZipFile.writestr`. Overrides the `compression`
+            parameter given to `__init__`. If the first parameter is a
+            `ZipInfo` object, the value its `compress_type` field is also
+            overriden.
+
         Raises
         ------
         ProhibitedWriteError
@@ -1960,7 +2001,7 @@ class WheelFile:
             )
 
         arcname = self._distinfo_path(arcname.lstrip('/'))
-        self.writestr(arcname, data)
+        self.writestr(arcname, data, compress_type)
 
     @staticmethod
     def _check_section(section):
