@@ -934,14 +934,21 @@ class WheelFile:
         compresslevel: Optional[int] = None,
         strict_timestamps: bool = True,
     ) -> None:
+        # FIXME: Validation does not fail if filename differs from generated
+        # filename
         """Open or create a wheel file.
 
         In write and exclusive-write modes, if `file_or_path` is not specified,
-        or the specified path is a directory, the wheelfile will be created in
-        the current working directory, with filename generated using the values
-        given via `distname`, `version`, `build_tag`, `language_tag`,
-        `abi_tag`, and `platfrom_tag` arguments. Each of these parameters is
-        stored in a read-only property of the same name.
+        it is assumed to be the current directory. If the specified path is a
+        directory, the wheelfile will be created inside it, with filename
+        generated using the values given via `distname`, `version`,
+        `build_tag`, `language_tag`, `abi_tag`, and `platfrom_tag` arguments.
+        Each of these parameters is stored in a read-only property of the same
+        name. If `file_or_path` is a path to a file, the wheel will be created
+        under the specified path, but unless the lazy mode is used, the name of
+        the file will have to be the same as the one generated from the
+        arguments mentioned above, if these arguments are given - otherwise
+        validation will fail.
 
         If lazy mode is not specified:
 

@@ -961,3 +961,24 @@ class TestZipFileRelatedArgs:
         wf.write_distinfo(tmp_file, compresslevel=7)
         arcpath = wf.distinfo_dirname + '/' + tmp_file.name
         assert wf.zipfile.getinfo(arcpath)._compresslevel == 7
+
+
+class TestWheelCloning:
+    def test_all_usecases(self):
+        ...
+        clone, wf, path_to_dir, path_to_file = None, None, None, None
+
+        # mode?
+        # default tag args vs removing a tag?
+
+        # 1. Creates copy of wf with io buffer as the underlying memory obj, if
+        #    wf was created using one
+        # 2. Creates copy of wf, if it's possible without overwriting, the
+        #    original.
+        #
+        clone(wf, ...)
+        # Creates copy of wf in dir
+        # If resulting wf is in dir already - errors out
+        clone(wf, path_to_dir, ...)
+        # Creates copy of wf in dir
+        clone(wf, path_to_file, ...)
