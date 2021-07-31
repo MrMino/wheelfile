@@ -937,11 +937,14 @@ class WheelFile:
         """Open or create a wheel file.
 
         In write and exclusive-write modes, if `file_or_path` is not specified,
-        or the specified path is a directory, the wheelfile will be created in
-        the current working directory, with filename generated using the values
-        given via `distname`, `version`, `build_tag`, `language_tag`,
-        `abi_tag`, and `platfrom_tag` arguments. Each of these parameters is
-        stored in a read-only property of the same name.
+        it is assumed to be the current directory. If the specified path is a
+        directory, the wheelfile will be created inside it, with filename
+        generated using the values given via `distname`, `version`,
+        `build_tag`, `language_tag`, `abi_tag`, and `platfrom_tag` arguments.
+        Each of these parameters is stored in a read-only property of the same
+        name.
+        If `file_or_path` is a path to a file, the wheel will be created
+        under the specified path.
 
         If lazy mode is not specified:
 
