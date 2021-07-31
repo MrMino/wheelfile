@@ -1215,6 +1215,91 @@ class WheelFile:
         if 'l' not in mode:
             self.validate()
 
+    class _Sentinel:
+        """Used in `from_wheelfile` to specify that a given paramter should be
+        copied from the source object.
+        """
+    _unspecified = _Sentinel()
+
+    @classmethod
+    def from_wheelfile(
+        cls, wf: "WheelFile",
+        file_or_path: Union[str, Path, BinaryIO] = './',
+        mode: str = 'w',
+        *,
+        distname: Union[str, None, _Sentinel] = _unspecified,
+        version: Union[str, Version, None, _Sentinel] = _unspecified,
+        build_tag: Union[int, str, None, _Sentinel] = _unspecified,
+        language_tag: Union[str, None, _Sentinel] = _unspecified,
+        abi_tag: Union[str, None, _Sentinel] = _unspecified,
+        platform_tag: Union[str, None, _Sentinel] = _unspecified,
+        compression: int = zipfile.ZIP_DEFLATED,
+        allowZip64: bool = True,
+        compresslevel: Optional[int] = None,
+        strict_timestamps: bool = True,
+    ) -> "WheelFile":
+        """Recreate `wf` using different parameters.
+
+        Creates a new `WheelFile` object using data from another, given as
+        `wf`, and given constructor parameters. The new object will contain
+        the same files (including those under `.data` and `.dist-info`
+        directories), except:
+            - `.dist-info` directory is renamed, if `version` or `distname` is
+              changed.
+            - `METADATA` will contain almost all the same information, except
+              for the fields that were changed via arguments of this method.
+            - `WHEEL` will be changed to contain the new `tags`, and the
+              `generator` field will be reset to the one given by `WheelData`
+              by default.
+            - `RECORD` is reconstructed in order to accomodate the differences
+              above.
+
+        All parameters of this method except `wf` are passed to the new
+        object's `__init__`.
+
+        For `distname`, `version`, and `*_tag` arguments, if a parameter is not
+        given, the value from `wf` is used. If a default is needed instead, set
+        the argument to `None` explicitly.
+
+        Even if `wf` was created using a path to a directory, the default value
+        used for `file_or_path` will be the current working directory.
+
+        The new `WheelFile` object must be writable, so by default `"w"` mode
+        is used, instead of `"r"`. If copying `wf` would result in overwriting
+        a file or buffer from which `wf` was created, `ValueError` will be
+        raised.
+        """
+        if distname is cls._unspecified:
+            distname = wf.distname
+        if version is cls._unspecified:
+            version = wf.version
+        if build_tag is cls._unspecified:
+            build_tag = wf.build_tag
+        if language_tag is cls._unspecified:
+            language_tag = wf.language_tag
+        if abi_tag is cls._unspecified:
+            abi_tag = wf.abi_tag
+        if platform_tag is cls._unspecified:
+            platform_tag = wf.platform_tag
+
+        # For MyPy
+        assert isinstance(distname, str) or distname is None
+        assert isinstance(version, (str, Version)) or version is None
+        assert isinstance(build_tag, (int, str)) or build_tag is None
+        assert isinstance(language_tag, str) or language_tag is None
+        assert isinstance(abi_tag, str) or abi_tag is None
+        assert isinstance(platform_tag, str) or platform_tag is None
+
+        return WheelFile(
+            file_or_path, mode,
+            distname=distname,
+            version=version,
+            build_tag=build_tag,
+            language_tag=language_tag,
+            abi_tag=abi_tag,
+            platform_tag=platform_tag,
+        )
+
     @staticmethod
     def _is_unnamed_or_directory(target: Union[Path, BinaryIO]) -> bool:
         return (
