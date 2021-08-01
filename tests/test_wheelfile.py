@@ -816,10 +816,9 @@ class TestZipFileRelatedArgs:
                        compression=ZIP_BZIP2)
         assert wf.zipfile.compression == ZIP_BZIP2
 
-    def test_passes_allowZip64_arg_to_zipfile(self, buf, tmp_file):
+    def test_passes_allowZip64_arg_to_zipfile(self, buf):
         wf = WheelFile(buf, mode='w', distname='_', version='0',
                        allowZip64=False)
-        wf.write(tmp_file, resolve=False)
         # ZipFile.open trips when allowZip64 is forced in a zipfile that does
         # not allow it.
         #
@@ -827,8 +826,7 @@ class TestZipFileRelatedArgs:
         # "force_zip64 is True, but allowZip64 was False when opening the ZIP
         # file."
         with pytest.raises(ValueError, match="allowZip64 was False"):
-            assert wf.zipfile.open(str(tmp_file).lstrip('/'), mode='w',
-                                   force_zip64=True)
+            assert wf.zipfile.open('file', mode='w', force_zip64=True)
 
     def test_passes_compresslevel_arg_to_zipfile(self, buf):
         wf = WheelFile(buf, mode='w', distname='_', version='0',
