@@ -30,13 +30,6 @@ def test_BadWheelFileError_is_ValueError():
     assert issubclass(BadWheelFileError, ValueError)
 
 
-@pytest.fixture
-def tmp_file(tmp_path):
-    fp = tmp_path / 'wheel-0-py3-none-any.whl'
-    fp.touch()
-    return fp
-
-
 def test_can_work_on_in_memory_bufs(buf):
     wf = WheelFile(buf, 'w', distname='_', version='0')
     wf.close()
