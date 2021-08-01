@@ -971,7 +971,7 @@ class WheelFile:
         omitted, its attribute is set to an empty string.
 
         If the archive root contains a directory with a name ending with
-        '.dist-info', it is considered to be _the_ metadata directory for the
+        '.dist-info', it is considered to be *the* metadata directory for the
         wheel, even if the given/inferred distname and version do not match its
         name.
 
@@ -1243,7 +1243,8 @@ class WheelFile:
         Creates a new `WheelFile` object using data from another, given as
         `wf`, and given constructor parameters. The new object will contain
         the same files (including those under `.data` and `.dist-info`
-        directories), except:
+        directories), with the same timestamps, compression methods,
+        compression levels, access modes, etc., *except*:
             - `.dist-info` directory is renamed, if `version` or `distname` is
               changed.
             - `METADATA` will contain almost all the same information, except
