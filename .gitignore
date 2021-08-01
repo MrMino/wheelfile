@@ -1,5 +1,6 @@
 # Documentation
 docs-out
+docs_out
 
 # Built packages
 *.tar.gz
