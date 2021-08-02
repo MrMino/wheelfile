@@ -300,8 +300,11 @@ class TestWheelData:
 
         assert wm_a != wm_b
 
-    def test_from_str(self):
+    def test_from_str_eqs_by_string(self):
         assert str(WheelData.from_str(str(WheelData()))) == str(WheelData())
+
+    def test_from_str_eqs_by_obj(self):
+        assert WheelData.from_str(str(WheelData())) == WheelData()
 
 
 class TestWheelRecord:
