@@ -839,6 +839,9 @@ class WheelFile:
             - A path to a file: that path, even if it is not compliant with the
               spec (in lazy mode).
 
+         **Returned path is not resolved, and so might be relative and/or
+         contain `../` and `./` segments**.
+
     distname : str
         Name of the distribution (project). Either given to __init__()
         explicitly or inferred from its file_or_path argument.
