@@ -940,6 +940,8 @@ class WheelFile:
         compresslevel: Optional[int] = None,
         strict_timestamps: bool = True,
     ) -> None:
+        # FIXME: Validation does not fail if filename differs from generated
+        # filename, yet it validates the extension
         """Open or create a wheel file.
 
         In write and exclusive-write modes, if `file_or_path` is not specified,
