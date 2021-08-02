@@ -33,7 +33,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - `WheelFile` write methods now take optional `compress_type` and
   `compresslevel` arguments known from `ZipFile`.
 - New `skipdir` argument in `WheelFile` write methods: `write`, `write_data`,
-  and `write_distinfo`. When `True` (which is the default`), these methods will
+  and `write_distinfo`. When `True` (which is the default), these methods will
   not write ZIP entries for directories into the archive.
 
 ### Fixed
