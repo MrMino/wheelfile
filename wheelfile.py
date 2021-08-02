@@ -1250,13 +1250,24 @@ class WheelFile:
         compression levels, access modes, etc., *except*:
             - `.dist-info` directory is renamed, if `version` or `distname` is
               changed.
+            - `.data` directory is renamed, if `version` or `distname` is
+              changed.
             - `METADATA` will contain almost all the same information, except
               for the fields that were changed via arguments of this method.
-            - `WHEEL` will be changed to contain the new `tags`, and the
-              `generator` field will be reset to the one given by `WheelData`
-              by default.
+            - `WHEEL` will be changed to contain the new `tags` and `build`
+              number. The `generator` field will be reset to the one given by
+              `WheelData` by default: `"wheelfile <version>"`.
             - `RECORD` is reconstructed in order to accomodate the differences
               above.
+
+        This can be used to rename a wheel, change its metadata, or add files
+        to it. It also fixes some common problems of wheel packages, e.g.
+        unnormalized dist-info directory names.
+
+        If any of the metadata files is missing or corrupted in `wf`, i.e. the
+        properties `metadata`, `wheeldata`, and `record` of `wf` are set to
+        `None`, new ones with will be created for the new object, using default
+        values.
 
         All parameters of this method except `wf` are passed to the new
         object's `__init__`.
@@ -1272,7 +1283,47 @@ class WheelFile:
         is used, instead of `"r"`. If copying `wf` would result in overwriting
         a file or buffer from which `wf` was created, `ValueError` will be
         raised.
+
+        Parameters
+        ----------
+        wf
+            `WheelFile` object from which the new object should be recreated.
+
+        mode
+            Mode in which the new `WheelFile` should be opened. Accepts the
+            same modes as `WheelFile.__init__`, except read mode (`"r"`) is not
+            allowed.
+
+        distname, version, build_tag, language_tag, abi_tag, platform_tag
+            Optional argument passed to the new object's constructor. See
+            `WheelFile.__init__` for the full description. If not specified,
+            value from `wf` is used (it is avaialable via property of the same
+            name). If `None` is given explicitly, constructor's default is
+            used.
+
+        compression, allowZip64, compresslevel, strict_timestamps
+            Optional argument passed to the new object's constructor, which in
+            turn passes them to `zipfile.ZipFile` - see `zipfile` docs for full
+            description on each.
+
+            Value from `wf` is *not* reused for this parameter.
+
+        Raises
+        ------
+        ValueError
+            Raised when:
+               - Read mode is used (`"r"`) in `mode`.
+               - Creating the object would result in rewriting the underlying
+                 buffer of `wf` (if `wf` uses an IO buffer).
+               - Creating the object would result in rewriting the file on
+                 which `wf` operates.
         """
+        if "r" in mode:
+            raise ValueError(
+                f"Passing \"r\" as mode is not allowed when recreating a "
+                f"wheel: {repr('mode')}."
+            )
+
         if distname is cls._unspecified:
             distname = wf.distname
         if version is cls._unspecified:
@@ -1294,7 +1345,13 @@ class WheelFile:
         assert isinstance(abi_tag, str) or abi_tag is None
         assert isinstance(platform_tag, str) or platform_tag is None
 
-        return WheelFile(
+        if file_or_path == wf.zipfile.fp:
+            raise ValueError(
+                "Buffer object used to save the new wheel cannot be the "
+                "same as the one used by the other WheelFile object."
+            )
+
+        new_wf = WheelFile(
             file_or_path, mode,
             distname=distname,
             version=version,
@@ -1302,7 +1359,62 @@ class WheelFile:
             language_tag=language_tag,
             abi_tag=abi_tag,
             platform_tag=platform_tag,
+            compression=compression,
+            allowZip64=allowZip64,
+            compresslevel=compresslevel,
+            strict_timestamps=strict_timestamps,
         )
+
+        assert new_wf.wheeldata is not None  # For MyPy
+
+        # TODO: if Corrupted() is implemented, make sure to test
+        # wf.metadata = Corupted (& wheeldata, & record)
+
+        if wf.metadata is not None:
+            # TODO: use copy.deepcopy instead
+            new_wf.metadata = MetaData.from_str(str(wf.metadata))
+            new_wf.metadata.name = new_wf.distname
+            new_wf.metadata.version = new_wf.version
+
+        if wf.wheeldata is not None:
+            new_wf.wheeldata.root_is_purelib = wf.wheeldata.root_is_purelib
+
+            # TODO: if wf.wheeldata.build/tags are changed, the changed values
+            # should superseed those from wf's name in cloning, i.e. new_wf
+            # should have build/tags from wf in its own name, but build/tags
+            # from wf.wheeldata in its wheeldata.
+            #
+            # new_wf.wheeldata.tags = wf.wheeldata.tags
+            # new_wf.wheeldata.build = wf.wheeldata.build
+            #
+            # But the given build tag should always superseed the above:
+            #
+            # <<(dedent)
+            # if build_tag is not cls._unspecified:
+            #     new_wf.wheeldata.build = build_tag
+            # <<
+            #
+            # Similar modality should be put in place for distname and version
+            # of wf.metadata.
+
+        to_copy = wf.infolist()
+        for zinfo in to_copy:
+
+            arcname = zinfo.filename
+            arcname_head, *arcname_tail_parts = arcname.split('/')
+            arcname_tail = '/'.join(arcname_tail_parts)
+            if arcname_head == wf.distinfo_dirname:
+                new_arcname = new_wf.distinfo_dirname + '/' + arcname_tail
+                new_wf.writestr(new_arcname, wf.zipfile.read(zinfo))
+                continue
+            if arcname_head == wf.data_dirname:
+                new_arcname = new_wf.data_dirname + '/' + arcname_tail
+                new_wf.writestr(new_arcname, wf.zipfile.read(zinfo))
+                continue
+
+            new_wf.writestr(zinfo, wf.zipfile.read(zinfo))
+
+        return new_wf
 
     @staticmethod
     def _is_unnamed_or_directory(target: Union[Path, BinaryIO]) -> bool:

@@ -63,8 +63,9 @@ class TestMetadata:
     def test_keywords_is_not_multiple_use(self):
         assert not MetaData.field_is_multiple_use('keywords')
 
+    @classmethod
     @pytest.fixture
-    def full_usage(self):
+    def full_usage(cls):
         description = dedent("""\
 
             Some
