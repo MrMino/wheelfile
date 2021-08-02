@@ -60,7 +60,7 @@ else:
 
 from typing import Optional, Union, List, Dict, IO, BinaryIO
 
-__version__ = '0.0.7'
+__version__ = '0.0.8'
 
 
 # TODO: ensure that writing into `file` arcname and then into `file/not/really`

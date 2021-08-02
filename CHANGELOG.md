@@ -7,6 +7,9 @@ This project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+Nothing yet.
+
+## [0.0.8] - 2021-08-03
 ### Changed
 - Since `WheelFile` write methods now have `skipdir=True` default (see below),
   writing recursively from a directory will no longer produce entries for
@@ -176,7 +179,8 @@ contributions - both of the fixes below came from them.
 - First working version of the library.
 - It's possible to create wheels from scratch.
 
-[Unreleased]: https://github.com/mrmino/wheelfile/compare/v0.0.7...HEAD
+[Unreleased]: https://github.com/mrmino/wheelfile/compare/v0.0.8...HEAD
+[0.0.8]: https://github.com/mrmino/wheelfile/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/mrmino/wheelfile/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/mrmino/wheelfile/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/mrmino/wheelfile/compare/v0.0.4...v0.0.5
