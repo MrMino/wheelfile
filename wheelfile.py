@@ -1942,6 +1942,14 @@ class WheelFile:
         zinfo = zipfile.ZipInfo.from_file(
             filename, arcname, strict_timestamps=self._strict_timestamps
         )
+
+        # Since we construct ZipInfo manually here, we have to propagate
+        # defaults ourselves.
+        if compress_type is None:
+            compress_type = self.zipfile.compression
+        if compresslevel is None:
+            compresslevel = self.zipfile.compresslevel
+
         if zinfo.is_dir():
             if skipdir:
                 return

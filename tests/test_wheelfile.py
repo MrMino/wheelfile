@@ -945,3 +945,140 @@ class TestZipFileRelatedArgs:
         wf.write_distinfo(tmp_file, compresslevel=7)
         arcpath = wf.distinfo_dirname + '/' + tmp_file.name
         assert wf.zipfile.getinfo(arcpath)._compresslevel == 7
+
+    def test_write_default_compress_type_is_deflate(self, buf, tmp_file):
+        wf = WheelFile(buf, 'w', distname='_', version='0')
+        wf.write(tmp_file)
+        assert wf.infolist()[0].compress_type == ZIP_DEFLATED
+
+    def test_write_data_default_compress_type_is_deflate(self, buf, tmp_file):
+        wf = WheelFile(buf, 'w', distname='_', version='0')
+        wf.write_data(tmp_file, 'section')
+        assert wf.infolist()[0].compress_type == ZIP_DEFLATED
+
+    def test_write_distinfo_default_compress_type_is_deflate(self, buf,
+                                                             tmp_file):
+        wf = WheelFile(buf, 'w', distname='_', version='0')
+        wf.write_distinfo(tmp_file)
+        assert wf.infolist()[0].compress_type == ZIP_DEFLATED
+
+    def test_write_default_compress_type_is_from_init(self, buf, tmp_file):
+        wf = WheelFile(buf, 'w', distname='_', version='0',
+                       compression=ZIP_BZIP2)
+        wf.write(tmp_file)
+        assert wf.infolist()[0].compress_type == ZIP_BZIP2
+
+    def test_write_data_default_compress_type_is_from_init(self, buf, tmp_file):
+        wf = WheelFile(buf, 'w', distname='_', version='0',
+                       compression=ZIP_BZIP2)
+        wf.write_data(tmp_file, 'section')
+        assert wf.infolist()[0].compress_type == ZIP_BZIP2
+
+    def test_write_distinfo_default_compress_type_is_from_init(self, buf,
+                                                               tmp_file):
+        wf = WheelFile(buf, 'w', distname='_', version='0',
+                       compression=ZIP_BZIP2)
+        wf.write_distinfo(tmp_file)
+        assert wf.infolist()[0].compress_type == ZIP_BZIP2
+
+    def test_write_default_compresslevel_is_none(self, buf, tmp_file):
+        wf = WheelFile(buf, 'w', distname='_', version='0')
+        wf.write(tmp_file)
+        assert wf.infolist()[0]._compresslevel is None
+
+    def test_write_data_default_compresslevel_is_none(self, buf, tmp_file):
+        wf = WheelFile(buf, 'w', distname='_', version='0')
+        wf.write_data(tmp_file, 'section')
+        assert wf.infolist()[0]._compresslevel is None
+
+    def test_write_distinfo_default_compresslevel_is_none(self, buf, tmp_file):
+        wf = WheelFile(buf, 'w', distname='_', version='0')
+        wf.write_distinfo(tmp_file)
+        assert wf.infolist()[0]._compresslevel is None
+
+    def test_write_default_compresslevel_is_from_init(self, buf,
+                                                      tmp_file):
+        wf = WheelFile(buf, 'w', distname='_', version='0',
+                       compresslevel=9)
+        wf.write(tmp_file)
+        assert wf.infolist()[0]._compresslevel == 9
+
+    def test_write_data_default_compresslevel_is_from_init(self, buf,
+                                                           tmp_file):
+        wf = WheelFile(buf, 'w', distname='_', version='0',
+                       compresslevel=9)
+        wf.write_data(tmp_file, 'section')
+        assert wf.infolist()[0]._compresslevel == 9
+
+    def test_write_distinfo_default_compresslevel_is_from_init(self, buf,
+                                                               tmp_file):
+        wf = WheelFile(buf, 'w', distname='_', version='0',
+                       compresslevel=9)
+        wf.write_distinfo(tmp_file)
+        assert wf.infolist()[0]._compresslevel == 9
+
+    def test_writestr_default_compress_type_is_deflate(self, buf):
+        wf = WheelFile(buf, 'w', distname='_', version='0')
+        wf.writestr('file', b'data')
+        assert wf.infolist()[0].compress_type == ZIP_DEFLATED
+
+    def test_writestr_data_default_compress_type_is_deflate(self, buf):
+        wf = WheelFile(buf, 'w', distname='_', version='0')
+        wf.writestr_data('section', 'file', b'data')
+        assert wf.infolist()[0].compress_type == ZIP_DEFLATED
+
+    def test_writestr_distinfo_default_compress_type_is_deflate(self, buf):
+        wf = WheelFile(buf, 'w', distname='_', version='0')
+        wf.writestr_distinfo('file', b'data')
+        assert wf.infolist()[0].compress_type == ZIP_DEFLATED
+
+    def test_writestr_default_compress_type_is_from_init(self, buf):
+        wf = WheelFile(buf, 'w', distname='_', version='0',
+                       compression=ZIP_BZIP2)
+        wf.writestr('file', b'data')
+        assert wf.infolist()[0].compress_type == ZIP_BZIP2
+
+    def test_writestr_data_default_compress_type_is_from_init(self, buf):
+        wf = WheelFile(buf, 'w', distname='_', version='0',
+                       compression=ZIP_BZIP2)
+        wf.writestr_data('section', 'file', b'data')
+        assert wf.infolist()[0].compress_type == ZIP_BZIP2
+
+    def test_writestr_distinfo_default_compress_type_is_from_init(self, buf):
+        wf = WheelFile(buf, 'w', distname='_', version='0',
+                       compression=ZIP_BZIP2)
+        wf.writestr_distinfo('file', b'data')
+        assert wf.infolist()[0].compress_type == ZIP_BZIP2
+
+    def test_writestr_default_compresslevel_is_none(self, buf):
+        wf = WheelFile(buf, 'w', distname='_', version='0')
+        wf.writestr('file', b'data')
+        assert wf.infolist()[0]._compresslevel is None
+
+    def test_writestr_data_default_compresslevel_is_none(self, buf):
+        wf = WheelFile(buf, 'w', distname='_', version='0')
+        wf.writestr_data('section', 'file', b'data')
+        assert wf.infolist()[0]._compresslevel is None
+
+    def test_writestr_distinfo_default_compresslevel_is_none(self, buf):
+        wf = WheelFile(buf, 'w', distname='_', version='0')
+        wf.writestr_distinfo('file', b'data')
+        assert wf.infolist()[0]._compresslevel is None
+
+    def test_writestr_default_compresslevel_is_from_init(self, buf):
+        wf = WheelFile(buf, 'w', distname='_', version='0',
+                       compresslevel=9)
+        wf.writestr('file', b'data')
+        assert wf.infolist()[0]._compresslevel == 9
+
+    def test_writestr_data_default_compresslevel_is_from_init(self, buf):
+        wf = WheelFile(buf, 'w', distname='_', version='0',
+                       compresslevel=9)
+        wf.writestr_data('section', 'file', b'data')
+        assert wf.infolist()[0]._compresslevel == 9
+
+    def test_writestr_distinfo_default_compresslevel_is_from_init(self, buf):
+        wf = WheelFile(buf, 'w', distname='_', version='0',
+                       compresslevel=9)
+        wf.writestr_distinfo('file', b'data')
+        assert wf.infolist()[0]._compresslevel == 9
