@@ -17,6 +17,9 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   This does not apply to `writestr_*` methods - attempting to write to an
   `arcname` ending in `/` _will_ produce an entry that is visible as a
   directory.
+- `WheelFile.validate` will now fail and raise `ValueError` if `WHEEL` build
+  tag field (`.wheeldata.build`) contains a value that is different from the
+  wheel name (`.build_tag`).
 
 ### Added
 - `WheelFile.METADATA_FILENAMES` - a static field with a set of names of

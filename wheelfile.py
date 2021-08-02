@@ -1586,6 +1586,11 @@ class WheelFile:
                 "RECORD file is not present in the archive or is corrupted."
             )
 
+        if self.wheeldata.build != self.build_tag:
+            raise ValueError(
+                "WHEEL build tag is different than the one in the filename"
+            )
+
     # TODO: return a list of defects & negligences present in the wheel file
     # TODO: maybe it's a good idea to put it outside this class?
     # TODO: The implementation could be made simpler by utilizng an internal
