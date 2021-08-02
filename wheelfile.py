@@ -476,7 +476,10 @@ class MetaData:
             if not attr.endswith('s'):
                 args[attr] = m.get(field_name)
             else:
-                args[attr] = m.get_all(field_name)
+                if field_name == "Keywords":
+                    args[attr] = m.get(field_name).split(',')
+                else:
+                    args[attr] = m.get_all(field_name)
 
         args['description'] = m.get_payload()
 

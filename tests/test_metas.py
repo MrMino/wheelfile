@@ -156,10 +156,15 @@ class TestMetadata:
         assert set(headers) == set(expected_headers)
         assert payload == expected_payload
 
-    def test_full_usage_from_str(self, full_usage):
+    def test_full_usage_from_str_eqs_by_str(self, full_usage):
         md = MetaData(**full_usage)
         fs = MetaData.from_str(str(md))
         assert str(fs) == str(md)
+
+    def test_full_usage_from_str_eqs_by_obj(self, full_usage):
+        md = MetaData(**full_usage)
+        fs = MetaData.from_str(str(md))
+        assert fs == md
 
     def test_no_mistaken_attributes(self, metadata):
         with pytest.raises(AttributeError):

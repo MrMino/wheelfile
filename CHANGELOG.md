@@ -38,6 +38,9 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 - Docstring of the `WheelFile.filename` property, which was innacurate.
+- `MetaData.from_str` will now correctly unpack `Keywords` field into a list of
+  strings, instead of a one-element list with a string containing
+  comma-separated tags.
 
 ## [0.0.7] - 2021-07-19
 ### Changed
