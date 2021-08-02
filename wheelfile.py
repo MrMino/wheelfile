@@ -1342,6 +1342,12 @@ class WheelFile:
         if platform_tag is cls._unspecified:
             platform_tag = wf.platform_tag
 
+        # Required for the path check below
+        if isinstance(version, str):
+            version = Version(version)
+        if isinstance(file_or_path, str):
+            file_or_path = Path(file_or_path)
+
         # For MyPy
         assert isinstance(distname, str) or distname is None
         assert isinstance(version, (str, Version)) or version is None
@@ -1355,6 +1361,36 @@ class WheelFile:
                 "Buffer object used to save the new wheel cannot be the "
                 "same as the one used by the other WheelFile object."
             )
+
+        f_o_p = file_or_path  # For brevity
+        dir_path = (
+            f_o_p.resolve() if isinstance(f_o_p, Path) and f_o_p.is_dir() else
+            f_o_p.parent.resolve() if isinstance(f_o_p, Path) else
+            getattr(f_o_p, 'name', None)
+        )
+
+        # wf.zipfile.filename is not None only when it is writing to a file
+        both_are_files = (
+            wf.zipfile.filename is not None
+            and dir_path is not None
+        )
+
+        if both_are_files:
+            assert wf.zipfile.filename is not None  # For MyPy
+            # Ensure we won't overwrite wf
+            wf_dir_path = Path(wf.zipfile.filename).parent.resolve()
+            if wf_dir_path == dir_path and (
+                wf.distname == distname
+                and wf.version == version
+                and wf.build_tag == build_tag
+                and wf.language_tag == language_tag
+                and wf.abi_tag == abi_tag
+                and wf.platform_tag == platform_tag
+            ):
+                raise ValueError(
+                    "Operation would overwrite the old wheel - "
+                    "both objects' paths point at the same file."
+                )
 
         new_wf = WheelFile(
             file_or_path, mode,

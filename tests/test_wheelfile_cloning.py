@@ -418,7 +418,7 @@ class TestNoOverwriting:
             with pytest.raises(ValueError):
                 WheelFile.from_wheelfile(wf, tmp_file)
 
-    def test_raises_VE_when_same_path_used_relatively(self, wf, buf, tmp_path):
+    def test_raises_VE_when_same_path_used_relatively(self, wf, tmp_path):
         (tmp_path / 'relative/').mkdir()
         (tmp_path / 'path/').mkdir()
         path = (tmp_path / 'relative/../path/../')
@@ -426,3 +426,15 @@ class TestNoOverwriting:
         with WheelFile(path, mode='w', distname='_', version='0') as wf:
             with pytest.raises(ValueError):
                 WheelFile.from_wheelfile(wf, tmp_path)
+
+    @pytest.fixture
+    def tmp_cwd(self, tmp_path):
+        old_dir = os.getcwd()
+        os.chdir(tmp_path)
+        yield tmp_path
+        os.chdir(old_dir)
+
+    def test_raises_VE_when_same_path_used_via_curdir(self, tmp_cwd):
+        with WheelFile(tmp_cwd, mode='w', distname='_', version='0') as wf:
+            with pytest.raises(ValueError):
+                WheelFile.from_wheelfile(wf)

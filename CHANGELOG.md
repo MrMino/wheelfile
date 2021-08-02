@@ -22,6 +22,9 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   wheel name (`.build_tag`).
 
 ### Added
+- `WheelFile.from_wheelfile` - a constructor class-method that makes it
+  possible to recreate a wheel and: rename it (change distname, version,
+  buildnumber and/or tags), append files to it, change its metadata, etc.
 - `WheelFile.METADATA_FILENAMES` - a static field with a set of names of
   metadata files managed by this class.
 - `WheelFile.writestr_distinfo` - similar to `write_distinfo`, this is a safe
