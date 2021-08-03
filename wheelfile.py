@@ -78,7 +78,6 @@ __version__ = '0.0.8'
 # TODO: idea - install wheel - w/ INSTALLER file
 # TODO: idea - wheel from an installed distribution?
 
-# TODO: module docstring
 # TODO: fix inconsistent referencing style of symbols in docstrings
 
 # TODO: parameters for path-like values should accept bytes
@@ -89,8 +88,6 @@ __version__ = '0.0.8'
 # It would simplify the whole implementation.
 
 # TODO: fix usage of UnnamedDistributionError and ValueError - it is ambiguous
-
-# TODO: methods that take ZipInfo should take compression switches into account
 
 
 def _slots_from_params(func):
@@ -817,7 +814,6 @@ def resolved(path: Union[str, Path]) -> str:
 # TODO: append mode
 # TODO: writing inexistent metadata in lazy mode
 # TODO: better repr
-# TODO: docstrings
 # TODO: comparison operators for comparing version + build number
 class WheelFile:
     """An archive that follows the wheel specification.
@@ -1619,6 +1615,7 @@ class WheelFile:
     # TODO: test edge cases related to bad contents
     # TODO: should "bad content" exceptions be saved for validate()?
     # TODO: the try...excepts should use something stricter than "Exception"
+    # TODO: save the exceptions in Corrupted objects after they are implemented
     def _read_distinfo(self):
         try:
             metadata = self.zipfile.read(self._distinfo_path('METADATA'))
@@ -1693,6 +1690,7 @@ class WheelFile:
     def data_dirname(self):
         return self._distinfo_path("", kind="data")[:-1]
 
+    # TODO: the baseline for this should be "is the wheel installable"?
     # TODO: validate naming conventions, metadata, etc.
     # TODO: use testwheel()
     # TODO: idea: raise when completely out-of-spec, return a compliancy score?
