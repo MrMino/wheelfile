@@ -111,8 +111,6 @@ def _slots_from_params(func):
 # TODO: values validation
 # TODO: validate provides_extras ↔ requires_dists?
 # TODO: validate values charset-wise
-# TODO: as_json?
-# TODO: as_dict?
 # TODO: ensure name is the same as wheelfile namepath
 # TODO: PEP-643 - v2.2
 # TODO: don't raise invalid version, assign a degenerated version object instead
@@ -486,8 +484,6 @@ class MetaData:
 # TODO: reimplement using dataclasses?
 # TODO: add version to the class name, reword the "Note"
 # TODO: values validation
-# TODO: to_json?
-# TODO: as_dict?
 class WheelData:
     """Implements .dist-info/WHEEL file format.
 
