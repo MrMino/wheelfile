@@ -1,5 +1,5 @@
-Simple build script example
-===========================
+Full build script example
+=========================
 
 The following script is the actual build script used to package ``wheelfile``
 during a release.

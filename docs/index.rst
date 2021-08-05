@@ -1,12 +1,18 @@
 wheelfile
 =========
 
-.. toctree::
-    :hidden:
-
-    examples/simple_build.rst
 
 .. automodule:: wheelfile
+
+Other examples
+--------------
+
+Here's a list of more in-depth examples. Each example is based on a real piece
+of software that's used "in the wild" at the time of writing.
+
+.. toctree::
+
+    examples/simple_build.rst
 
 Installation
 ------------
