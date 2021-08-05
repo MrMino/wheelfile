@@ -1,10 +1,12 @@
 PEP-517 Builder
 ===============
 
+Ever wanted to create a package builder like ``setuptools``?
+
 Thanks to `PEP-517 <https://www.python.org/dev/peps/pep-0517/>`__ and `PEP-518
 <https://www.python.org/dev/peps/pep-0517/>`__ you can create your very own
 package builders, and make them compatible with ``pip install
-path/to/repository``.
+path/to/repository``, ``pip wheel``, and all sorts of other tools.
 
 ``wheelfile`` makes developing your own builder & hooks straightforward.
 
