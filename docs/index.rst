@@ -11,8 +11,10 @@ Here's a list of more in-depth examples. Each example is based on a real piece
 of software that's used "in the wild" at the time of writing.
 
 .. toctree::
+    :maxdepth: 1
 
     examples/buildscript.rst
+    examples/pep-517-builder.rst
 
 Installation
 ------------
