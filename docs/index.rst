@@ -12,7 +12,7 @@ of software that's used "in the wild" at the time of writing.
 
 .. toctree::
 
-    examples/simple_build.rst
+    examples/buildscript.rst
 
 Installation
 ------------
