@@ -1245,17 +1245,18 @@ class WheelFile:
         the same files (including those under `.data` and `.dist-info`
         directories), with the same timestamps, compression methods,
         compression levels, access modes, etc., *except*:
-            - `.dist-info` directory is renamed, if `version` or `distname` is
-              changed.
-            - `.data` directory is renamed, if `version` or `distname` is
-              changed.
-            - `METADATA` will contain almost all the same information, except
-              for the fields that were changed via arguments of this method.
-            - `WHEEL` will be changed to contain the new `tags` and `build`
-              number. The `generator` field will be reset to the one given by
-              `WheelData` by default: `"wheelfile <version>"`.
-            - `RECORD` is reconstructed in order to accomodate the differences
-              above.
+
+        - `.dist-info` directory is renamed, if `version` or `distname` is
+          changed.
+        - `.data` directory is renamed, if `version` or `distname` is
+          changed.
+        - `METADATA` will contain almost all the same information, except
+          for the fields that were changed via arguments of this method.
+        - `WHEEL` will be changed to contain the new `tags` and `build`
+          number. The `generator` field will be reset to the one given by
+          `WheelData` by default: `"wheelfile <version>"`.
+        - `RECORD` is reconstructed in order to accomodate the differences
+          above.
 
         This can be used to rename a wheel, change its metadata, or add files
         to it. It also fixes some common problems of wheel packages, e.g.
