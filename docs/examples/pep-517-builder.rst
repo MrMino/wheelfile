@@ -53,7 +53,38 @@ Here is an example of the contents of this file::
     maintainers_emails = "sparrow.jack@pearl.black"
 
 
-The builder module
-------------------
+Project tree & building a wheel using pip
+-----------------------------------------
+Another file that our builder will expect, is ``requirements.txt``. To sum up,
+a project directory that this builder expects should have the following
+structure::
+
+    .
+    ├── pyproject.toml
+    ├── requirements.txt
+    └── src
+        ├── ...
+        └── app.py
+
+
+After navigating to this directory, you can use the following `pip` command to
+build a wheel::
+
+    pip wheel . --no-build-isolation
+
+This command will make ``pip`` politely run the builder hooks over the project
+directory tree.
+
+The ``--no-build-isolation`` flag will make `pip` use the builder installed
+within your environment (the ``pep_517_example`` one), instead of downloading
+it with all of its dependencies from scratch.
+
+After issuing the command above, you should see a wheel po up in the directory
+you're currently in::
+
+    my_package-1.0.0-py3-none-any.whl
+
+Builder source code
+-------------------
 
 .. literalinclude:: ./pep_517_builder.py
