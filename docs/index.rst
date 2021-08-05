@@ -1,6 +1,11 @@
 wheelfile
 =========
 
+.. toctree::
+    :hidden:
+
+    examples/simple_build.rst
+
 .. automodule:: wheelfile
 
 Installation
