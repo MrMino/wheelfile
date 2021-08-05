@@ -17,7 +17,7 @@ if __name__ == '__main__':
 """
 
 with WheelFile(
-    mode='w', distname='pep_517_example', version='1', build_tag=2
+    mode='w', distname='pep_517_example', version='1', build_tag=4
 ) as wf:
     wf.metadata.requires_dists = ['wheelfile', 'toml']
     wf.metadata.summary = "Example of PEP-517 builder that uses wheelfile"

@@ -4,7 +4,7 @@ from pathlib import Path
 from wheelfile import WheelFile
 
 
-def get_config(cls):
+def get_config():
     """Read pyproject.toml"""
     project_config = toml.load('pyproject.toml')
     config = project_config['tool']['pep_517_example']
@@ -12,7 +12,7 @@ def get_config(cls):
 
 
 # See https://www.python.org/dev/peps/pep-0517/#get-requires-for-build-wheel
-def get_requires_for_build_wheel(cls, config_settings):
+def get_requires_for_build_wheel(config_settings):
     return []
 
 
