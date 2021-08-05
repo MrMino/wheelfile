@@ -66,8 +66,11 @@ with WheelFile(mode='w', **spec) as wf:
 
 # 🧀
 ```
-
 <br/>
+<b> More examples:
+    <a href="https://wheelfile.readthedocs.io/en/latest/examples/buildscript.html"> buildscript </a> |
+    <a href="https://wheelfile.readthedocs.io/en/latest/examples/pep-517-builder.html"> PEP-517 builder </a>
+</b>
 <br/>
 
 </td>
