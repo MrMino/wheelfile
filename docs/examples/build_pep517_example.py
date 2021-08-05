@@ -16,8 +16,10 @@ if __name__ == '__main__':
         subprocess.call(('xdg-open', filepath))
 """
 
-with WheelFile(mode='w', distname='pep_517_example', version='1') as wf:
-    wf.metadata.requires_dists = ['wheelfile']
+with WheelFile(
+    mode='w', distname='pep_517_example', version='1', build_tag=2
+) as wf:
+    wf.metadata.requires_dists = ['wheelfile', 'toml']
     wf.metadata.summary = "Example of PEP-517 builder that uses wheelfile"
     wf.metadata.description = (
         "See "
