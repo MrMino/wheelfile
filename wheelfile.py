@@ -21,11 +21,12 @@
 
 Use :class:`WheelFile` to create or read a wheel.
 
-Managing metadata is done via `metadata`, `wheeldata`, `record`, and `entry_points`
-attributes.
+Managing metadata is done via `metadata`, `wheeldata`, `record`, and
+`entry_points` attributes.
 
-See :class:`MetaData`, :class:`WheelData`, :class:`WheelRecord`, and :class:`EntryPoints`
-for documentation of the objects returned by these attributes.
+See :class:`MetaData`, :class:`WheelData`, :class:`WheelRecord`, and
+:class:`EntryPoints` for documentation of the objects returned by these
+attributes.
 
 Example
 -------
@@ -753,10 +754,12 @@ class WheelRecord:
     def __contains__(self, path):
         return path in self._records
 
+
 class EntryPoints(set):
     """Contains logic for creation and modification of entry_points.txt files.
 
-    For the full spec, see https://packaging.python.org/specifications/entry-points/.
+    For the full spec, see
+    https://packaging.python.org/specifications/entry-points/.
     """
 
     def __str__(self) -> str:
@@ -781,22 +784,30 @@ class EntryPoints(set):
 
         return entries
 
+
 class _EntryPointFileParser(configparser.ConfigParser):
     """A config parser customized to read and write entry_points.txt files"""
-    optionxform = staticmethod(str)
+    optionxform = staticmethod(str)  # type: ignore
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs, delimiters=('=',), empty_lines_in_values=False, interpolation=None)
+        super().__init__(*args,
+                         **kwargs,
+                         delimiters=('=',),
+                         empty_lines_in_values=False,
+                         interpolation=None)
 
     def getentry_point(self, section, option) -> EntryPoint:
         """Get an EntryPoint object from the entry_points.txt file"""
-        return EntryPoint(group=section, name=option, value=self.get(section, option))
+        return EntryPoint(group=section,
+                          name=option,
+                          value=self.get(section, option))
 
     def setentry_point(self, entry_point: EntryPoint):
         if not self.has_section(entry_point.group):
             self.add_section(entry_point.group)
 
         self.set(entry_point.group, entry_point.name, entry_point.value)
+
 
 class UnsupportedHashTypeError(ValueError):
     """The given hash name is not allowed by the spec."""
@@ -1695,8 +1706,10 @@ class WheelFile:
             self.record = None
 
         try:
-            entry_points = self.zipfile.read(self._distinfo_path('entry_points.txt'))
-            self.entry_points = EntryPoints.from_str(entry_points.decode('utf-8'))
+            entry_points = self.zipfile.read(
+                self._distinfo_path('entry_points.txt'))
+            self.entry_points = EntryPoints.from_str(
+                entry_points.decode('utf-8'))
         except Exception:
             self.entry_points = None
 
