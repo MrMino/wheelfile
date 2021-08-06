@@ -28,8 +28,8 @@ You can install this example using::
 
     pip install pep-517-example
 
-Inside this package, there is a simple entry point script that opens the hook
-source inside an editor. You can run it using::
+Inside this package, there is a simple entry point script that opens the
+builder source inside an editor. You can run it using::
 
     python -m pep_517_example
 
