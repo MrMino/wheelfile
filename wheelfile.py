@@ -758,6 +758,8 @@ class WheelRecord:
 class EntryPoints(set):
     """Contains logic for creation and modification of entry_points.txt files.
 
+    Provides a set-like interface to add wheelfile.EntryPoint objects
+
     For the full spec, see
     https://packaging.python.org/specifications/entry-points/.
     """
