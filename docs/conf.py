@@ -11,4 +11,4 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
 ]
-html_theme_options = {"nosidebar": True}
+html_theme = "furo"
