@@ -21,9 +21,11 @@
 
 Use :class:`WheelFile` to create or read a wheel.
 
-Managing metadata is done via `metadata`, `wheeldata`, and `record` attributes.
-See :class:`MetaData`, :class:`WheelData`, and :class:`WheelRecord` for
-documentation of the objects returned by these attributes.
+Managing metadata is done via `metadata`, `wheeldata`, `record`, and `entry_points`
+attributes.
+
+See :class:`MetaData`, :class:`WheelData`, :class:`WheelRecord`, and :class:`EntryPoints`
+for documentation of the objects returned by these attributes.
 
 Example
 -------
@@ -41,6 +43,7 @@ import sys
 import hashlib
 import base64
 import warnings
+import configparser
 
 from string import ascii_letters, digits
 from pathlib import Path
@@ -55,8 +58,10 @@ from email import message_from_string
 
 if sys.version_info >= (3, 8):
     import zipfile
+    from importlib.metadata import EntryPoint
 else:
     import zipfile38 as zipfile
+    from importlib_metadata import EntryPoint
 
 from typing import Optional, Union, List, Dict, IO, BinaryIO
 
@@ -748,6 +753,50 @@ class WheelRecord:
     def __contains__(self, path):
         return path in self._records
 
+class EntryPoints(set):
+    """Contains logic for creation and modification of entry_points.txt files.
+
+    For the full spec, see https://packaging.python.org/specifications/entry-points/.
+    """
+
+    def __str__(self) -> str:
+        buf = io.StringIO()
+
+        cp = _EntryPointFileParser()
+        for entry in sorted(self, key=lambda x: (x[2], x[0], x[1])):
+            cp.setentry_point(entry)
+        cp.write(buf)
+        return buf.getvalue()
+
+    @classmethod
+    def from_str(cls, s) -> 'EntryPoints':
+        entries = EntryPoints()
+
+        cp = _EntryPointFileParser()
+        cp.read_string(s, "entry_points.txt")
+
+        for section in cp.sections():
+            for option in cp.options(section):
+                entries.add(cp.getentry_point(section, option))
+
+        return entries
+
+class _EntryPointFileParser(configparser.ConfigParser):
+    """A config parser customized to read and write entry_points.txt files"""
+    optionxform = staticmethod(str)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs, delimiters=('=',), empty_lines_in_values=False, interpolation=None)
+
+    def getentry_point(self, section, option) -> EntryPoint:
+        """Get an EntryPoint object from the entry_points.txt file"""
+        return EntryPoint(group=section, name=option, value=self.get(section, option))
+
+    def setentry_point(self, entry_point: EntryPoint):
+        if not self.has_section(entry_point.group):
+            self.add_section(entry_point.group)
+
+        self.set(entry_point.group, entry_point.name, entry_point.value)
 
 class UnsupportedHashTypeError(ValueError):
     """The given hash name is not allowed by the spec."""
@@ -872,6 +921,16 @@ class WheelFile:
         initialization.
         In write and exclusive-write modes, written to the archive on close().
 
+    entry_points : Optional[EntryPoints]
+        Current state of .dist-info/entry_points.txt file.
+
+        When reading wheels in lazy mode, if the file does not exist or is
+        misformatted, this attribute becomes None.
+
+        In non-lazy modes this file is always read & validated on
+        initialization.
+        In write and exclusive-write modes, written to the archive on close().
+
     metadata : Optional[MetaData]
         Current state of .dist-info/METADATA file.
 
@@ -911,7 +970,7 @@ class WheelFile:
         True if the underlying `ZipFile` object is closed, false otherwise.
     """
     VALID_DISTNAME_CHARS = set(ascii_letters + digits + '._')
-    METADATA_FILENAMES = {"WHEEL", "METADATA", "RECORD"}
+    METADATA_FILENAMES = {"WHEEL", "METADATA", "RECORD", "entry_points.txt"}
 
     # TODO: implement lazy mode
     # TODO: in lazy mode, log reading/missing metadata errors
@@ -951,7 +1010,8 @@ class WheelFile:
             - In read and append modes, the file is validated using validate().
               Contents of metadata files inside .dist-info directory are read
               and converted into their respective object representations (see
-              "metadata", "wheeldata", and "record" attributes).
+              "metadata", "wheeldata", "record", and "entry_points"
+              attributes).
             - In write and exclusive-write modes, object representations for
               each metadata file are created from scratch. They will be written
               to each of their respective .dist-info/ files on close().
@@ -1163,6 +1223,7 @@ class WheelFile:
         self.wheeldata: Optional[WheelData] = None
         self.metadata: Optional[MetaData] = None
         self.record: Optional[WheelRecord] = None
+        self.entry_points: Optional[EntryPoints] = None
 
         self._strict_timestamps = strict_timestamps
 
@@ -1263,9 +1324,9 @@ class WheelFile:
         unnormalized dist-info directory names.
 
         If any of the metadata files is missing or corrupted in `wf`, i.e. the
-        properties `metadata`, `wheeldata`, and `record` of `wf` are set to
-        `None`, new ones with will be created for the new object, using default
-        values.
+        properties `metadata`, `wheeldata`, `record`, and `entry_points` of `wf`
+        are set to `None`, new ones with will be created for the new object,
+        using default values.
 
         All parameters of this method except `wf` are passed to the new
         object's `__init__`.
@@ -1402,7 +1463,7 @@ class WheelFile:
         assert new_wf.wheeldata is not None  # For MyPy
 
         # TODO: if Corrupted() is implemented, make sure to test
-        # wf.metadata = Corupted (& wheeldata, & record)
+        # wf.metadata = Corrupted (& wheeldata, & record)
 
         if wf.metadata is not None:
             # TODO: use copy.deepcopy instead
@@ -1608,6 +1669,7 @@ class WheelFile:
         self.wheeldata = WheelData(build=self.build_tag, tags=collapsed_tags)
         self.metadata = MetaData(name=self.distname, version=self.version)
         self.record = WheelRecord()
+        self.entry_points = EntryPoints()
 
     # TODO: test edge cases related to bad contents
     # TODO: should "bad content" exceptions be saved for validate()?
@@ -1631,6 +1693,12 @@ class WheelFile:
             self.record = WheelRecord.from_str(record.decode('utf-8'))
         except Exception:
             self.record = None
+
+        try:
+            entry_points = self.zipfile.read(self._distinfo_path('entry_points.txt'))
+            self.entry_points = EntryPoints.from_str(entry_points.decode('utf-8'))
+        except Exception:
+            self.entry_points = None
 
     # TODO: check what are the common bugs with wheels and implement checks here
     # TODO: test behavior if no candidates found
@@ -1834,6 +1902,9 @@ class WheelFile:
                               str(self.wheeldata).encode())
             self._zip.writestr(self._distinfo_path("RECORD"),
                                str(self.record).encode())
+            if self.entry_points:
+                self.writestr(self._distinfo_path("entry_points.txt"),
+                              str(self.entry_points).encode())
 
         self._zip.close()
 
@@ -2213,7 +2284,8 @@ class WheelFile:
         ------
         ProhibitedWriteError
             Raised if the write would result with duplicated `WHEEL`,
-            `METADATA`, or `RECORD` files after `close()` is called.
+            `METADATA`, `RECORD`, or `entry_points.txt` files after `close()`
+            is called.
         """
         if resolve and arcname is None:
             arcname = resolved(filename)
@@ -2278,7 +2350,8 @@ class WheelFile:
         Raises
         ------
         ProhibitedWriteError
-            When attempting to write into `METADATA`, `WHEEL`, or `RECORD`.
+            When attempting to write into `METADATA`, `WHEEL`, `RECORD`, or
+            `entry_points.txt`.
         """
         arcname = (
             zinfo_or_arcname.filename
@@ -2307,8 +2380,8 @@ class WheelFile:
     def namelist(self) -> List[str]:
         """Return a list of wheel members by name, omit metadata files.
 
-        Same as ``ZipFile.namelist()``, but omits ``RECORD``, ``METADATA``, and
-        ``WHEEL`` files.
+        Same as ``ZipFile.namelist()``, but omits ``RECORD``, ``METADATA``,
+        ``WHEEL``, and ``entry_points.txt`` files.
         """
         skip = [self._distinfo_path(n) for n in self.METADATA_FILENAMES]
         return [name for name in self.zipfile.namelist() if name not in skip]
@@ -2317,7 +2390,7 @@ class WheelFile:
         """Return a list of ``ZipInfo`` objects for each wheel member.
 
         Same as ``ZipFile.infolist()``, but omits objects corresponding to
-        ``RECORD``, ``METADATA``, and ``WHEEL`` files.
+        ``RECORD``, ``METADATA``, ``WHEEL``, and ``entry_points.txt`` files.
         """
         skip = [self._distinfo_path(n) for n in self.METADATA_FILENAMES]
         return [zi for zi in self.zipfile.infolist() if zi.filename not in skip]
