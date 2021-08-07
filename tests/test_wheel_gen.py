@@ -115,6 +115,7 @@ class TestWritesDoNotMisformatRecordWithDirEntries:
         wf = WheelFile(buf, 'r', distname='mywheel', version='1')
         assert str(written_dir) not in str(wf.record)
 
+
 class TestEntryPointsMetadata:
 
     distname = 'my_dist'

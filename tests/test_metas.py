@@ -421,7 +421,9 @@ class TestEntryPoints:
         assert str(entry_points) == expected
 
     def test_one_with_attr_and_extra(self, entry_points):
-        entry_points.add(EntryPoint(name="foo", value="bar:quux [frob]", group="baz"))
+        entry_points.add(EntryPoint(name="foo",
+                                    value="bar:quux [frob]",
+                                    group="baz"))
 
         expected = dedent("""\
             [baz]

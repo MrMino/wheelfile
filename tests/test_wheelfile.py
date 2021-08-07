@@ -21,6 +21,8 @@ else:
     from zipfile38 import (ZipFile, ZipInfo, Path as ZipPath, ZIP_DEFLATED,
                            ZIP_BZIP2, ZIP_STORED)
 
+metadata_files = ('WHEEL', 'METADATA', 'RECORD', 'entry_points.txt')
+
 
 def test_UnnamedDistributionError_is_BadWheelFileError():
     assert issubclass(UnnamedDistributionError, BadWheelFileError)
@@ -421,7 +423,7 @@ class TestWheelFileWrites:
         di_arcpath = wf.distname + '-' + str(wf.version) + '.dist-info'
         assert wf.zipfile.namelist() == [di_arcpath + '/custom_filename']
 
-    @pytest.mark.parametrize('filename', ('WHEEL', 'METADATA', 'RECORD', 'entry_points.txt'))
+    @pytest.mark.parametrize('filename', metadata_files)
     def test_write_distinfo_doesnt_permit_writing_metadata(self, wf,
                                                            tmp_path, filename):
         (tmp_path/filename).touch()
@@ -438,14 +440,14 @@ class TestWheelFileWrites:
             wf.write_distinfo(tmp_file, arcname='../file')
 
     @pytest.mark.xfail
-    @pytest.mark.parametrize('filename', ('WHEEL', 'METADATA', 'RECORD', 'entry_points.txt'))
+    @pytest.mark.parametrize('filename', metadata_files)
     def test_write_doesnt_permit_writing_metadata(self, wf, tmp_path, filename):
         (tmp_path/filename).touch()
         with pytest.raises(ProhibitedWriteError):
             wf.write(tmp_path/filename)
 
     @pytest.mark.xfail
-    @pytest.mark.parametrize('filename', ('WHEEL', 'METADATA', 'RECORD', 'entry_points.txt'))
+    @pytest.mark.parametrize('filename', metadata_files)
     def test_writestr_doesnt_permit_writing_metadata(self, wf, filename):
         with pytest.raises(ProhibitedWriteError):
             wf.writestr(filename, b'')
@@ -463,12 +465,12 @@ class TestWheelFileWrites:
         wf.writestr_distinfo(zi, data)
         assert wf.zipfile.read(wf.distinfo_dirname + '/' + arcname) == data
 
-    @pytest.mark.parametrize('name', ('WHEEL', 'METADATA', 'RECORD', 'entry_points.txt'))
+    @pytest.mark.parametrize('name', metadata_files)
     def test_writestr_distinfo_doesnt_permit_writing_metadata(self, wf, name):
         with pytest.raises(ProhibitedWriteError):
             wf.writestr_distinfo(name, b'')
 
-    @pytest.mark.parametrize('name', ('WHEEL', 'METADATA', 'RECORD', 'entry_points.txt'))
+    @pytest.mark.parametrize('name', metadata_files)
     def test_writestr_distinfo_doesnt_permit_writing_metadata_as_dirs(self,
                                                                       wf, name):
         with pytest.raises(ProhibitedWriteError):
@@ -751,7 +753,7 @@ class TestWheelFileNameList:
         wf.writestr(arcpath, b'contents')
         assert wf.namelist() == [arcpath]
 
-    @pytest.mark.parametrize("meta_file", ['METADATA', 'RECORD', 'WHEEL', 'entry_points.txt'])
+    @pytest.mark.parametrize("meta_file", metadata_files)
     def test_after_closing_does_not_contain_meta_files(self, wf, meta_file):
         wf.close()
         assert (wf.distinfo_dirname + '/' + meta_file) not in wf.namelist()
@@ -767,14 +769,14 @@ class TestWheelFileInfoList:
         infolist = wf.infolist()
         assert len(infolist) == 1 and infolist[0].filename == arcpath
 
-    @pytest.mark.parametrize("meta_file", ['METADATA', 'RECORD', 'WHEEL', 'entry_points.txt'])
+    @pytest.mark.parametrize("meta_file", metadata_files)
     def test_after_closing_does_not_contain_meta_files(self, wf, meta_file):
         wf.close()
         infolist_arcpaths = [zi.filename for zi in wf.infolist()]
         assert (wf.distinfo_dirname + '/' + meta_file) not in infolist_arcpaths
 
 
-@pytest.mark.parametrize('metadata_name', ['METADATA', 'RECORD', 'WHEEL', 'entry_points.txt'])
+@pytest.mark.parametrize('metadata_name', metadata_files)
 def test_wheelfile_METADATA_FILENAMES(metadata_name):
     assert metadata_name in WheelFile.METADATA_FILENAMES
 
