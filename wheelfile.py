@@ -222,6 +222,10 @@ class MetaData:
         classifier is used, this parameter may be omitted or used to specify the
         particular version of the intended legal text.
 
+    license_file
+        The License-File is a string that is a path, relative to``.dist-info``,
+        to a license file. The license file content MUST be UTF-8 encoded text.
+
     home_page
         URL of the home page for this distribution (project).
 
@@ -338,7 +342,8 @@ class MetaData:
                  requires_externals: Optional[List[str]] = None,
                  provides_extras: Optional[List[str]] = None,
                  provides_dists: Optional[List[str]] = None,
-                 obsoletes_dists: Optional[List[str]] = None
+                 obsoletes_dists: Optional[List[str]] = None,
+                 license_files: Optional[List[str]] = None,
                  ):
         # self.metadata_version = '2.1' by property
         self.name = name
@@ -373,6 +378,7 @@ class MetaData:
         self.provides_extras = provides_extras or []
         self.provides_dists = provides_dists or []
         self.obsoletes_dists = obsoletes_dists or []
+        self.license_files = license_files or []
 
     __slots__ = _slots_from_params(__init__)
 
