@@ -21,7 +21,7 @@ to provide a simple API.
 
 Wheelfile does not depend on Wheel.
 
-## Ackonwledgements
+## Acknowledgements
 
 Thanks to [Paul Moore](https://github.com/pfmoore) for providing
 [his gist](https://gist.github.com/pfmoore/20f3654ca33f8b14f0fcb6dfa1a6b469)
