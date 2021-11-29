@@ -1439,11 +1439,21 @@ class WheelFile:
             arcname_tail = '/'.join(arcname_tail_parts)
             if arcname_head == wf.distinfo_dirname:
                 new_arcname = new_wf.distinfo_dirname + '/' + arcname_tail
-                new_wf.writestr(new_arcname, wf.zipfile.read(zinfo))
+
+                # create a new ZipInfo
+                new_zinfo = zipfile.ZipInfo(filename=new_arcname, date_time=zinfo.date_time)
+                new_zinfo.external_attr = zinfo.external_attr
+
+                new_wf.writestr(new_zinfo, wf.zipfile.read(zinfo))
                 continue
             if arcname_head == wf.data_dirname:
                 new_arcname = new_wf.data_dirname + '/' + arcname_tail
-                new_wf.writestr(new_arcname, wf.zipfile.read(zinfo))
+
+                # create a new ZipInfo
+                new_zinfo = zipfile.ZipInfo(filename=new_arcname, date_time=zinfo.date_time)
+                new_zinfo.external_attr = zinfo.external_attr
+
+                new_wf.writestr(new_zinfo, wf.zipfile.read(zinfo))
                 continue
 
             new_wf.writestr(zinfo, wf.zipfile.read(zinfo))
