@@ -1441,7 +1441,8 @@ class WheelFile:
                 new_arcname = new_wf.distinfo_dirname + '/' + arcname_tail
 
                 # create a new ZipInfo
-                new_zinfo = zipfile.ZipInfo(filename=new_arcname, date_time=zinfo.date_time)
+                new_zinfo = zipfile.ZipInfo(filename=new_arcname,
+                                            date_time=zinfo.date_time)
                 new_zinfo.external_attr = zinfo.external_attr
 
                 new_wf.writestr(new_zinfo, wf.zipfile.read(zinfo))
@@ -1450,7 +1451,8 @@ class WheelFile:
                 new_arcname = new_wf.data_dirname + '/' + arcname_tail
 
                 # create a new ZipInfo
-                new_zinfo = zipfile.ZipInfo(filename=new_arcname, date_time=zinfo.date_time)
+                new_zinfo = zipfile.ZipInfo(filename=new_arcname,
+                                            date_time=zinfo.date_time)
                 new_zinfo.external_attr = zinfo.external_attr
 
                 new_wf.writestr(new_zinfo, wf.zipfile.read(zinfo))
