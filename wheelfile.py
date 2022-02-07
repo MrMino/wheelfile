@@ -1441,7 +1441,7 @@ class WheelFile:
                 new_arcname = new_wf.distinfo_dirname + '/' + arcname_tail
 
                 # create a new ZipInfo
-                new_zinfo = self._clone_and_rename_zipinfo(zinfo, new_arcname)
+                new_zinfo = cls._clone_and_rename_zipinfo(zinfo, new_arcname)
 
                 new_wf.writestr(new_zinfo, wf.zipfile.read(zinfo))
                 continue
@@ -1449,7 +1449,7 @@ class WheelFile:
                 new_arcname = new_wf.data_dirname + '/' + arcname_tail
 
                 # create a new ZipInfo
-                new_zinfo = self._clone_and_rename_zipinfo(zinfo, new_arcname)
+                new_zinfo = cls._clone_and_rename_zipinfo(zinfo, new_arcname)
 
                 new_wf.writestr(new_zinfo, wf.zipfile.read(zinfo))
                 continue
@@ -1459,7 +1459,7 @@ class WheelFile:
         return new_wf
 
     @staticmethod
-    def _clone_and_rename_zipinfo(self, zinfo: zipfile.ZipInfo, new_name: str):
+    def _clone_and_rename_zipinfo(zinfo: zipfile.ZipInfo, new_name: str):
         # attributes to preserved
         PRESERVED_ZIPINFO_ATTRS = ['date_time', 'compress_type', 'comment',
                                    'extra', 'create_system', 'create_version',
