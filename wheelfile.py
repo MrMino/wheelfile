@@ -277,6 +277,12 @@ class MetaData:
         Each item may end with a semicolon followed by a PEP-496 environment
         markers.
 
+    requires
+        Package requirements
+
+    provides
+        The name of the provided package
+
     provides_extras
         List of names of optional features provided by a distribution. Used to
         specify which dependencies should be installed depending on which of
@@ -338,13 +344,14 @@ class MetaData:
                  platforms: Optional[List[str]] = None,
                  supported_platforms: Optional[List[str]] = None,
                  requires_python: Optional[str] = None,
-                 requires: Optional[List[str]] = None,
                  requires_dists: Optional[List[str]] = None,
                  requires_externals: Optional[List[str]] = None,
                  provides_extras: Optional[List[str]] = None,
                  provides_dists: Optional[List[str]] = None,
                  obsoletes_dists: Optional[List[str]] = None,
                  license_files: Optional[List[str]] = None,
+                 provides: Optional[str] = None,
+                 requires: Optional[str] = None,
                  ):
         # self.metadata_version = '2.1' by property
         self.name = name
@@ -374,13 +381,14 @@ class MetaData:
         self.supported_platforms = supported_platforms or []
 
         self.requires_python = requires_python
-        self.requires = requires or []
         self.requires_dists = requires_dists or []
         self.requires_externals = requires_externals or []
         self.provides_extras = provides_extras or []
         self.provides_dists = provides_dists or []
         self.obsoletes_dists = obsoletes_dists or []
         self.license_files = license_files or []
+        self.provides = provides
+        self.requires = requires
 
     __slots__ = _slots_from_params(__init__)
 
@@ -391,7 +399,9 @@ class MetaData:
 
     @classmethod
     def field_is_multiple_use(cls, field_name: str) -> bool:
-        field_name = field_name.lower().replace('-', '_')
+        field_name = field_name.lower().replace('-', '_').rstrip('s')
+        if field_name in ['provide', 'require']:
+            return False
         if field_name in cls.__slots__ or field_name == 'keyword':
             return False
         if field_name + 's' in cls.__slots__:
@@ -475,7 +485,7 @@ class MetaData:
         args = {}
         for field_name in m.keys():
             attr = cls._attr_name(field_name)
-            if not attr.endswith('s'):
+            if not attr.endswith('s') or attr in ["provides", "requires"]:
                 args[attr] = m.get(field_name)
             else:
                 if field_name == "Keywords":
