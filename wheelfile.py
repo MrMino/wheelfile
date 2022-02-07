@@ -1654,8 +1654,9 @@ class WheelFile:
         try:
             metadata = self.zipfile.read(self._distinfo_path('METADATA'))
             self.metadata = MetaData.from_str(metadata.decode('utf-8'))
-        except Exception:
+        except Exception as e:
             self.metadata = None
+            raise(e)
 
         try:
             wheeldata = self.zipfile.read(self._distinfo_path('WHEEL'))
