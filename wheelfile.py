@@ -699,7 +699,8 @@ class WheelRecord:
         assert buf.tell() == 0, (
             f"Stale buffer given - current position: {buf.tell()}."
         )
-        assert not arcpath.endswith('.dist-info/RECORD'), (
+        # if .dist-info/RECORD is not in a subdirectory, it is not allowed
+        assert "/" in arcpath.replace('.dist-info/RECORD',"") or not arcpath.endswith('.dist-info/RECORD') (
             f"Attempt to add an entry for a RECORD file to the RECORD: "
             f"{repr(arcpath)}."
         )
