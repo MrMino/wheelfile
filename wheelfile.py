@@ -1445,16 +1445,37 @@ class WheelFile:
             arcname_tail = '/'.join(arcname_tail_parts)
             if arcname_head == wf.distinfo_dirname:
                 new_arcname = new_wf.distinfo_dirname + '/' + arcname_tail
-                new_wf.writestr(new_arcname, wf.zipfile.read(zinfo))
+
+                # create a new ZipInfo
+                new_zinfo = self._clone_and_rename_zipinfo(zinfo, new_arcname)
+
+                new_wf.writestr(new_zinfo, wf.zipfile.read(zinfo))
                 continue
             if arcname_head == wf.data_dirname:
                 new_arcname = new_wf.data_dirname + '/' + arcname_tail
-                new_wf.writestr(new_arcname, wf.zipfile.read(zinfo))
+
+                # create a new ZipInfo
+                new_zinfo = self._clone_and_rename_zipinfo(zinfo, new_arcname)
+
+                new_wf.writestr(new_zinfo, wf.zipfile.read(zinfo))
                 continue
 
             new_wf.writestr(zinfo, wf.zipfile.read(zinfo))
 
         return new_wf
+
+    @staticmethod
+    def _clone_and_rename_zipinfo(self, zinfo: zipfile.ZipInfo, new_name: str):
+        # attributes to preserved
+        PRESERVED_ZIPINFO_ATTRS = ['date_time', 'compress_type', 'comment',
+                                   'extra', 'create_system', 'create_version',
+                                   'extract_version', 'flag_bits', 'volume',
+                                   'internal_attr', 'external_attr']
+        new_zinfo = zipfile.ZipInfo(filename=new_name)
+        for attr in PRESERVED_ZIPINFO_ATTRS:
+            setattr(new_zinfo, attr, getattr(zinfo, attr))
+
+        return new_zinfo
 
     @staticmethod
     def _is_unnamed_or_directory(target: Union[Path, BinaryIO]) -> bool:
@@ -1977,7 +1998,6 @@ class WheelFile:
         path = os.path.join(arcname, directory[len(prefix):], stem)
         return path
 
-    # TODO: Make sure fields of given ZipInfo objects are propagated
     def writestr(self,
                  zinfo_or_arcname: Union[zipfile.ZipInfo, str],
                  data: Union[bytes, str],
@@ -2101,7 +2121,6 @@ class WheelFile:
 
     # TODO: drive letter should be stripped from the arcname the same way
     # ZipInfo.from_file does it
-    # TODO: Make sure fields of given ZipInfo objects are propagated
     def writestr_data(self, section: str,
                       zinfo_or_arcname: Union[zipfile.ZipInfo, str],
                       data: Union[bytes, str],
@@ -2153,6 +2172,10 @@ class WheelFile:
 
         arcname = self._distinfo_path(section + '/' + arcname.lstrip('/'),
                                       kind='data')
+
+        # clone the rest of the attributes from provided zinfo
+        if isinstance(zinfo_or_arcname, zipfile.ZipInfo):
+            arcname = self._clone_and_rename_zipinfo(zinfo_or_arcname, arcname)
 
         self.writestr(arcname, data, compress_type, compresslevel)
 
@@ -2242,7 +2265,6 @@ class WheelFile:
         self.write(filename, arcname, compress_type, compresslevel,
                    recursive=recursive, skipdir=skipdir)
 
-    # TODO: Make sure fields of given ZipInfo objects are propagated
     def writestr_distinfo(self, zinfo_or_arcname: Union[zipfile.ZipInfo, str],
                           data: Union[bytes, str],
                           compress_type: Optional[int] = None,
@@ -2300,6 +2322,10 @@ class WheelFile:
             )
 
         arcname = self._distinfo_path(arcname.lstrip('/'))
+        # clone the rest of the attributes from provided zinfo
+        if isinstance(zinfo_or_arcname, zipfile.ZipInfo):
+            arcname = self._clone_and_rename_zipinfo(zinfo_or_arcname, arcname)
+
         self.writestr(arcname, data, compress_type, compresslevel)
 
     @staticmethod

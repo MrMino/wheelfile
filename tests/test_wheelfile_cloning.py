@@ -244,7 +244,6 @@ class TestRegularFilesCloning:
 
         assert getattr(czf, attr) == getattr(zf, attr)
 
-    @pytest.mark.xfail(reason="writestr_data does not propagate zinfo yet")
     @pytest.mark.parametrize("attr", PRESERVED_ZIPINFO_ATTRS)
     def test_zip_attributes_are_preserved_writestr_data(self, wf, buf, attr):
         zf = self.custom_zipinfo()
@@ -255,9 +254,6 @@ class TestRegularFilesCloning:
 
         assert getattr(czf, attr) == getattr(zf, attr)
 
-    # writestr_data does not propagate zinfo yet
-    # skipped because it generates lots of warnings
-    @pytest.mark.xfail(reason="writestr_distinfo does not propagate zinfo yet")
     @pytest.mark.parametrize("attr", PRESERVED_ZIPINFO_ATTRS)
     def test_zip_attributes_are_preserved_writestr_distinfo(self, wf, buf,
                                                             attr):
