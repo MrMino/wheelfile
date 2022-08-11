@@ -450,6 +450,8 @@ class MetaData:
                     m.add_header(field_name, value)
             elif field_name == 'Description':
                 m.set_payload(content)
+            elif field_name == 'License':
+                m.set_payload(content)
             else:
                 assert isinstance(content, str), (
                     f"Expected string, got {type(content)} instead: {attr_name}"
