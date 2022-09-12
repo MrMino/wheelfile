@@ -1624,7 +1624,7 @@ class WheelFile:
             wheeldata = self.zipfile.read(self._distinfo_path('WHEEL'))
             self.wheeldata = WheelData.from_str(wheeldata.decode('utf-8'))
         except Exception:
-            self.metadata = None
+            self.wheeldata = None
 
         try:
             record = self.zipfile.read(self._distinfo_path('RECORD'))
