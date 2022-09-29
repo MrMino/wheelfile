@@ -1,9 +1,0 @@
--r requirements.txt
-
-# Documentation
--r docs/requirements.txt
-
-# Tests
-pre-commit
-pytest
-mypy

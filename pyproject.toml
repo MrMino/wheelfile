@@ -1,0 +1,80 @@
+[build-system]
+requires = ["wheelfile", "toml"]
+build-backend = "__build__"
+backend-path = ["."]
+
+[project]
+name = "wheelfile"
+version = "0.0.8-1"
+description = "API for creating and inspecting Python .whl files (wheels)."
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["wheel", "packaging", "pip", "build"]
+requires-python = ">=3.6.2"
+authors = [{name = "Błażej Michalik"}]
+maintainers = [{name = "Błażej Michalik"}]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: System :: Archiving :: Packaging",
+    "Topic :: System :: Software Distribution",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "packaging~=20.8",
+    "zipfile38; python_version<'3.8'"
+]
+
+[project.optional-dependencies]
+build = [
+    "build",
+]
+docs = [
+    "sphinx",
+    "furo",
+]
+test = [
+    "pre-commit",
+    "pytest<7",
+    "mypy>=0.942",
+]
+style = [
+    "black==22.3.0",
+    "isort>=5.10.1",
+    "flake8>=3.8.3",
+]
+
+[project.urls]
+repository = "https://github.com/MrMino/wheelfile"
+documentation = "https://wheelfile.readthedocs.io/en/latest/"
+changelog = "https://github.com/MrMino/wheelfile/CHANGELOG.md"
+
+[tool.isort]
+profile = "black"
+line_length = 79
+
+[tool.black]
+line-length = 79
+skip-string-normalization = true
+include = '\.pyi?$'
+exclude = '''
+(
+    /(
+        | \.git
+        | \.mypy_cache
+        | \.pytest_cache
+        | build
+        | dist
+    )
+)
+'''
+
+[tool.mypy]
+# warn_redundant_casts = true
+# warn_unused_ignores = true
+# disallow_untyped_defs = true
+# ignore_missing_imports = true
+mypy_path = "stubs"
