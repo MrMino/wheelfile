@@ -4,6 +4,7 @@ import sys
 import pytest
 
 from wheelfile import WheelFile, __version__, MetaData
+from pathlib import Path
 
 from packaging.version import Version
 
@@ -129,7 +130,7 @@ class TestZipFileRelatedArgs:
         # Given very old timestamp, ZipInfo will set itself to 01-01-1980
         os.utime(tmp_file, (10000000, 100000000))
         cwf.write(tmp_file, resolve=False)
-        zinfo = cwf.zipfile.getinfo(str(tmp_file).lstrip('/'))
+        zinfo = cwf.zipfile.getinfo(Path(*tmp_file.parts[1:]).as_posix())
         assert zinfo.date_time == (1980, 1, 1, 0, 0, 0)
 
     def test_when_not_given_uses_default_compression(self, wf, buf):
