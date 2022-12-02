@@ -7,7 +7,7 @@ This project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-Nothing yet.
+- Added support for entry\_points.txt files.
 
 ## [0.0.8] - 2021-08-03
 ### Changed

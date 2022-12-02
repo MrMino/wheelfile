@@ -2,6 +2,7 @@ import pytest
 
 from wheelfile import (__version__ as lib_version,
                        WheelData, MetaData, WheelRecord,
+                       EntryPoints, EntryPoint,
                        UnsupportedHashTypeError,
                        RecordContainsDirectoryError,
                        )
@@ -388,3 +389,98 @@ class TestWheelRecord:
         with pytest.raises(RecordContainsDirectoryError):
             record_str = "./,sha256=whatever,0"
             WheelRecord.from_str(record_str)
+
+
+class TestEntryPoints:
+
+    @pytest.fixture
+    def entry_points(self):
+        return EntryPoints()
+
+    def test_empty(self, entry_points):
+        assert str(entry_points) == ''
+
+    def test_one_simple(self, entry_points):
+        entry_points.add(EntryPoint(name="foo", value="bar", group="baz"))
+
+        expected = dedent("""\
+            [baz]
+            foo = bar\n
+        """)
+
+        assert str(entry_points) == expected
+
+    def test_one_with_attr(self, entry_points):
+        entry_points.add(EntryPoint(name="foo", value="bar:quux", group="baz"))
+
+        expected = dedent("""\
+            [baz]
+            foo = bar:quux\n
+        """)
+
+        assert str(entry_points) == expected
+
+    def test_one_with_attr_and_extra(self, entry_points):
+        entry_points.add(EntryPoint(name="foo",
+                                    value="bar:quux [frob]",
+                                    group="baz"))
+
+        expected = dedent("""\
+            [baz]
+            foo = bar:quux [frob]\n
+        """)
+
+        assert str(entry_points) == expected
+
+    def test_two_sorted_name(self, entry_points):
+        entry_points.add(EntryPoint(name="b", value="b", group="c"))
+        entry_points.add(EntryPoint(name="a", value="b", group="c"))
+
+        expected = dedent("""\
+            [c]
+            a = b
+            b = b\n
+        """)
+
+        assert str(entry_points) == expected
+
+    def test_two_sorted_group(self, entry_points):
+        entry_points.add(EntryPoint(name="a", value="b", group="c"))
+        entry_points.add(EntryPoint(name="a", value="b", group="a"))
+
+        expected = dedent("""\
+            [a]
+            a = b
+
+            [c]
+            a = b\n
+        """)
+
+        assert str(entry_points) == expected
+
+    def test_from_str_empty(self):
+        entry_points = EntryPoints.from_str("")
+
+        assert len(entry_points) == 0
+
+    def test_from_str_one_simple(self):
+        entry_points = EntryPoints.from_str(dedent("""\
+            [baz]
+            foo = bar
+        """))
+
+        assert EntryPoint("foo", "bar", "baz") in entry_points
+        assert len(entry_points) == 1
+
+    def test_from_str_two_groups_simple(self):
+        entry_points = EntryPoints.from_str(dedent("""\
+            [c]
+            a = b
+
+            [a]
+            a = b\n\n\n
+        """))
+
+        assert EntryPoint("a", "b", "a") in entry_points
+        assert EntryPoint("a", "b", "c") in entry_points
+        assert len(entry_points) == 2

@@ -1,8 +1,9 @@
 import pytest
 
 import sys
+from textwrap import dedent
 
-from wheelfile import WheelFile
+from wheelfile import WheelFile, EntryPoint
 
 if sys.version_info >= (3, 8):
     from zipfile import ZipFile, Path as ZipPath
@@ -113,3 +114,33 @@ class TestWritesDoNotMisformatRecordWithDirEntries:
 
         wf = WheelFile(buf, 'r', distname='mywheel', version='1')
         assert str(written_dir) not in str(wf.record)
+
+
+class TestEntryPointsMetadata:
+
+    distname = 'my_dist'
+    version = '1.0.0'
+
+    @pytest.fixture
+    def wheelfile(self, buf):
+        wf = WheelFile(buf, 'w', distname=self.distname, version=self.version)
+        wf.entry_points.add(EntryPoint("foo", "bar", "baz"))
+        wf.close()
+        return wf
+
+    @pytest.fixture
+    def wheel(self, wheelfile, buf):
+        assert not buf.closed
+        return ZipFile(buf)
+
+    @pytest.fixture
+    def distinfo(self, wheel):
+        return ZipPath(wheel, f'{self.distname}-{self.version}.dist-info/')
+
+    def test_entry_points_is_in_wheelfile(self, distinfo, wheelfile):
+        """Test long lines in METADATA aren't split to multiple shorter lines"""
+        entry_points_txt = distinfo / 'entry_points.txt'
+        assert dedent("""\
+            [baz]
+            foo = bar
+        """) in entry_points_txt.read_text()

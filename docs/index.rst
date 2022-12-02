@@ -43,6 +43,10 @@ Metadata classes
     :special-members:
     :members:
 
+.. autoclass:: EntryPoints
+    :special-members:
+    :members:
+
 Exceptions
 ----------
 .. autoexception:: BadWheelFileError
