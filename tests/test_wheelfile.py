@@ -389,7 +389,7 @@ class TestWheelFileWrites:
     def test_write_distinfo_resolve_arg(self, wf, tmp_file):
         wf.write_distinfo(tmp_file, resolve=False)
         di_arcpath = wf.distname + '-' + str(wf.version) + '.dist-info'
-        assert wf.zipfile.namelist() == [di_arcpath + '/' + tmp_file.as_posix()]
+        assert wf.zipfile.namelist() == [di_arcpath + '/' + tmp_file.as_posix().lstrip('/')]
 
     def test_write_distinfo_recursive(self, wf, tmp_path):
         (tmp_path / 'file').touch()
