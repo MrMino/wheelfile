@@ -389,7 +389,7 @@ class TestWheelFileWrites:
     def test_write_distinfo_resolve_arg(self, wf, tmp_file):
         wf.write_distinfo(tmp_file, resolve=False)
         di_arcpath = wf.distname + '-' + str(wf.version) + '.dist-info'
-        assert wf.zipfile.namelist() == [di_arcpath + str(tmp_file)]
+        assert wf.zipfile.namelist() == [di_arcpath + '/' + tmp_file.as_posix().lstrip('/')]
 
     def test_write_distinfo_recursive(self, wf, tmp_path):
         (tmp_path / 'file').touch()
@@ -686,13 +686,14 @@ class TestWheelFileRecursiveWrite:
 
         tree = [d] + tree
 
-        return [str(p) + '/' if p.is_dir() else str(p) for p in tree]
+        return [str(p) + os.sep if p.is_dir() else str(p) for p in tree]
 
     def test_write_recursive_writes_all_files_in_the_tree(self, wf, path_tree):
         directory = path_tree[0]
         wf.write(directory, recursive=True, resolve=False, skipdir=False)
-        expected_tree = [pth.lstrip('/') for pth in path_tree]
-        assert set(wf.zipfile.namelist()) == set(expected_tree)
+        expected_tree = [Path(*Path(x).parts[1:]).as_posix() for x in path_tree]
+        named_list = [Path(x).as_posix() for x in wf.zipfile.namelist()]
+        assert set(named_list) == set(expected_tree)
 
     def test_write_recursive_writes_with_proper_arcname(self, wf, path_tree):
         directory = path_tree[0]
@@ -704,18 +705,19 @@ class TestWheelFileRecursiveWrite:
 
     def test_write_data_writes_recursively_when_asked(self, wf, path_tree):
         directory = path_tree[0]
-        directory_name = os.path.basename(directory.rstrip('/'))
+        directory_name = os.path.basename(directory.rstrip(os.sep))
         archive_root = '_-0.data/test/' + directory_name + '/'
 
         wf.write_data(directory, section="test", skipdir=False, recursive=True)
 
-        expected_tree = [archive_root + pth[len(directory):]
+        expected_tree = [Path(archive_root + pth[len(directory):]).as_posix()
                          for pth in path_tree]
-        assert set(wf.zipfile.namelist()) == set(expected_tree)
+        named_list = [Path(x).as_posix() for x in wf.zipfile.namelist()]
+        assert set(named_list) == set(expected_tree)
 
     def test_write_data_writes_non_recursively_when_asked(self, wf, path_tree):
         directory = path_tree[0]
-        directory_name = os.path.basename(directory.rstrip('/'))
+        directory_name = os.path.basename(directory.rstrip(os.sep))
         archive_root = '_-0.data/test/' + directory_name + '/'
 
         wf.write_data(directory, section="test", skipdir=False, recursive=False)
@@ -841,7 +843,7 @@ class TestZipFileRelatedArgs:
         # Given very old timestamp, ZipInfo will set itself to 01-01-1980
         os.utime(tmp_file, (10000000, 100000000))
         wf.write(tmp_file, resolve=False)
-        zinfo = wf.zipfile.getinfo(str(tmp_file).lstrip('/'))
+        zinfo = wf.zipfile.getinfo(Path(*tmp_file.parts[1:]).as_posix())
         assert zinfo.date_time == (1980, 1, 1, 0, 0, 0)
 
     def test_writestr_sets_the_right_compress_type(self, wf):

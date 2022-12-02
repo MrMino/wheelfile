@@ -1,2 +1,3 @@
 packaging ~= 20.8
 zipfile38 ; python_version<"3.8"
+typing-extensions ; python_version<"3.8"
