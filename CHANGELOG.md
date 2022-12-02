@@ -7,7 +7,10 @@ This project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-Nothing yet.
+### Fixed
+- `zipfile.ZipInfo.from_file` has a bug that produces invalid archive names
+  on Windows which happens when writing to the archive with functions other
+  then writestr.
 
 ## [0.0.8] - 2021-08-03
 ### Changed
