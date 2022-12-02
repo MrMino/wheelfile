@@ -691,8 +691,9 @@ class TestWheelFileRecursiveWrite:
     def test_write_recursive_writes_all_files_in_the_tree(self, wf, path_tree):
         directory = path_tree[0]
         wf.write(directory, recursive=True, resolve=False, skipdir=False)
-        expected_tree = [Path(*Path(pth).parts[1:]).as_posix() for pth in path_tree]
-        assert set(Path(x).as_posix() for x in wf.zipfile.namelist()) == set(expected_tree)
+        expected_tree = [Path(*Path(x).parts[1:]).as_posix() for x in path_tree]
+        named_list = [Path(x).as_posix() for x in wf.zipfile.namelist()]
+        assert set(named_list) == set(expected_tree)
 
     def test_write_recursive_writes_with_proper_arcname(self, wf, path_tree):
         directory = path_tree[0]
@@ -711,7 +712,8 @@ class TestWheelFileRecursiveWrite:
 
         expected_tree = [Path(archive_root + pth[len(directory):]).as_posix()
                          for pth in path_tree]
-        assert set(Path(x).as_posix() for x in wf.zipfile.namelist()) == set(expected_tree)
+        named_list = [Path(x).as_posix() for x in wf.zipfile.namelist()]
+        assert set(named_list) == set(expected_tree)
 
     def test_write_data_writes_non_recursively_when_asked(self, wf, path_tree):
         directory = path_tree[0]

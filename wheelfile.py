@@ -105,11 +105,12 @@ def _slots_from_params(func):
     slots.remove('self')
     return slots
 
-class _ZipInfo(zipfile.ZipInfo):
-    """Contains a patched from_file so the function will create valid wheels on windows.
 
-    On windows the buggy version of this function will create an arcname that has windows
-    path seperators.
+class _ZipInfo(zipfile.ZipInfo):
+    """Contains a patched from_file to create valid wheels on windows.
+
+    On windows the buggy version of this function will create an arcname that
+    has windows path seperators.
 
     A bug report for python will be made shortly.
     """
@@ -136,7 +137,9 @@ class _ZipInfo(zipfile.ZipInfo):
         # Create ZipInfo instance to store file information
         if arcname is None:
             arcname = filename
-        arcname = Path(os.path.normpath(os.path.splitdrive(arcname)[1])).as_posix()
+        arcname = Path(
+                    os.path.normpath(
+                        os.path.splitdrive(arcname)[1])).as_posix()
         while arcname[0] in (posixpath.sep, posixpath.altsep):
             arcname = arcname[1:]
         if isdir:
@@ -150,6 +153,7 @@ class _ZipInfo(zipfile.ZipInfo):
             zinfo.file_size = st.st_size
 
         return zinfo
+
 
 # TODO: accept packaging.requirements.Requirement in requires_dist, fix this in
 # example, ensure such objects are converted on __str__
