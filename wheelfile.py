@@ -55,12 +55,14 @@ from email import message_from_string
 
 if sys.version_info >= (3, 8):
     import zipfile
+    from typing import Literal
 else:
     import zipfile38 as zipfile
+    from typing_extensions import Literal
 
-from typing import Optional, Union, List, Dict, IO, BinaryIO
+from typing import Optional, Union, List, Dict, IO, BinaryIO, cast
 
-__version__ = '0.0.8'
+__version__ = '0.0.9'
 
 
 # TODO: ensure that writing into `file` arcname and then into `file/not/really`
@@ -919,7 +921,7 @@ class WheelFile:
     def __init__(
         self,
         file_or_path: Union[str, Path, BinaryIO] = './',
-        mode: str = 'r',
+        mode: Literal['r', 'w', 'x', 'a', 'rl', 'wl', 'xl', 'al'] = 'r',
         *,
         distname: Optional[str] = None,
         version: Optional[Union[str, Version]] = None,
@@ -1197,7 +1199,9 @@ class WheelFile:
 
         # FIXME: the file is opened before validating the arguments, so this
         # litters empty and corrupted wheels if any arg is wrong.
-        self._zip = zipfile.ZipFile(file_or_path, mode.strip('l'),
+        self._zip = zipfile.ZipFile(file_or_path,
+                                    cast(Literal['r', 'w', 'x', 'a'],
+                                         mode.strip('l')),
                                     compression=compression,
                                     allowZip64=allowZip64,
                                     compresslevel=compresslevel,
@@ -1225,7 +1229,7 @@ class WheelFile:
     def from_wheelfile(
         cls, wf: "WheelFile",
         file_or_path: Union[str, Path, BinaryIO] = './',
-        mode: str = 'w',
+        mode: Literal['r', 'w', 'x', 'a', 'rl', 'wl', 'xl', 'al'] = 'w',
         *,
         distname: Union[str, None, _Sentinel] = _unspecified,
         version: Union[str, Version, None, _Sentinel] = _unspecified,
