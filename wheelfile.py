@@ -222,6 +222,14 @@ class MetaData:
         classifier is used, this parameter may be omitted or used to specify the
         particular version of the intended legal text.
 
+    license_file
+        The License-File is a string that is a path, relative to``.dist-info``,
+        to a license file. The license file content MUST be UTF-8 encoded text.
+
+    license_expression
+        The License-Expression optional field is specified to contain a text
+        string that is a valid SPDX license expression, as defined herein.
+
     home_page
         URL of the home page for this distribution (project).
 
@@ -272,6 +280,12 @@ class MetaData:
 
         Each item may end with a semicolon followed by a PEP-496 environment
         markers.
+
+    requires
+        Package requirements
+
+    provides
+        The name of the provided package
 
     provides_extras
         List of names of optional features provided by a distribution. Used to
@@ -338,7 +352,11 @@ class MetaData:
                  requires_externals: Optional[List[str]] = None,
                  provides_extras: Optional[List[str]] = None,
                  provides_dists: Optional[List[str]] = None,
-                 obsoletes_dists: Optional[List[str]] = None
+                 obsoletes_dists: Optional[List[str]] = None,
+                 license_files: Optional[List[str]] = None,
+                 license_expression: Optional[str] = None,
+                 provides: Optional[str] = None,
+                 requires: Optional[str] = None,
                  ):
         # self.metadata_version = '2.1' by property
         self.name = name
@@ -373,6 +391,10 @@ class MetaData:
         self.provides_extras = provides_extras or []
         self.provides_dists = provides_dists or []
         self.obsoletes_dists = obsoletes_dists or []
+        self.license_files = license_files or []
+        self.license_expression = license_expression or []
+        self.provides = provides
+        self.requires = requires
 
     __slots__ = _slots_from_params(__init__)
 
@@ -384,6 +406,8 @@ class MetaData:
     @classmethod
     def field_is_multiple_use(cls, field_name: str) -> bool:
         field_name = field_name.lower().replace('-', '_').rstrip('s')
+        if field_name in ['provide', 'require']:
+            return False
         if field_name in cls.__slots__ or field_name == 'keyword':
             return False
         if field_name + 's' in cls.__slots__:
@@ -432,6 +456,8 @@ class MetaData:
                     m.add_header(field_name, value)
             elif field_name == 'Description':
                 m.set_payload(content)
+            elif field_name == 'License':
+                m.set_payload(content)
             else:
                 assert isinstance(content, str), (
                     f"Expected string, got {type(content)} instead: {attr_name}"
@@ -459,7 +485,6 @@ class MetaData:
     @classmethod
     def from_str(cls, s: str) -> 'MetaData':
         m = message_from_string(s)
-
         # TODO: validate this when the rest of the versions are implemented
         # assert m['Metadata-Version'] == cls._metadata_version
 
@@ -468,7 +493,7 @@ class MetaData:
         args = {}
         for field_name in m.keys():
             attr = cls._attr_name(field_name)
-            if not attr.endswith('s'):
+            if not attr.endswith('s') or attr in ["provides", "requires"]:
                 args[attr] = m.get(field_name)
             else:
                 if field_name == "Keywords":
@@ -477,7 +502,6 @@ class MetaData:
                     args[attr] = m.get_all(field_name)
 
         args['description'] = m.get_payload()
-
         return cls(**args)
 
 
@@ -699,7 +723,8 @@ class WheelRecord:
         assert buf.tell() == 0, (
             f"Stale buffer given - current position: {buf.tell()}."
         )
-        assert not arcpath.endswith('.dist-info/RECORD'), (
+        # if .dist-info/RECORD is not in a subdirectory, it is not allowed
+        assert "/" in arcpath.replace('.dist-info/RECORD',"") or not arcpath.endswith('.dist-info/RECORD'), (
             f"Attempt to add an entry for a RECORD file to the RECORD: "
             f"{repr(arcpath)}."
         )
@@ -1398,6 +1423,12 @@ class WheelFile:
             compresslevel=compresslevel,
             strict_timestamps=strict_timestamps,
         )
+        # if we copy a wheel from an existing wheelfile, we should recreate the
+        # distinfo_prefix with the original distname and the modified version
+        # if we do not set _distinfo_prefix, the distname will get canonicalized through
+        # _distinfo_path(), and this is wrong when building a wheel from an existing one
+        # as it will break package discovery
+        new_wf._distinfo_prefix = f"{distname}-{version}."
 
         assert new_wf.wheeldata is not None  # For MyPy
 
@@ -1439,16 +1470,37 @@ class WheelFile:
             arcname_tail = '/'.join(arcname_tail_parts)
             if arcname_head == wf.distinfo_dirname:
                 new_arcname = new_wf.distinfo_dirname + '/' + arcname_tail
-                new_wf.writestr(new_arcname, wf.zipfile.read(zinfo))
+
+                # create a new ZipInfo
+                new_zinfo = cls._clone_and_rename_zipinfo(zinfo, new_arcname)
+
+                new_wf.writestr(new_zinfo, wf.zipfile.read(zinfo))
                 continue
             if arcname_head == wf.data_dirname:
                 new_arcname = new_wf.data_dirname + '/' + arcname_tail
-                new_wf.writestr(new_arcname, wf.zipfile.read(zinfo))
+
+                # create a new ZipInfo
+                new_zinfo = cls._clone_and_rename_zipinfo(zinfo, new_arcname)
+
+                new_wf.writestr(new_zinfo, wf.zipfile.read(zinfo))
                 continue
 
             new_wf.writestr(zinfo, wf.zipfile.read(zinfo))
 
         return new_wf
+
+    @staticmethod
+    def _clone_and_rename_zipinfo(zinfo: zipfile.ZipInfo, new_name: str):
+        # attributes to preserved
+        PRESERVED_ZIPINFO_ATTRS = ['date_time', 'compress_type', 'comment',
+                                   'extra', 'create_system', 'create_version',
+                                   'extract_version', 'flag_bits', 'volume',
+                                   'internal_attr', 'external_attr']
+        new_zinfo = zipfile.ZipInfo(filename=new_name)
+        for attr in PRESERVED_ZIPINFO_ATTRS:
+            setattr(new_zinfo, attr, getattr(zinfo, attr))
+
+        return new_zinfo
 
     @staticmethod
     def _is_unnamed_or_directory(target: Union[Path, BinaryIO]) -> bool:
@@ -1617,14 +1669,15 @@ class WheelFile:
         try:
             metadata = self.zipfile.read(self._distinfo_path('METADATA'))
             self.metadata = MetaData.from_str(metadata.decode('utf-8'))
-        except Exception:
+        except Exception as e:
             self.metadata = None
+            raise(e)
 
         try:
             wheeldata = self.zipfile.read(self._distinfo_path('WHEEL'))
             self.wheeldata = WheelData.from_str(wheeldata.decode('utf-8'))
         except Exception:
-            self.metadata = None
+            self.wheeldata = None
 
         try:
             record = self.zipfile.read(self._distinfo_path('RECORD'))
@@ -1971,7 +2024,6 @@ class WheelFile:
         path = os.path.join(arcname, directory[len(prefix):], stem)
         return path
 
-    # TODO: Make sure fields of given ZipInfo objects are propagated
     def writestr(self,
                  zinfo_or_arcname: Union[zipfile.ZipInfo, str],
                  data: Union[bytes, str],
@@ -2095,7 +2147,6 @@ class WheelFile:
 
     # TODO: drive letter should be stripped from the arcname the same way
     # ZipInfo.from_file does it
-    # TODO: Make sure fields of given ZipInfo objects are propagated
     def writestr_data(self, section: str,
                       zinfo_or_arcname: Union[zipfile.ZipInfo, str],
                       data: Union[bytes, str],
@@ -2147,6 +2198,10 @@ class WheelFile:
 
         arcname = self._distinfo_path(section + '/' + arcname.lstrip('/'),
                                       kind='data')
+
+        # clone the rest of the attributes from provided zinfo
+        if isinstance(zinfo_or_arcname, zipfile.ZipInfo):
+            arcname = self._clone_and_rename_zipinfo(zinfo_or_arcname, arcname)
 
         self.writestr(arcname, data, compress_type, compresslevel)
 
@@ -2236,7 +2291,6 @@ class WheelFile:
         self.write(filename, arcname, compress_type, compresslevel,
                    recursive=recursive, skipdir=skipdir)
 
-    # TODO: Make sure fields of given ZipInfo objects are propagated
     def writestr_distinfo(self, zinfo_or_arcname: Union[zipfile.ZipInfo, str],
                           data: Union[bytes, str],
                           compress_type: Optional[int] = None,
@@ -2294,6 +2348,10 @@ class WheelFile:
             )
 
         arcname = self._distinfo_path(arcname.lstrip('/'))
+        # clone the rest of the attributes from provided zinfo
+        if isinstance(zinfo_or_arcname, zipfile.ZipInfo):
+            arcname = self._clone_and_rename_zipinfo(zinfo_or_arcname, arcname)
+
         self.writestr(arcname, data, compress_type, compresslevel)
 
     @staticmethod
