@@ -226,6 +226,10 @@ class MetaData:
         The License-File is a string that is a path, relative to``.dist-info``,
         to a license file. The license file content MUST be UTF-8 encoded text.
 
+    license_expression
+        The License-Expression optional field is specified to contain a text
+        string that is a valid SPDX license expression, as defined herein.
+
     home_page
         URL of the home page for this distribution (project).
 
@@ -350,6 +354,7 @@ class MetaData:
                  provides_dists: Optional[List[str]] = None,
                  obsoletes_dists: Optional[List[str]] = None,
                  license_files: Optional[List[str]] = None,
+                 license_expression: Optional[str] = None,
                  provides: Optional[str] = None,
                  requires: Optional[str] = None,
                  ):
@@ -387,6 +392,7 @@ class MetaData:
         self.provides_dists = provides_dists or []
         self.obsoletes_dists = obsoletes_dists or []
         self.license_files = license_files or []
+        self.license_expression = license_expression or []
         self.provides = provides
         self.requires = requires
 
