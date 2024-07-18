@@ -7,7 +7,8 @@ This project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-Nothing yet.
+### Changed
+- **Dropped support of Python versions lower than Python 3.9.**
 
 ## [0.0.8] - 2021-08-03
 ### Changed

@@ -16,8 +16,8 @@ requirements = Path('./requirements.txt').read_text().splitlines()
 with WheelFile(mode='w', **spec) as wf:
     # Add requirements to the metadata
     wf.metadata.requires_dists = requirements
-    # We target Python 3.6+ only
-    wf.metadata.requires_python = '>=3.6'
+    # We target Python 3.9+ only
+    wf.metadata.requires_python = '>=3.9'
 
     # Make sure PyPI page renders nicely
     wf.metadata.summary = "API for inspecting and creating .whl files"

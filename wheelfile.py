@@ -37,10 +37,10 @@ Here's how to create a simple package under a specific directory path::
 import os
 import csv
 import io
-import sys
 import hashlib
 import base64
 import warnings
+import zipfile
 
 from string import ascii_letters, digits
 from pathlib import Path
@@ -52,11 +52,6 @@ from packaging.version import Version, InvalidVersion
 from email.message import EmailMessage
 from email.policy import EmailPolicy
 from email import message_from_string
-
-if sys.version_info >= (3, 8):
-    import zipfile
-else:
-    import zipfile38 as zipfile
 
 from typing import Optional, Union, List, Dict, IO, BinaryIO
 

@@ -1,7 +1,6 @@
 import pytest
 
 import os
-import sys
 
 from functools import partial
 from wheelfile import (
@@ -14,12 +13,8 @@ from io import BytesIO
 from packaging.version import Version
 from pathlib import Path
 
-if sys.version_info >= (3, 8):
-    from zipfile import (ZipFile, ZipInfo, Path as ZipPath, ZIP_DEFLATED,
-                         ZIP_BZIP2, ZIP_STORED)
-else:
-    from zipfile38 import (ZipFile, ZipInfo, Path as ZipPath, ZIP_DEFLATED,
-                           ZIP_BZIP2, ZIP_STORED)
+from zipfile import (ZipFile, ZipInfo, Path as ZipPath, ZIP_DEFLATED,
+                     ZIP_BZIP2, ZIP_STORED)
 
 
 def test_UnnamedDistributionError_is_BadWheelFileError():
