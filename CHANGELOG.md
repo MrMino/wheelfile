@@ -22,6 +22,10 @@ Versioning](https://semver.org/spec/v2.0.0.html).
   `WHEEL` file is corrupted or wrong, the `.wheeldata` will be set to `None`,
   as opposed to `.metadata` as was the case previously. Thanks to
   [mboisson](https://github.com/mboisson) for spotting this and the fix.
+- Writing a `.dist-info/RECORD` file in a subdirectory of the archive will no
+  longer trigger an `AssertionError`. This should help with vendoring packages
+  inside wheels. Thanks to [mboisson](https://github.com/mboisson) for
+  providing a fix.
 
 ## [0.0.8] - 2021-08-03
 ### Changed
