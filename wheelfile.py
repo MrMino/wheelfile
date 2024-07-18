@@ -54,7 +54,7 @@ from packaging.tags import parse_tag
 from packaging.utils import canonicalize_name
 from packaging.version import InvalidVersion, Version
 
-__version__ = "0.0.8"
+__version__ = "0.0.9"
 
 
 # TODO: ensure that writing into `file` arcname and then into `file/not/really`

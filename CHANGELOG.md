@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.0.9] - 2024-07-19
 ### Changed
 - **Dropped support of Python versions lower than Python 3.9.**
 - The `WheelFile.writestr_*` methods will now preserve as `ZipInfo` attributes,
@@ -197,7 +197,8 @@ contributions - both of the fixes below came from them.
 - First working version of the library.
 - It's possible to create wheels from scratch.
 
-[Unreleased]: https://github.com/mrmino/wheelfile/compare/v0.0.8...HEAD
+[Unreleased]: https://github.com/mrmino/wheelfile/compare/v0.0.9...HEAD
+[0.0.9]: https://github.com/mrmino/wheelfile/compare/v0.0.8...v0.0.9
 [0.0.8]: https://github.com/mrmino/wheelfile/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/mrmino/wheelfile/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/mrmino/wheelfile/compare/v0.0.5...v0.0.6
