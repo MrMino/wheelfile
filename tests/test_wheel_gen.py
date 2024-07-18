@@ -1,13 +1,9 @@
 import pytest
 
-import sys
+from zipfile import ZipFile, Path as ZipPath
 
 from wheelfile import WheelFile
 
-if sys.version_info >= (3, 8):
-    from zipfile import ZipFile, Path as ZipPath
-else:
-    from zipfile38 import ZipFile, Path as ZipPath
 
 
 class TestEmptyWheelStructure:

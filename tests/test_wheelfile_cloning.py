@@ -1,16 +1,12 @@
 import io
 import os
-import sys
+from zipfile import ZIP_DEFLATED, ZIP_BZIP2, ZIP_STORED, ZipInfo
+
 import pytest
 
 from wheelfile import WheelFile, __version__, MetaData
 
 from packaging.version import Version
-
-if sys.version_info >= (3, 8):
-    from zipfile import ZIP_DEFLATED, ZIP_BZIP2, ZIP_STORED, ZipInfo
-else:
-    from zipfile38 import ZIP_DEFLATED, ZIP_BZIP2, ZIP_STORED, ZipInfo
 
 from .test_metas import TestMetadata as MetaDataTests
 

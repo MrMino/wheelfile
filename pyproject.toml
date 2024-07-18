@@ -1,0 +1,7 @@
+# This pyproject.toml file is currently only used to keep all tooling config in
+# one place. It should not be used to install the package via `pip install .`
+# or similar.
+
+[tool.isort]
+profile = "black"
+split_on_trailing_comma = true
