@@ -365,6 +365,7 @@ class MetaData:
                  platforms: Optional[List[str]] = None,
                  supported_platforms: Optional[List[str]] = None,
                  requires_python: Optional[str] = None,
+                 requires: Optional[List[str]] = None,
                  requires_dists: Optional[List[str]] = None,
                  requires_externals: Optional[List[str]] = None,
                  provides_extras: Optional[List[str]] = None,
@@ -399,6 +400,7 @@ class MetaData:
         self.supported_platforms = supported_platforms or []
 
         self.requires_python = requires_python
+        self.requires = requires or []
         self.requires_dists = requires_dists or []
         self.requires_externals = requires_externals or []
         self.provides_extras = provides_extras or []
@@ -414,7 +416,7 @@ class MetaData:
 
     @classmethod
     def field_is_multiple_use(cls, field_name: str) -> bool:
-        field_name = field_name.lower().replace('-', '_').rstrip('s')
+        field_name = field_name.lower().replace('-', '_')
         if field_name in cls.__slots__ or field_name == 'keyword':
             return False
         if field_name + 's' in cls.__slots__:
@@ -490,7 +492,6 @@ class MetaData:
     @classmethod
     def from_str(cls, s: str) -> 'MetaData':
         m = message_from_string(s)
-
         # TODO: validate this when the rest of the versions are implemented
         # assert m['Metadata-Version'] == cls._metadata_version
 
@@ -508,7 +509,6 @@ class MetaData:
                     args[attr] = m.get_all(field_name)
 
         args['description'] = m.get_payload()
-
         return cls(**args)
 
 
