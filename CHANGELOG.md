@@ -17,6 +17,12 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - Unconstrained `packaging` requirement. At the time of writing this, all
   versions up to `packaging==24.1` pass the tests on Linux.
 
+### Fixed
+- Lazy mode will no longer confuse corrupted wheeldata with metadata - if
+  `WHEEL` file is corrupted or wrong, the `.wheeldata` will be set to `None`,
+  as opposed to `.metadata` as was the case previously. Thanks to
+  [mboisson](https://github.com/mboisson) for spotting this and the fix.
+
 ## [0.0.8] - 2021-08-03
 ### Changed
 - Since `WheelFile` write methods now have `skipdir=True` default (see below),
