@@ -14,6 +14,8 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - `WheelFile.from_wheelfile` constructor will now preserve `ZipInfo`
   attributes of the files from distinfo and data directories of the original
   archive. This includes file permissions.
+- Unconstrained `packaging` requirement. At the time of writing this, all
+  versions up to `packaging==24.1` pass the tests on Linux.
 
 ## [0.0.8] - 2021-08-03
 ### Changed
