@@ -1,6 +1,6 @@
 import pathlib
-from wheelfile import WheelFile
 
+from wheelfile import WheelFile
 
 main = """
 import subprocess, os, platform
@@ -16,27 +16,27 @@ if __name__ == '__main__':
         subprocess.call(('xdg-open', filepath))
 """
 
-with WheelFile(
-    mode='w', distname='pep_517_example', version='1', build_tag=4
-) as wf:
-    wf.metadata.requires_dists = ['wheelfile', 'toml']
+with WheelFile(mode="w", distname="pep_517_example", version="1", build_tag=4) as wf:
+    wf.metadata.requires_dists = ["wheelfile", "toml"]
     wf.metadata.summary = "Example of PEP-517 builder that uses wheelfile"
     wf.metadata.description = (
         "See "
         "https://wheelfile.readthedocs.io/en/latest/"
         "examples/pep-517-builder.html"
     )
-    wf.metadata.description_content_type = 'text/markdown'
-    wf.metadata.keywords = ['wheel', 'packaging', 'pip', 'build', 'pep-517']
+    wf.metadata.description_content_type = "text/markdown"
+    wf.metadata.keywords = ["wheel", "packaging", "pip", "build", "pep-517"]
     wf.metadata.classifiers = [
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
     ]
     wf.metadata.author = "Błażej Michalik"
-    wf.metadata.home_page = 'https://github.com/MrMino/wheelfile'
+    wf.metadata.home_page = "https://github.com/MrMino/wheelfile"
 
-    wf.write(pathlib.Path(__file__).parent / './pep_517_builder.py',
-             'pep_517_example/builder.py')
-    wf.writestr('pep_517_example/__main__.py', main)
+    wf.write(
+        pathlib.Path(__file__).parent / "./pep_517_builder.py",
+        "pep_517_example/builder.py",
+    )
+    wf.writestr("pep_517_example/__main__.py", main)
 
 # 🧀

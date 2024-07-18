@@ -1,14 +1,15 @@
+from pathlib import Path
+
 import pytest
 
 from wheelfile import WheelFile
 
-from pathlib import Path
-
 
 @pytest.fixture
 def empty_wheel(tmp_path) -> Path:
-    with WheelFile(tmp_path, 'w',
-                   distname='wheelfile_test_wheel', version='0.0.0') as wf:
+    with WheelFile(
+        tmp_path, "w", distname="wheelfile_test_wheel", version="0.0.0"
+    ) as wf:
         pass
     return wf
 
@@ -16,7 +17,7 @@ def empty_wheel(tmp_path) -> Path:
 class TestWheelFileReadMode:
     def test_read_mode_is_the_default_one(self, empty_wheel):
         wf = WheelFile(empty_wheel.filename)
-        assert wf.mode == 'r'
+        assert wf.mode == "r"
 
     def test_close_in_read_mode_does_not_try_to_write(self, empty_wheel):
         wf = WheelFile(empty_wheel.filename)

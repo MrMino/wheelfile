@@ -34,28 +34,27 @@ Here's how to create a simple package under a specific directory path::
         wf.write('path/to/a/module.py', arcname="mywheel.py")
 """
 
-import os
-import csv
-import io
-import hashlib
 import base64
+import csv
+import hashlib
+import io
+import os
 import warnings
 import zipfile
-
-from string import ascii_letters, digits
-from pathlib import Path
 from collections import namedtuple
-from inspect import signature
-from packaging.tags import parse_tag
-from packaging.utils import canonicalize_name
-from packaging.version import Version, InvalidVersion
+from email import message_from_string
 from email.message import EmailMessage
 from email.policy import EmailPolicy
-from email import message_from_string
+from inspect import signature
+from pathlib import Path
+from string import ascii_letters, digits
+from typing import IO, BinaryIO, Dict, List, Optional, Union
 
-from typing import Optional, Union, List, Dict, IO, BinaryIO
+from packaging.tags import parse_tag
+from packaging.utils import canonicalize_name
+from packaging.version import InvalidVersion, Version
 
-__version__ = '0.0.8'
+__version__ = "0.0.8"
 
 
 # TODO: ensure that writing into `file` arcname and then into `file/not/really`
@@ -92,7 +91,7 @@ def _slots_from_params(func):
     """
     funcsig = signature(func)
     slots = list(funcsig.parameters)
-    slots.remove('self')
+    slots.remove("self")
     return slots
 
 
@@ -348,29 +347,34 @@ class MetaData:
         this one. Each entry must follow the same format that entries in
         "requires_dists" list do.
     """
-    def __init__(self, *, name: str, version: Union[str, Version],
-                 summary: Optional[str] = None,
-                 description: Optional[str] = None,
-                 description_content_type: Optional[str] = None,
-                 keywords: Union[List[str], str, None] = None,
-                 classifiers: Optional[List[str]] = None,
-                 author: Optional[str] = None,
-                 author_email: Optional[str] = None,
-                 maintainer: Optional[str] = None,
-                 maintainer_email: Optional[str] = None,
-                 license: Optional[str] = None,
-                 home_page: Optional[str] = None,
-                 download_url: Optional[str] = None,
-                 project_urls: Optional[List[str]] = None,
-                 platforms: Optional[List[str]] = None,
-                 supported_platforms: Optional[List[str]] = None,
-                 requires_python: Optional[str] = None,
-                 requires_dists: Optional[List[str]] = None,
-                 requires_externals: Optional[List[str]] = None,
-                 provides_extras: Optional[List[str]] = None,
-                 provides_dists: Optional[List[str]] = None,
-                 obsoletes_dists: Optional[List[str]] = None
-                 ):
+
+    def __init__(
+        self,
+        *,
+        name: str,
+        version: Union[str, Version],
+        summary: Optional[str] = None,
+        description: Optional[str] = None,
+        description_content_type: Optional[str] = None,
+        keywords: Union[List[str], str, None] = None,
+        classifiers: Optional[List[str]] = None,
+        author: Optional[str] = None,
+        author_email: Optional[str] = None,
+        maintainer: Optional[str] = None,
+        maintainer_email: Optional[str] = None,
+        license: Optional[str] = None,
+        home_page: Optional[str] = None,
+        download_url: Optional[str] = None,
+        project_urls: Optional[List[str]] = None,
+        platforms: Optional[List[str]] = None,
+        supported_platforms: Optional[List[str]] = None,
+        requires_python: Optional[str] = None,
+        requires_dists: Optional[List[str]] = None,
+        requires_externals: Optional[List[str]] = None,
+        provides_extras: Optional[List[str]] = None,
+        provides_dists: Optional[List[str]] = None,
+        obsoletes_dists: Optional[List[str]] = None,
+    ):
         # self.metadata_version = '2.1' by property
         self.name = name
         self.version = Version(version) if isinstance(version, str) else version
@@ -380,8 +384,7 @@ class MetaData:
         self.description_content_type = description_content_type
         if keywords is None:
             keywords = []
-        self.keywords = (keywords if isinstance(keywords, list)
-                         else keywords.split(','))
+        self.keywords = keywords if isinstance(keywords, list) else keywords.split(",")
         self.classifiers = classifiers or []
 
         self.author = author
@@ -410,14 +413,15 @@ class MetaData:
     @property
     def metadata_version(self):
         return self._metadata_version
-    _metadata_version = '2.1'
+
+    _metadata_version = "2.1"
 
     @classmethod
     def field_is_multiple_use(cls, field_name: str) -> bool:
-        field_name = field_name.lower().replace('-', '_').rstrip('s')
-        if field_name in cls.__slots__ or field_name == 'keyword':
+        field_name = field_name.lower().replace("-", "_").rstrip("s")
+        if field_name in cls.__slots__ or field_name == "keyword":
             return False
-        if field_name + 's' in cls.__slots__:
+        if field_name + "s" in cls.__slots__:
             return True
         else:
             raise ValueError(f"Unknown field: {repr(field_name)}.")
@@ -427,17 +431,17 @@ class MetaData:
         if cls.field_is_multiple_use(attribute_name):
             attribute_name = attribute_name[:-1]
         field_name = attribute_name.title()
-        field_name = field_name.replace('_', '-')
-        field_name = field_name.replace('Url', 'URL')
-        field_name = field_name.replace('-Page', '-page')
-        field_name = field_name.replace('-Email', '-email')
+        field_name = field_name.replace("_", "-")
+        field_name = field_name.replace("Url", "URL")
+        field_name = field_name.replace("-Page", "-page")
+        field_name = field_name.replace("-Email", "-email")
         return field_name
 
     @classmethod
     def _attr_name(cls, field_name: str) -> str:
         if cls.field_is_multiple_use(field_name):
-            field_name += 's'
-        return field_name.lower().replace('-', '_')
+            field_name += "s"
+        return field_name.lower().replace("-", "_")
 
     def __str__(self) -> str:
         m = EmailMessage(EmailPolicy(max_line_length=None))
@@ -449,24 +453,24 @@ class MetaData:
 
             field_name = self._field_name(attr_name)
 
-            if field_name == 'Keywords':
-                content = ','.join(content)
+            if field_name == "Keywords":
+                content = ",".join(content)
             elif field_name == "Version":
                 content = str(content)
 
             if self.field_is_multiple_use(field_name):
-                assert not isinstance(content, str), (
-                    f"Single string in multiple use attribute: {attr_name}"
-                )
+                assert not isinstance(
+                    content, str
+                ), f"Single string in multiple use attribute: {attr_name}"
 
                 for value in content:
                     m.add_header(field_name, value)
-            elif field_name == 'Description':
+            elif field_name == "Description":
                 m.set_payload(content)
             else:
-                assert isinstance(content, str), (
-                    f"Expected string, got {type(content)} instead: {attr_name}"
-                )
+                assert isinstance(
+                    content, str
+                ), f"Expected string, got {type(content)} instead: {attr_name}"
                 m.add_header(field_name, content)
         return str(m)
 
@@ -477,37 +481,42 @@ class MetaData:
             # argument, the latter is there due to semantics of email-style
             # parsing.
             # Ensure these two values compare equally in the description.
-            mine = '' if self.description is None else self.description
-            theirs = '' if other.description is None else other.description
-            descriptions_equal = (mine == theirs)
+            mine = "" if self.description is None else self.description
+            theirs = "" if other.description is None else other.description
+            descriptions_equal = mine == theirs
 
-            return (all(getattr(self, field) == getattr(other, field)
-                        for field in self.__slots__ if field != 'description')
-                    and descriptions_equal)
+            return (
+                all(
+                    getattr(self, field) == getattr(other, field)
+                    for field in self.__slots__
+                    if field != "description"
+                )
+                and descriptions_equal
+            )
         else:
             return NotImplemented
 
     @classmethod
-    def from_str(cls, s: str) -> 'MetaData':
+    def from_str(cls, s: str) -> "MetaData":
         m = message_from_string(s)
 
         # TODO: validate this when the rest of the versions are implemented
         # assert m['Metadata-Version'] == cls._metadata_version
 
-        del m['Metadata-Version']
+        del m["Metadata-Version"]
 
         args = {}
         for field_name in m.keys():
             attr = cls._attr_name(field_name)
-            if not attr.endswith('s'):
+            if not attr.endswith("s"):
                 args[attr] = m.get(field_name)
             else:
                 if field_name == "Keywords":
-                    args[attr] = m.get(field_name).split(',')
+                    args[attr] = m.get(field_name).split(",")
                 else:
                     args[attr] = m.get_all(field_name)
 
-        args['description'] = m.get_payload()
+        args["description"] = m.get_payload()
 
         return cls(**args)
 
@@ -547,23 +556,26 @@ class WheelData:
         Optional build number. Used as a tie breaker when two wheels have the
         same version.
     """
-    def __init__(self, *,
-                 generator: str = 'wheelfile ' + __version__,
-                 root_is_purelib: bool = True,
-                 tags: Union[List[str], str] = 'py3-none-any',
-                 build: Optional[int] = None):
+
+    def __init__(
+        self,
+        *,
+        generator: str = "wheelfile " + __version__,
+        root_is_purelib: bool = True,
+        tags: Union[List[str], str] = "py3-none-any",
+        build: Optional[int] = None,
+    ):
         # self.wheel_version = '1.0' by property
         self.generator = generator
         self.root_is_purelib = root_is_purelib
-        self.tags = self._extend_tags(
-            tags if isinstance(tags, list) else [tags]
-        )
+        self.tags = self._extend_tags(tags if isinstance(tags, list) else [tags])
         self.build = build
+
     __slots__ = _slots_from_params(__init__)
 
     @property
     def wheel_version(self) -> str:
-        return '1.0'
+        return "1.0"
 
     def _extend_tags(self, tags: List[str]) -> List[str]:
         extended_tags = []
@@ -573,26 +585,25 @@ class WheelData:
 
     def __str__(self) -> str:
         # TODO Custom exception? Exception message?
-        assert isinstance(self.generator, str), (
-            f"'generator' must be a string, got {type(self.generator)} instead"
-        )
+        assert isinstance(
+            self.generator, str
+        ), f"'generator' must be a string, got {type(self.generator)} instead"
         assert isinstance(self.root_is_purelib, bool), (
             f"'root_is_purelib' must be a boolean, got"
             f"{type(self.root_is_purelib)} instead"
         )
-        assert isinstance(self.tags, list), (
-            f"Expected a list in 'tags', got {type(self.tags)} instead"
-        )
+        assert isinstance(
+            self.tags, list
+        ), f"Expected a list in 'tags', got {type(self.tags)} instead"
         assert self.tags, "'tags' cannot be empty"
-        assert isinstance(self.build, int) or self.build is None, (
-            f"'build' must be an int, got {type(self.build)} instead"
-        )
+        assert (
+            isinstance(self.build, int) or self.build is None
+        ), f"'build' must be an int, got {type(self.build)} instead"
 
         m = EmailMessage()
         m.add_header("Wheel-Version", self.wheel_version)
         m.add_header("Generator", self.generator)
-        m.add_header("Root-Is-Purelib", "true"
-                     if self.root_is_purelib else "false")
+        m.add_header("Root-Is-Purelib", "true" if self.root_is_purelib else "false")
         for tag in self.tags:
             m.add_header("Tag", tag)
         if self.build is not None:
@@ -601,24 +612,23 @@ class WheelData:
         return str(m)
 
     @classmethod
-    def from_str(cls, s: str) -> 'WheelData':
+    def from_str(cls, s: str) -> "WheelData":
         m = message_from_string(s)
-        assert m['Wheel-Version'] == '1.0'
+        assert m["Wheel-Version"] == "1.0"
         args = {
-            'generator': m.get('Generator'),
-            'root_is_purelib': bool(m.get('Root-Is-Purelib')),
-            'tags': m.get_all('Tag'),
+            "generator": m.get("Generator"),
+            "root_is_purelib": bool(m.get("Root-Is-Purelib")),
+            "tags": m.get_all("Tag"),
         }
 
-        if 'build' in m:
-            args['build'] = int(m.get('build'))
+        if "build" in m:
+            args["build"] = int(m.get("build"))
 
         return cls(**args)
 
     def __eq__(self, other):
         if isinstance(other, WheelData):
-            return all(getattr(self, f) == getattr(other, f)
-                       for f in self.__slots__)
+            return all(getattr(self, f) == getattr(other, f) for f in self.__slots__)
         else:
             return NotImplemented
 
@@ -634,11 +644,12 @@ class WheelRecord:
     "The .dist-info directory" section of PEP-427, and
     https://packaging.python.org/specifications/recording-installed-packages/.
     """
+
     HASH_BUF_SIZE = 65536
 
-    _RecordEntry = namedtuple('_RecordEntry', 'path hash size')
+    _RecordEntry = namedtuple("_RecordEntry", "path hash size")
 
-    def __init__(self, hash_algo: str = 'sha256'):
+    def __init__(self, hash_algo: str = "sha256"):
         self._records: Dict[str, WheelRecord._RecordEntry] = {}
         self._hash_algo = ""
         self.hash_algo = hash_algo
@@ -652,14 +663,10 @@ class WheelRecord:
     def hash_algo(self, value: str):
         # per PEP-376
         if value not in hashlib.algorithms_guaranteed:
-            raise UnsupportedHashTypeError(
-                f"{repr(value)} is not a valid record hash."
-            )
+            raise UnsupportedHashTypeError(f"{repr(value)} is not a valid record hash.")
         # per PEP 427
-        if value in ('md5', 'sha1'):
-            raise UnsupportedHashTypeError(
-                f"{repr(value)} is a forbidden hash type."
-            )
+        if value in ("md5", "sha1"):
+            raise UnsupportedHashTypeError(f"{repr(value)} is a forbidden hash type.")
 
         # PEP-427 says the RECORD hash must be sha256 or better.  Does that mean
         # hashes such as sha224 are forbidden as well though not specifically
@@ -694,7 +701,7 @@ class WheelRecord:
         return buf.getvalue()
 
     @classmethod
-    def from_str(cls, s) -> 'WheelRecord':
+    def from_str(cls, s) -> "WheelRecord":
         record = WheelRecord()
         buf = io.StringIO(s)
         reader = csv.DictReader(buf, cls._RecordEntry._fields)
@@ -727,11 +734,11 @@ class WheelRecord:
         RecordContainsDirectoryError
             If ``arcpath`` is a path to a directory.
         """
-        assert buf.tell() == 0, (
-            f"Stale buffer given - current position: {buf.tell()}."
-        )
+        assert buf.tell() == 0, f"Stale buffer given - current position: {buf.tell()}."
         # if .dist-info/RECORD is not in a subdirectory, it is not allowed
-        assert "/" in arcpath.replace('.dist-info/RECORD',"") or not arcpath.endswith('.dist-info/RECORD'), (
+        assert "/" in arcpath.replace(".dist-info/RECORD", "") or not arcpath.endswith(
+            ".dist-info/RECORD"
+        ), (
             f"Attempt to add an entry for a RECORD file to the RECORD: "
             f"{repr(arcpath)}."
         )
@@ -769,7 +776,7 @@ class WheelRecord:
         followed by the urlsafe-base64-nopad encoding of the digest
         (base64.urlsafe_b64encode(digest) with trailing = removed).
         """
-        return base64.urlsafe_b64encode(data).rstrip(b"=").decode('ascii')
+        return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
 
     def __eq__(self, other):
         if isinstance(other, WheelRecord):
@@ -942,7 +949,8 @@ class WheelFile:
     closed : bool
         True if the underlying `ZipFile` object is closed, false otherwise.
     """
-    VALID_DISTNAME_CHARS = set(ascii_letters + digits + '._')
+
+    VALID_DISTNAME_CHARS = set(ascii_letters + digits + "._")
     METADATA_FILENAMES = {"WHEEL", "METADATA", "RECORD"}
 
     # TODO: implement lazy mode
@@ -950,8 +958,8 @@ class WheelFile:
     # TODO: warn on 'w' modes if filename does not end with .whl
     def __init__(
         self,
-        file_or_path: Union[str, Path, BinaryIO] = './',
-        mode: str = 'r',
+        file_or_path: Union[str, Path, BinaryIO] = "./",
+        mode: str = "r",
         *,
         distname: Optional[str] = None,
         version: Optional[Union[str, Version]] = None,
@@ -1171,22 +1179,21 @@ class WheelFile:
         zipfile.BadZipFile
             If given file is not a proper zip.
         """
-        assert not isinstance(file_or_path, io.TextIOBase), (
-            "Text buffer given where a binary one was expected."
-        )
+        assert not isinstance(
+            file_or_path, io.TextIOBase
+        ), "Text buffer given where a binary one was expected."
 
-        if 'a' in mode:
+        if "a" in mode:
             # Requires rewrite feature
-            raise NotImplementedError(
-                "Append mode is not supported yet"
-            )
+            raise NotImplementedError("Append mode is not supported yet")
 
-        if 'l' in mode:
-            warnings.warn(RuntimeWarning(
+        if "l" in mode:
+            warning = RuntimeWarning(
                 "Lazy mode is not fully implemented yet. "
                 "Methods of this class may raise exceptions where "
                 "documentation states lazy mode will suppress them."
-            ))
+            )
+            warnings.warn(warning)
 
         # TODO: this should be read-only prop
         self.mode = mode
@@ -1211,53 +1218,60 @@ class WheelFile:
         filename = self._get_filename(file_or_path)
         self._pick_a_distname(filename, given_distname=distname)
         self._pick_a_version(filename, given_version=version)
-        self._pick_tags(
-            filename, build_tag, language_tag, abi_tag, platform_tag
-        )
+        self._pick_tags(filename, build_tag, language_tag, abi_tag, platform_tag)
 
         if self._is_unnamed_or_directory(file_or_path):
             assert distname is not None and version is not None  # For Mypy
             self._generated_filename = self._generate_filename(
-                self._distname, self._version, self._build_tag,
-                self._language_tag, self._abi_tag, self._platform_tag
+                self._distname,
+                self._version,
+                self._build_tag,
+                self._language_tag,
+                self._abi_tag,
+                self._platform_tag,
             )
         else:
-            self._generated_filename = ''
+            self._generated_filename = ""
 
         if isinstance(file_or_path, Path):
             file_or_path /= self._generated_filename
 
         # FIXME: the file is opened before validating the arguments, so this
         # litters empty and corrupted wheels if any arg is wrong.
-        self._zip = zipfile.ZipFile(file_or_path, mode.strip('l'),
-                                    compression=compression,
-                                    allowZip64=allowZip64,
-                                    compresslevel=compresslevel,
-                                    strict_timestamps=strict_timestamps)
+        self._zip = zipfile.ZipFile(
+            file_or_path,
+            mode.strip("l"),
+            compression=compression,
+            allowZip64=allowZip64,
+            compresslevel=compresslevel,
+            strict_timestamps=strict_timestamps,
+        )
 
         # Used by distinfo_dirname, data_dirname, and _distinfo_path
         self._distinfo_prefix: Optional[str] = None
 
-        if 'w' in mode or 'x' in mode:
+        if "w" in mode or "x" in mode:
             self._initialize_distinfo()
         else:
             self._distinfo_prefix = self._find_distinfo_prefix()
             self._read_distinfo()
 
-        if 'l' not in mode:
+        if "l" not in mode:
             self.validate()
 
     class _Sentinel:
         """Used in `from_wheelfile` to specify that a given paramter should be
         copied from the source object.
         """
+
     _unspecified = _Sentinel()
 
     @classmethod
     def from_wheelfile(
-        cls, wf: "WheelFile",
-        file_or_path: Union[str, Path, BinaryIO] = './',
-        mode: str = 'w',
+        cls,
+        wf: "WheelFile",
+        file_or_path: Union[str, Path, BinaryIO] = "./",
+        mode: str = "w",
         *,
         distname: Union[str, None, _Sentinel] = _unspecified,
         version: Union[str, Version, None, _Sentinel] = _unspecified,
@@ -1356,7 +1370,7 @@ class WheelFile:
         """
         if "r" in mode:
             raise ValueError(
-                f"Passing \"r\" as mode is not allowed when recreating a "
+                f'Passing "r" as mode is not allowed when recreating a '
                 f"wheel: {repr('mode')}."
             )
 
@@ -1395,16 +1409,17 @@ class WheelFile:
 
         f_o_p = file_or_path  # For brevity
         dir_path = (
-            f_o_p.resolve() if isinstance(f_o_p, Path) and f_o_p.is_dir() else
-            f_o_p.parent.resolve() if isinstance(f_o_p, Path) else
-            getattr(f_o_p, 'name', None)
+            f_o_p.resolve()
+            if isinstance(f_o_p, Path) and f_o_p.is_dir()
+            else (
+                f_o_p.parent.resolve()
+                if isinstance(f_o_p, Path)
+                else getattr(f_o_p, "name", None)
+            )
         )
 
         # wf.zipfile.filename is not None only when it is writing to a file
-        both_are_files = (
-            wf.zipfile.filename is not None
-            and dir_path is not None
-        )
+        both_are_files = wf.zipfile.filename is not None and dir_path is not None
 
         if both_are_files:
             assert wf.zipfile.filename is not None  # For MyPy
@@ -1429,7 +1444,8 @@ class WheelFile:
             default_compression = compression
 
         new_wf = WheelFile(
-            file_or_path, mode,
+            file_or_path,
+            mode,
             distname=distname,
             version=version,
             build_tag=build_tag,
@@ -1480,13 +1496,13 @@ class WheelFile:
             data = wf.zipfile.read(zinfo)
 
             arcname = zinfo.filename
-            arcname_head, *arcname_tail_parts = arcname.split('/')
-            arcname_tail = '/'.join(arcname_tail_parts)
+            arcname_head, *arcname_tail_parts = arcname.split("/")
+            arcname_tail = "/".join(arcname_tail_parts)
             if arcname_head == wf.distinfo_dirname:
-                new_arcname = new_wf.distinfo_dirname + '/' + arcname_tail
+                new_arcname = new_wf.distinfo_dirname + "/" + arcname_tail
                 zinfo = _clone_zipinfo(zinfo, filename=new_arcname)
             elif arcname_head == wf.data_dirname:
-                new_arcname = new_wf.data_dirname + '/' + arcname_tail
+                new_arcname = new_wf.data_dirname + "/" + arcname_tail
                 zinfo = _clone_zipinfo(zinfo, filename=new_arcname)
 
             new_wf.writestr(
@@ -1500,10 +1516,8 @@ class WheelFile:
 
     @staticmethod
     def _is_unnamed_or_directory(target: Union[Path, BinaryIO]) -> bool:
-        return (
-            (getattr(target, 'name', None) is None)
-            or
-            (isinstance(target, Path) and target.is_dir())
+        return (getattr(target, "name", None) is None) or (
+            isinstance(target, Path) and target.is_dir()
         )
 
     @staticmethod
@@ -1526,22 +1540,25 @@ class WheelFile:
         build_tag: Optional[Union[str, int]],
         language_tag: str,
         abi_tag: str,
-        platform_tag: str
+        platform_tag: str,
     ) -> str:
         if build_tag is None:
-            segments = [distname, str(version),
-                        language_tag, abi_tag, platform_tag]
+            segments = [distname, str(version), language_tag, abi_tag, platform_tag]
         else:
-            segments = [distname, str(version), str(build_tag),
-                        language_tag, abi_tag, platform_tag]
+            segments = [
+                distname,
+                str(version),
+                str(build_tag),
+                language_tag,
+                abi_tag,
+                platform_tag,
+            ]
 
-        filename = '-'.join(segments) + '.whl'
+        filename = "-".join(segments) + ".whl"
         return filename
 
     @classmethod
-    def _get_filename(
-        cls, file_or_path: Union[BinaryIO, Path]
-    ) -> Optional[str]:
+    def _get_filename(cls, file_or_path: Union[BinaryIO, Path]) -> Optional[str]:
         """Return a filename from file obj or a path.
 
         If given file, the asumption is that the filename is within the value
@@ -1562,8 +1579,9 @@ class WheelFile:
             filename = Path(file_or_path.name).name
             return filename
 
-    def _pick_a_distname(self, filename: Optional[str],
-                         given_distname: Union[None, str]):
+    def _pick_a_distname(
+        self, filename: Optional[str], given_distname: Union[None, str]
+    ):
         # filename == None means an unnamed object was given
         assert filename is not None or given_distname is not None
 
@@ -1571,8 +1589,8 @@ class WheelFile:
             distname = given_distname
         else:
             assert filename is not None  # For MyPy
-            distname = filename.split('-')[0]
-            if distname == '':
+            distname = filename.split("-")[0]
+            if distname == "":
                 raise UnnamedDistributionError(
                     f"No distname provided and the inferred filename does not "
                     f"contain a proper distname substring: {repr(filename)}."
@@ -1597,9 +1615,9 @@ class WheelFile:
             )
         else:
             assert filename is not None  # For MyPy
-            name_segments = filename.split('-')
+            name_segments = filename.split("-")
 
-            if len(name_segments) < 2 or name_segments[1] == '':
+            if len(name_segments) < 2 or name_segments[1] == "":
                 raise UnnamedDistributionError(
                     f"No version provided and the inferred filename does not "
                     f"contain a version segment: {repr(filename)}."
@@ -1614,26 +1632,28 @@ class WheelFile:
                 f"Filename contains invalid version: {repr(version)}."
             ) from e
 
-    def _pick_tags(self,
-                   filename: Optional[str],
-                   given_build: Optional[int],
-                   given_language: Optional[str],
-                   given_abi: Optional[str],
-                   given_platform: Optional[str]):
+    def _pick_tags(
+        self,
+        filename: Optional[str],
+        given_build: Optional[int],
+        given_language: Optional[str],
+        given_abi: Optional[str],
+        given_platform: Optional[str],
+    ):
         # filename == None means an unnamed object was given
         if filename is None:
             self._build_tag = given_build
-            self._language_tag = given_language or 'py3'
-            self._abi_tag = given_abi or 'none'
-            self._platform_tag = given_platform or 'any'
+            self._language_tag = given_language or "py3"
+            self._abi_tag = given_abi or "none"
+            self._platform_tag = given_platform or "any"
             return
 
-        if filename.endswith('.whl'):
+        if filename.endswith(".whl"):
             filename = filename[:-4]
 
-        segments = filename.split('-')
+        segments = filename.split("-")
         if not (len(segments) == 6 or len(segments) == 5):
-            segments = [''] * 5
+            segments = [""] * 5
 
         # TODO: test this when lazy mode is ready
         if len(segments) == 6 and given_build is None:
@@ -1650,9 +1670,9 @@ class WheelFile:
         self._platform_tag = given_platform or segments[-1]
 
     def _initialize_distinfo(self):
-        collapsed_tags = '-'.join((self._language_tag,
-                                   self._abi_tag,
-                                   self._platform_tag))
+        collapsed_tags = "-".join(
+            (self._language_tag, self._abi_tag, self._platform_tag)
+        )
         self.wheeldata = WheelData(build=self.build_tag, tags=collapsed_tags)
         self.metadata = MetaData(name=self.distname, version=self.version)
         self.record = WheelRecord()
@@ -1663,20 +1683,20 @@ class WheelFile:
     # TODO: save the exceptions in Corrupted objects after they are implemented
     def _read_distinfo(self):
         try:
-            metadata = self.zipfile.read(self._distinfo_path('METADATA'))
-            self.metadata = MetaData.from_str(metadata.decode('utf-8'))
+            metadata = self.zipfile.read(self._distinfo_path("METADATA"))
+            self.metadata = MetaData.from_str(metadata.decode("utf-8"))
         except Exception:
             self.metadata = None
 
         try:
-            wheeldata = self.zipfile.read(self._distinfo_path('WHEEL'))
-            self.wheeldata = WheelData.from_str(wheeldata.decode('utf-8'))
+            wheeldata = self.zipfile.read(self._distinfo_path("WHEEL"))
+            self.wheeldata = WheelData.from_str(wheeldata.decode("utf-8"))
         except Exception:
             self.wheeldata = None
 
         try:
-            record = self.zipfile.read(self._distinfo_path('RECORD'))
-            self.record = WheelRecord.from_str(record.decode('utf-8'))
+            record = self.zipfile.read(self._distinfo_path("RECORD"))
+            self.record = WheelRecord.from_str(record.decode("utf-8"))
         except Exception:
             self.record = None
 
@@ -1684,9 +1704,8 @@ class WheelFile:
     # TODO: test behavior if no candidates found
     def _find_distinfo_prefix(self):
         # TODO: this could use a walrus
-        candidates = {path.split('/')[0] for path in self.zipfile.namelist()}
-        candidates = {name for name in candidates
-                      if name.endswith('.dist-info')}
+        candidates = {path.split("/")[0] for path in self.zipfile.namelist()}
+        candidates = {name for name in candidates if name.endswith(".dist-info")}
         # TODO: log them onto debug
         if len(candidates) > 1:
             raise BadWheelFileError(
@@ -1697,7 +1716,7 @@ class WheelFile:
                 "Archive does not contain any .dist-info directory."
             )
 
-        return candidates.pop()[:-len('dist-info')]
+        return candidates.pop()[: -len("dist-info")]
 
     @property
     def filename(self) -> str:
@@ -1753,12 +1772,10 @@ class WheelFile:
     # TODO: check filename segments are not empty
     # TODO: !in lazy mode, return exception objects instead of raising them!
     def validate(self):
-        if self.filename is not None and not self.filename.endswith('.whl'):
-            raise ValueError(
-                f"Filename must end with '.whl': {repr(self.filename)}"
-            )
+        if self.filename is not None and not self.filename.endswith(".whl"):
+            raise ValueError(f"Filename must end with '.whl': {repr(self.filename)}")
 
-        if self.distname == '':
+        if self.distname == "":
             raise ValueError("Distname cannot be an empty string.")
 
         distname_valid = set(self.distname) <= self.VALID_DISTNAME_CHARS
@@ -1826,7 +1843,7 @@ class WheelFile:
             return
 
         # Adding directories to record is bad
-        if str(arcname).endswith('/'):
+        if str(arcname).endswith("/"):
             return
 
         if isinstance(arcname, Path):
@@ -1841,7 +1858,7 @@ class WheelFile:
         with self._zip.open(arcname) as zf:
             self.record.update(arcname, zf)
 
-    def _distinfo_path(self, filename: str, *, kind='dist-info') -> str:
+    def _distinfo_path(self, filename: str, *, kind="dist-info") -> str:
         if self._distinfo_prefix is None:
             name = canonicalize_name(self.distname).replace("-", "_")
             version = str(self.version).replace("-", "_")
@@ -1873,15 +1890,16 @@ class WheelFile:
         if self.closed:
             return
 
-        if 'r' not in self.mode:
+        if "r" not in self.mode:
             if self.metadata is not None:
-                self.writestr(self._distinfo_path("METADATA"),
-                              str(self.metadata).encode())
+                self.writestr(
+                    self._distinfo_path("METADATA"), str(self.metadata).encode()
+                )
             if self.wheeldata is not None:
-                self.writestr(self._distinfo_path("WHEEL"),
-                              str(self.wheeldata).encode())
-            self._zip.writestr(self._distinfo_path("RECORD"),
-                               str(self.record).encode())
+                self.writestr(
+                    self._distinfo_path("WHEEL"), str(self.wheeldata).encode()
+                )
+            self._zip.writestr(self._distinfo_path("RECORD"), str(self.record).encode())
 
         self._zip.close()
 
@@ -1905,13 +1923,17 @@ class WheelFile:
 
     # TODO: symlinks?
     # TODO: use shutil.copyfileobj same way ZipFile.write does
-    def write(self,
-              filename: Union[str, Path],
-              arcname: Optional[str] = None,
-              compress_type: Optional[int] = None,
-              compresslevel: Optional[int] = None,
-              *, recursive: bool = True, resolve: bool = True,
-              skipdir: bool = True) -> None:
+    def write(
+        self,
+        filename: Union[str, Path],
+        arcname: Optional[str] = None,
+        compress_type: Optional[int] = None,
+        compresslevel: Optional[int] = None,
+        *,
+        recursive: bool = True,
+        resolve: bool = True,
+        skipdir: bool = True,
+    ) -> None:
         """Add the file to the wheel.
 
         Updates the wheel record, if the record is being kept.
@@ -1960,8 +1982,7 @@ class WheelFile:
         """
         if resolve and arcname is None:
             arcname = resolved(filename)
-        self._write_to_zip(filename, arcname, skipdir, compress_type,
-                           compresslevel)
+        self._write_to_zip(filename, arcname, skipdir, compress_type, compresslevel)
 
         if recursive:
             common_root = str(filename)
@@ -1971,17 +1992,17 @@ class WheelFile:
                 # traverses them in a defined order.
                 dirs.sort()
 
-                dirs = [d + '/' for d in dirs]
+                dirs = [d + "/" for d in dirs]
                 for name in sorted(dirs + files):
                     filepath = os.path.join(root, name)
                     arcpath = self._os_walk_path_to_arcpath(
                         common_root, root, name, root_arcname
                     )
-                    self._write_to_zip(filepath, arcpath, skipdir,
-                                       compress_type, compresslevel)
+                    self._write_to_zip(
+                        filepath, arcpath, skipdir, compress_type, compresslevel
+                    )
 
-    def _write_to_zip(self, filename, arcname, skipdir, compress_type,
-                      compresslevel):
+    def _write_to_zip(self, filename, arcname, skipdir, compress_type, compresslevel):
         zinfo = zipfile.ZipInfo.from_file(
             filename, arcname, strict_timestamps=self._strict_timestamps
         )
@@ -1997,16 +2018,17 @@ class WheelFile:
             if skipdir:
                 return
             else:
-                data = b''
+                data = b""
         else:
-            with open(filename, 'br') as f:
+            with open(filename, "br") as f:
                 data = f.read()
         self._zip.writestr(zinfo, data, compress_type, compresslevel)
         self.refresh_record(zinfo.filename)
 
     @staticmethod
-    def _os_walk_path_to_arcpath(prefix: str, directory: str,
-                                 stem: str, arcname: Optional[str]):
+    def _os_walk_path_to_arcpath(
+        prefix: str, directory: str, stem: str, arcname: Optional[str]
+    ):
         if arcname is None:
             arcname = prefix
 
@@ -2016,14 +2038,16 @@ class WheelFile:
         # would make os.path.join below ignore 'arcname'.
         prefix = prefix.rstrip(os.sep) + os.sep
 
-        path = os.path.join(arcname, directory[len(prefix):], stem)
+        path = os.path.join(arcname, directory[len(prefix) :], stem)
         return path
 
-    def writestr(self,
-                 zinfo_or_arcname: Union[zipfile.ZipInfo, str],
-                 data: Union[bytes, str],
-                 compress_type: Optional[int] = None,
-                 compresslevel: Optional[int] = None) -> None:
+    def writestr(
+        self,
+        zinfo_or_arcname: Union[zipfile.ZipInfo, str],
+        data: Union[bytes, str],
+        compress_type: Optional[int] = None,
+        compresslevel: Optional[int] = None,
+    ) -> None:
         """Write given data into the wheel under the given path.
 
         Updates the wheel record, if the record is being kept.
@@ -2066,12 +2090,18 @@ class WheelFile:
     # TODO: drive letter should be stripped from the arcname the same way
     # ZipInfo.from_file does it
     # TODO: symlinks?
-    def write_data(self, filename: Union[str, Path],
-                   section: str, arcname: Optional[str] = None,
-                   compress_type: Optional[int] = None,
-                   compresslevel: Optional[int] = None,
-                   *, recursive: bool = True, resolve: bool = True,
-                   skipdir: bool = True) -> None:
+    def write_data(
+        self,
+        filename: Union[str, Path],
+        section: str,
+        arcname: Optional[str] = None,
+        compress_type: Optional[int] = None,
+        compresslevel: Optional[int] = None,
+        *,
+        recursive: bool = True,
+        resolve: bool = True,
+        skipdir: bool = True,
+    ) -> None:
         """Write a file to the .data directory under a specified section.
 
         This method is a handy shortcut for writing into
@@ -2134,19 +2164,28 @@ class WheelFile:
         if arcname is None:
             arcname = filename.name
 
-        arcname = self._distinfo_path(section + '/' + arcname.lstrip('/'),
-                                      kind='data')
+        arcname = self._distinfo_path(section + "/" + arcname.lstrip("/"), kind="data")
 
-        self.write(filename, arcname, compress_type, compresslevel,
-                   recursive=recursive, resolve=resolve, skipdir=skipdir)
+        self.write(
+            filename,
+            arcname,
+            compress_type,
+            compresslevel,
+            recursive=recursive,
+            resolve=resolve,
+            skipdir=skipdir,
+        )
 
     # TODO: drive letter should be stripped from the arcname the same way
     # ZipInfo.from_file does it
-    def writestr_data(self, section: str,
-                      zinfo_or_arcname: Union[zipfile.ZipInfo, str],
-                      data: Union[bytes, str],
-                      compress_type: Optional[int] = None,
-                      compresslevel: Optional[int] = None) -> None:
+    def writestr_data(
+        self,
+        section: str,
+        zinfo_or_arcname: Union[zipfile.ZipInfo, str],
+        data: Union[bytes, str],
+        compress_type: Optional[int] = None,
+        compresslevel: Optional[int] = None,
+    ) -> None:
         """Write given data to the .data directory under a specified section.
 
         This method is a handy shortcut for writing into
@@ -2191,7 +2230,9 @@ class WheelFile:
             else zinfo_or_arcname
         )
 
-        data_arcname = self._distinfo_path(section + '/' + arcname.lstrip('/'), kind='data')
+        data_arcname = self._distinfo_path(
+            section + "/" + arcname.lstrip("/"), kind="data"
+        )
 
         if isinstance(zinfo_or_arcname, zipfile.ZipInfo):
             zinfo_or_arcname = _clone_zipinfo(zinfo_or_arcname, filename=data_arcname)
@@ -2201,12 +2242,17 @@ class WheelFile:
         self.writestr(zinfo_or_arcname, data, compress_type, compresslevel)
 
     # TODO: Lazy mode should permit writing meta here
-    def write_distinfo(self, filename: Union[str, Path],
-                       arcname: Optional[str] = None,
-                       compress_type: Optional[int] = None,
-                       compresslevel: Optional[int] = None,
-                       *, recursive: bool = True, resolve: bool = True,
-                       skipdir: bool = True) -> None:
+    def write_distinfo(
+        self,
+        filename: Union[str, Path],
+        arcname: Optional[str] = None,
+        compress_type: Optional[int] = None,
+        compresslevel: Optional[int] = None,
+        *,
+        recursive: bool = True,
+        resolve: bool = True,
+        skipdir: bool = True,
+    ) -> None:
         """Write a file to `.dist-info` directory in the wheel.
 
         This is a shorthand for `write(...)` with `arcname` prefixed with
@@ -2270,7 +2316,7 @@ class WheelFile:
         elif arcname is None:
             arcname = str(filename)
 
-        if arcname == '':
+        if arcname == "":
             raise ProhibitedWriteError(
                 "Empty arcname - write would result in duplicating zip entry "
                 "for .dist-info directory."
@@ -2283,13 +2329,22 @@ class WheelFile:
 
         arcname = self._distinfo_path(arcname)
 
-        self.write(filename, arcname, compress_type, compresslevel,
-                   recursive=recursive, skipdir=skipdir)
+        self.write(
+            filename,
+            arcname,
+            compress_type,
+            compresslevel,
+            recursive=recursive,
+            skipdir=skipdir,
+        )
 
-    def writestr_distinfo(self, zinfo_or_arcname: Union[zipfile.ZipInfo, str],
-                          data: Union[bytes, str],
-                          compress_type: Optional[int] = None,
-                          compresslevel: Optional[int] = None) -> None:
+    def writestr_distinfo(
+        self,
+        zinfo_or_arcname: Union[zipfile.ZipInfo, str],
+        data: Union[bytes, str],
+        compress_type: Optional[int] = None,
+        compresslevel: Optional[int] = None,
+    ) -> None:
         """Write given data to the .dist-info directory.
 
         This method is a handy shortcut for writing into
@@ -2336,13 +2391,15 @@ class WheelFile:
         )
 
         # TODO don't check this in lazy mode
-        if (arcname in self.METADATA_FILENAMES
-                or arcname.split('/')[0] in self.METADATA_FILENAMES):
+        if (
+            arcname in self.METADATA_FILENAMES
+            or arcname.split("/")[0] in self.METADATA_FILENAMES
+        ):
             raise ProhibitedWriteError(
                 f"Write would result in a duplicated metadata file: {arcname}."
             )
 
-        dist_arcname = self._distinfo_path(arcname.lstrip('/'))
+        dist_arcname = self._distinfo_path(arcname.lstrip("/"))
 
         if isinstance(zinfo_or_arcname, zipfile.ZipInfo):
             zinfo_or_arcname = _clone_zipinfo(zinfo_or_arcname, filename=dist_arcname)
@@ -2354,9 +2411,9 @@ class WheelFile:
     @staticmethod
     def _check_section(section):
         # TODO make sure lazy mode doesn't do this
-        if section == '':
+        if section == "":
             raise ValueError("Section cannot be an empty string.")
-        if '/' in section:
+        if "/" in section:
             raise ValueError("Section cannot contain slashes.")
 
     def namelist(self) -> List[str]:

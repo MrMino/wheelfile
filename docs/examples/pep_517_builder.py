@@ -1,13 +1,15 @@
-import toml
 import tarfile
 from pathlib import Path
+
+import toml
+
 from wheelfile import WheelFile
 
 
 def get_config():
     """Read pyproject.toml"""
-    project_config = toml.load('pyproject.toml')
-    config = project_config['tool']['pep_517_example']
+    project_config = toml.load("pyproject.toml")
+    config = project_config["tool"]["pep_517_example"]
     return config
 
 
@@ -19,40 +21,39 @@ def get_requires_for_build_wheel(config_settings):
 # See https://www.python.org/dev/peps/pep-0517/#build-sdist
 def build_sdist(sdist_directory, config_settings=None):
     config = get_config()
-    distname = config['name']
-    version = config['version']
+    distname = config["name"]
+    version = config["version"]
 
     with tarfile.open(
-        f'{distname}-{version}.tar.gz', 'w:gz', format=tarfile.PAX_FORMAT
+        f"{distname}-{version}.tar.gz", "w:gz", format=tarfile.PAX_FORMAT
     ) as sdist:
-        sdist.add('./')
+        sdist.add("./")
 
 
 # See https://www.python.org/dev/peps/pep-0517/#build-wheel
-def build_wheel(wheel_directory,
-                config_settings=None, metadata_directory=None):
+def build_wheel(wheel_directory, config_settings=None, metadata_directory=None):
     config = get_config()
 
-    maintainers = config['maintainers']
+    maintainers = config["maintainers"]
     if isinstance(maintainers, list):
-        maintainers = ', '.join(maintainers)
+        maintainers = ", ".join(maintainers)
 
-    maintainers_emails = config['maintainers_emails']
+    maintainers_emails = config["maintainers_emails"]
     if isinstance(maintainers_emails, list):
-        maintainers_emails = ', '.join(config['maintainers_emails'])
+        maintainers_emails = ", ".join(config["maintainers_emails"])
 
-    requirements = Path('requirements.txt').read_text().splitlines()
+    requirements = Path("requirements.txt").read_text().splitlines()
 
     spec = {
-        'distname': config['name'],
-        'version': config['version'],
+        "distname": config["name"],
+        "version": config["version"],
     }
 
-    with WheelFile(wheel_directory, 'w', **spec) as wf:
+    with WheelFile(wheel_directory, "w", **spec) as wf:
         wf.metadata.maintainer = maintainers
         wf.metadata.maintainer_email = maintainers_emails
         wf.metadata.requires_dists = requirements
 
-        wf.write('src/')
+        wf.write("src/")
 
     return wf.filename  # 🧀

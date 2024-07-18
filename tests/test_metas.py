@@ -1,41 +1,54 @@
-import pytest
-
-from wheelfile import (__version__ as lib_version,
-                       WheelData, MetaData, WheelRecord,
-                       UnsupportedHashTypeError,
-                       RecordContainsDirectoryError,
-                       )
-from packaging.version import Version
-from textwrap import dedent
 from io import BytesIO
+from textwrap import dedent
+
+import pytest
+from packaging.version import Version
+
+from wheelfile import (
+    MetaData,
+    RecordContainsDirectoryError,
+    UnsupportedHashTypeError,
+    WheelData,
+    WheelRecord,
+)
+from wheelfile import __version__ as lib_version
 
 
 class TestMetadata:
     plurals = {
-        "keywords", "classifiers", "project_urls", "platforms",
-        "supported_platforms", "requires_dists", "requires_externals",
-        "provides_extras", "provides_dists", "obsoletes_dists"
+        "keywords",
+        "classifiers",
+        "project_urls",
+        "platforms",
+        "supported_platforms",
+        "requires_dists",
+        "requires_externals",
+        "provides_extras",
+        "provides_dists",
+        "obsoletes_dists",
     }
 
     def test_only_name_and_version_is_required(self):
-        md = MetaData(name='my-package', version='1.2.3')
-        assert md.name == 'my-package' and str(md.version) == '1.2.3'
+        md = MetaData(name="my-package", version="1.2.3")
+        assert md.name == "my-package" and str(md.version) == "1.2.3"
 
     @pytest.fixture
     def metadata(self):
-        return MetaData(name='my-package', version='1.2.3')
+        return MetaData(name="my-package", version="1.2.3")
 
     def test_basic_eq(self):
-        args = {'name': 'x', 'version': '1'}
+        args = {"name": "x", "version": "1"}
         assert MetaData(**args) == MetaData(**args)
 
     def test_basic_to_str(self, metadata):
-        expected = dedent("""\
+        expected = dedent(
+            """\
             Metadata-Version: 2.1
             Name: my-package
             Version: 1.2.3
 
-        """)
+            """
+        )
         assert str(metadata) == expected
 
     def test_basic_from_str(self, metadata):
@@ -45,60 +58,64 @@ class TestMetadata:
         assert metadata == MetaData.from_str(str(metadata))
 
     def test_metadata_version_is_2_1(self, metadata):
-        assert metadata.metadata_version == '2.1'
+        assert metadata.metadata_version == "2.1"
 
     def test_metadata_version_is_unchangeable(self, metadata):
         with pytest.raises(AttributeError):
-            metadata.metadata_version = '3.0'
+            metadata.metadata_version = "3.0"
 
-    @pytest.mark.parametrize('field', plurals)
+    @pytest.mark.parametrize("field", plurals)
     def test_plural_params_default_to_empty_lists(self, metadata, field):
         # Each of the attribute names here should end with an "s".
         assert getattr(metadata, field) == []
 
-    @pytest.mark.parametrize('field', plurals - {'keywords'})
+    @pytest.mark.parametrize("field", plurals - {"keywords"})
     def test_plural_fields_except_keywords_show_up_as_multiple_use(self, field):
         assert MetaData.field_is_multiple_use(field)
 
     def test_keywords_is_not_multiple_use(self):
-        assert not MetaData.field_is_multiple_use('keywords')
+        assert not MetaData.field_is_multiple_use("keywords")
 
     @classmethod
     @pytest.fixture
     def full_usage(cls):
-        description = dedent("""\
+        description = dedent(
+            """\
 
             Some
 
             Long
 
             Description
-        """)
+            """
+        )
         kwargs = {
-            'name': 'package-name',
-            'version': Version('1.2.3'),
-            'summary': "this is a test",
-            'description': description,
-            'description_content_type': 'text/plain',
-            'keywords': ["test", "unittests", "package", "wheelfile"],
-            'classifiers': ["Topic :: Software Development :: Testing",
-                            "Framework :: Pytest"],
-            'author': "MrMino",
-            'author_email': "mrmino@example.com",
-            'maintainer': "NotMrMino",
-            'maintainer_email': "not.mrmino@example.com",
-            'license': "May be distributed only if this test succeeds",
-            'home_page': "http://example.com/package-name/1.2.3",
-            'download_url': "http://example.com/package-name/1.2.3/download",
-            'project_urls': ["Details: http://example.com/package-name/"],
-            'platforms': ["SomeOS", "SomeOtherOS"],
-            'supported_platforms': ["some-architecture-128", "my-mips-21"],
-            'requires_python': "~=3.6",
-            'requires_dists': ["wheelfile[metadata]~=1.0", "paramiko"],
-            'requires_externals': ["vim", "zsh"],
-            'provides_extras': ["metadata"],
-            'provides_dists': ["wheel_packaging"],
-            'obsoletes_dists': ["wheel"]
+            "name": "package-name",
+            "version": Version("1.2.3"),
+            "summary": "this is a test",
+            "description": description,
+            "description_content_type": "text/plain",
+            "keywords": ["test", "unittests", "package", "wheelfile"],
+            "classifiers": [
+                "Topic :: Software Development :: Testing",
+                "Framework :: Pytest",
+            ],
+            "author": "MrMino",
+            "author_email": "mrmino@example.com",
+            "maintainer": "NotMrMino",
+            "maintainer_email": "not.mrmino@example.com",
+            "license": "May be distributed only if this test succeeds",
+            "home_page": "http://example.com/package-name/1.2.3",
+            "download_url": "http://example.com/package-name/1.2.3/download",
+            "project_urls": ["Details: http://example.com/package-name/"],
+            "platforms": ["SomeOS", "SomeOtherOS"],
+            "supported_platforms": ["some-architecture-128", "my-mips-21"],
+            "requires_python": "~=3.6",
+            "requires_dists": ["wheelfile[metadata]~=1.0", "paramiko"],
+            "requires_externals": ["vim", "zsh"],
+            "provides_extras": ["metadata"],
+            "provides_dists": ["wheel_packaging"],
+            "obsoletes_dists": ["wheel"],
         }
 
         return kwargs
@@ -110,7 +127,8 @@ class TestMetadata:
 
     def test_metadata_text_generation(self, full_usage):
         # Order of the header lines is NOT tested (order in payload - is)
-        expected_headers = dedent("""\
+        expected_headers = dedent(
+            """\
             Metadata-Version: 2.1
             Name: package-name
             Version: 1.2.3
@@ -139,8 +157,10 @@ class TestMetadata:
             Provides-Extra: metadata
             Provides-Dist: wheel_packaging
             Obsoletes-Dist: wheel
-        """).splitlines()
-        expected_payload = dedent("""\
+            """
+        ).splitlines()
+        expected_payload = dedent(
+            """\
 
 
             Some
@@ -148,10 +168,11 @@ class TestMetadata:
             Long
 
             Description
-        """).splitlines()
+            """
+        ).splitlines()
 
         lines = str(MetaData(**full_usage)).splitlines()
-        header_end_idx = lines.index('')
+        header_end_idx = lines.index("")
         headers = lines[:header_end_idx]
         payload = lines[header_end_idx:]
         assert set(headers) == set(expected_headers)
@@ -169,72 +190,74 @@ class TestMetadata:
 
     def test_no_mistaken_attributes(self, metadata):
         with pytest.raises(AttributeError):
-            metadata.maintainers = ''
+            metadata.maintainers = ""
 
         with pytest.raises(AttributeError):
-            metadata.Description = ''
+            metadata.Description = ""
 
         with pytest.raises(AttributeError):
             metadata.clasifiers = []
 
     def test_there_are_24_fields_in_this_metadata_version(self):
-        assert len(
-            [field for field in MetaData.__slots__] + ['metadata_version']
-        ) == 24
+        assert len([field for field in MetaData.__slots__] + ["metadata_version"]) == 24
 
     def test_keywords_param_accepts_comma_separated_str(self):
-        metadata = MetaData(name='name', version='1.2.3', keywords='a,b,c')
-        assert metadata.keywords == ['a', 'b', 'c']
+        metadata = MetaData(name="name", version="1.2.3", keywords="a,b,c")
+        assert metadata.keywords == ["a", "b", "c"]
 
     def test_keywords_param_accepts_list(self):
-        metadata = MetaData(name='name', version='1.2.3',
-                            keywords=['a', 'b', 'c'])
-        assert metadata.keywords == ['a', 'b', 'c']
+        metadata = MetaData(name="name", version="1.2.3", keywords=["a", "b", "c"])
+        assert metadata.keywords == ["a", "b", "c"]
 
 
 class TestWheelData:
     def test_simple_init(self):
         wm = WheelData()
-        assert (wm.generator.startswith('wheelfile ')
-                and wm.root_is_purelib is True
-                and wm.tags == ['py3-none-any']
-                and wm.build is None)
+        assert (
+            wm.generator.startswith("wheelfile ")
+            and wm.root_is_purelib is True
+            and wm.tags == ["py3-none-any"]
+            and wm.build is None
+        )
 
     def test_init_args(self):
         args = {}
-        args.update(generator='test', root_is_purelib=False,
-                    tags='my-awesome-tag', build=2)
+        args.update(
+            generator="test", root_is_purelib=False, tags="my-awesome-tag", build=2
+        )
         wm = WheelData(**args)
 
-        assert (wm.generator == args['generator']
-                and wm.root_is_purelib == args['root_is_purelib']
-                and set(wm.tags) == set([args['tags']])
-                and wm.build == args['build'])
+        assert (
+            wm.generator == args["generator"]
+            and wm.root_is_purelib == args["root_is_purelib"]
+            and set(wm.tags) == set([args["tags"]])
+            and wm.build == args["build"]
+        )
 
     def test_tags_are_extended(self):
-        wm = WheelData(tags=['py2.py3-none-any', 'py2-cp3.cp2-manylinux1'])
+        wm = WheelData(tags=["py2.py3-none-any", "py2-cp3.cp2-manylinux1"])
         expected_tags = [
-            'py2-none-any',
-            'py3-none-any',
-            'py2-cp3-manylinux1',
-            'py2-cp2-manylinux1'
+            "py2-none-any",
+            "py3-none-any",
+            "py2-cp3-manylinux1",
+            "py2-cp2-manylinux1",
         ]
         assert set(wm.tags) == set(expected_tags)
 
     def test_single_tag_is_extended(self):
-        wm = WheelData(tags='py2.py3-none-any')
+        wm = WheelData(tags="py2.py3-none-any")
         expected_tags = [
-            'py2-none-any',
-            'py3-none-any',
+            "py2-none-any",
+            "py3-none-any",
         ]
         assert set(wm.tags) == set(expected_tags)
 
     def test_wheel_version_is_1_0(self):
-        assert WheelData().wheel_version == '1.0'
+        assert WheelData().wheel_version == "1.0"
 
     def test_wheel_version_is_not_settable(self):
         with pytest.raises(AttributeError):
-            WheelData().wheel_version = '2.0'
+            WheelData().wheel_version = "2.0"
 
     def test_strignifies_into_valid_wheelmeta(self):
         expected_contents = dedent(
@@ -247,14 +270,14 @@ class TestWheelData:
 
             """
         )
-        wm = WheelData(tags='py2-none-any', build=123)
+        wm = WheelData(tags="py2-none-any", build=123)
         assert str(wm) == expected_contents
 
     def test_changing_attributes_changes_str(self):
         wm = WheelData()
-        wm.generator = 'test'
+        wm.generator = "test"
         wm.root_is_purelib = False
-        wm.tags = ['my-test-tag', 'another-test-tag']
+        wm.tags = ["my-test-tag", "another-test-tag"]
         wm.build = 12345
 
         expected_contents = dedent(
@@ -282,13 +305,13 @@ class TestWheelData:
         wm = WheelData()
 
         with pytest.raises(AttributeError):
-            wm.root_is_platlib = ''
+            wm.root_is_platlib = ""
 
         with pytest.raises(AttributeError):
-            wm.tag = ''
+            wm.tag = ""
 
         with pytest.raises(AttributeError):
-            wm.generated_by = ''
+            wm.generated_by = ""
 
     def test_instances_are_comparable(self):
         assert WheelData() == WheelData()
@@ -315,35 +338,36 @@ class TestWheelRecord:
 
     def test_after_adding_a_file_its_hash_is_available(self, record):
         buf = BytesIO(bytes(1000))
-        expected_hash = 'sha256=VBs-naoJsgv4X6Jz5cvT6AGFqk7CmOdl24d0K3ATilM'
-        record.update('file', buf)
-        assert record.hash_of('file') == expected_hash
+        expected_hash = "sha256=VBs-naoJsgv4X6Jz5cvT6AGFqk7CmOdl24d0K3ATilM"
+        record.update("file", buf)
+        assert record.hash_of("file") == expected_hash
 
     def test_empty_stringifies_to_empty_string(self, record):
-        assert str(record) == ''
+        assert str(record) == ""
 
     def test_stringifies_to_proper_format(self, record):
         size = 1000
         buf = BytesIO(bytes(size))
-        expected_hash = 'sha256=VBs-naoJsgv4X6Jz5cvT6AGFqk7CmOdl24d0K3ATilM'
-        record.update('file', buf)
+        expected_hash = "sha256=VBs-naoJsgv4X6Jz5cvT6AGFqk7CmOdl24d0K3ATilM"
+        record.update("file", buf)
         buf.seek(0)
-        record.update('another/file', buf)
+        record.update("another/file", buf)
 
         # CSV uses CRLF by default, hence \r-s
         expected_record = dedent(
             f"""\
             file,{expected_hash},{size}\r
             another/file,{expected_hash},{size}\r
-            """)
+            """
+        )
 
         assert str(record) == expected_record
 
     def test_removing_file_removes_it_from_str_repr(self, record):
         buf = BytesIO(bytes(1000))
-        record.update('file', buf)
-        record.remove('file')
-        assert str(record) == ''
+        record.update("file", buf)
+        record.remove("file")
+        assert str(record) == ""
 
     def test_two_empty_records_are_equal(self):
         assert WheelRecord() == WheelRecord()
@@ -352,29 +376,29 @@ class TestWheelRecord:
         a = WheelRecord()
         b = WheelRecord()
         buf = BytesIO(bytes(1000))
-        a.update('file', buf)
+        a.update("file", buf)
         buf.seek(0)
-        b.update('file', buf)
+        b.update("file", buf)
 
     def test_from_empty_str_produces_empty_record(self):
-        assert str(WheelRecord.from_str('')) == ''
+        assert str(WheelRecord.from_str("")) == ""
 
     def test_stringification_is_stable(self):
         wr = WheelRecord()
         buf = BytesIO(bytes(1000))
-        wr.update('file', buf)
+        wr.update("file", buf)
         assert str(WheelRecord.from_str(str(wr))) == str(wr)
 
     def test_has_membership_operator_for_paths_in_the_record(self):
         wr = WheelRecord()
-        wr.update('some/particular/path', BytesIO(bytes(1)))
-        assert 'some/particular/path' in wr
+        wr.update("some/particular/path", BytesIO(bytes(1)))
+        assert "some/particular/path" in wr
 
     def test_throws_with_unknown_hash(self):
         with pytest.raises(UnsupportedHashTypeError):
-            WheelRecord(hash_algo='frobnots')
+            WheelRecord(hash_algo="frobnots")
 
-    @pytest.mark.parametrize("hash_algo", ('md5', 'sha1'))
+    @pytest.mark.parametrize("hash_algo", ("md5", "sha1"))
     def test_throw_with_bad_hash(self, hash_algo):
         with pytest.raises(UnsupportedHashTypeError):
             WheelRecord(hash_algo=hash_algo)
@@ -382,7 +406,7 @@ class TestWheelRecord:
     def test_update_throws_on_directory_entry(self):
         with pytest.raises(RecordContainsDirectoryError):
             wr = WheelRecord()
-            wr.update('path/to/a/directory/', BytesIO(bytes(1)))
+            wr.update("path/to/a/directory/", BytesIO(bytes(1)))
 
     def test_from_str_throws_on_directory_entry(self):
         with pytest.raises(RecordContainsDirectoryError):
