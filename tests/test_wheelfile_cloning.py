@@ -1,6 +1,6 @@
 import io
 import os
-from zipfile import ZIP_DEFLATED, ZIP_BZIP2, ZIP_STORED, ZipInfo
+from zipfile import ZIP_DEFLATED, ZIP_BZIP2, ZIP_LZMA, ZIP_STORED, ZipInfo
 
 import pytest
 
@@ -211,9 +211,37 @@ class TestRegularFilesCloning:
             for arcname, data in archive.items():
                 assert cwf.zipfile.read(arcname) == data
 
-    PRESERVED_ZIPINFO_ATTRS = ['date_time', 'compress_type', 'comment',
+    def test_substitutes_compress_type_if_passed(self, wf, buf):
+        wf.writestr("file1", "", compress_type=ZIP_BZIP2)
+        new_compression = ZIP_LZMA
+
+        with WheelFile.from_wheelfile(wf, buf, compression=new_compression) as cwf:
+            assert cwf.zipfile.infolist()[0].compress_type == new_compression
+
+    def test_preserves_compress_type_if_not_passed(self, wf, buf):
+        old_compression = ZIP_BZIP2
+        wf.writestr("file1", "", compress_type=old_compression)
+
+        with WheelFile.from_wheelfile(wf, buf) as cwf:
+            assert cwf.zipfile.infolist()[0].compress_type == old_compression
+
+    def test_substitutes_compresslevel_if_passed(self, wf, buf):
+        wf.writestr("file1", "", compress_type=ZIP_BZIP2, compresslevel=5)
+        new_compresslevel = 7
+
+        with WheelFile.from_wheelfile(wf, buf, compression=ZIP_LZMA, compresslevel=new_compresslevel) as cwf:
+            assert cwf.zipfile.infolist()[0]._compresslevel == new_compresslevel
+
+    def test_preserves_compresslevel_if_not_passed(self, wf, buf):
+        old_compresslevel = 7
+        wf.writestr("file1", "", compress_type=ZIP_BZIP2, compresslevel=old_compresslevel)
+
+        with WheelFile.from_wheelfile(wf, buf) as cwf:
+            assert cwf.zipfile.infolist()[0]._compresslevel == old_compresslevel
+
+    PRESERVED_ZIPINFO_ATTRS = ['date_time', 'compress_type', '_compresslevel', 'comment',
                                'extra', 'create_system', 'create_version',
-                               'extract_version', 'flag_bits', 'volume',
+                               'extract_version', 'volume',
                                'internal_attr', 'external_attr']
 
     def custom_zipinfo(self):
@@ -222,9 +250,8 @@ class TestRegularFilesCloning:
         zf.comment = b"comment"
         zf.extra = b"extra"
         zf.create_system = 2
-        zf.create_version = 21
-        zf.extract_version = 19
-        zf.flag_bits = 0o123
+        zf.create_version = 50
+        zf.extract_version = 60
         zf.volume = 7
         zf.internal_attr = 123
         zf.external_attr = 321
@@ -240,7 +267,6 @@ class TestRegularFilesCloning:
 
         assert getattr(czf, attr) == getattr(zf, attr)
 
-    @pytest.mark.xfail(reason="writestr_data does not propagate zinfo yet")
     @pytest.mark.parametrize("attr", PRESERVED_ZIPINFO_ATTRS)
     def test_zip_attributes_are_preserved_writestr_data(self, wf, buf, attr):
         zf = self.custom_zipinfo()
@@ -251,9 +277,6 @@ class TestRegularFilesCloning:
 
         assert getattr(czf, attr) == getattr(zf, attr)
 
-    # writestr_data does not propagate zinfo yet
-    # skipped because it generates lots of warnings
-    @pytest.mark.xfail(reason="writestr_distinfo does not propagate zinfo yet")
     @pytest.mark.parametrize("attr", PRESERVED_ZIPINFO_ATTRS)
     def test_zip_attributes_are_preserved_writestr_distinfo(self, wf, buf,
                                                             attr):

@@ -9,6 +9,11 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 ### Changed
 - **Dropped support of Python versions lower than Python 3.9.**
+- The `WheelFile.writestr_*` methods will now preserve as `ZipInfo` attributes,
+  if a `ZipInfo` object has been passed instead of the filename.
+- `WheelFile.from_wheelfile` constructor will now preserve `ZipInfo`
+  attributes of the files from distinfo and data directories of the original
+  archive. This includes file permissions.
 
 ## [0.0.8] - 2021-08-03
 ### Changed

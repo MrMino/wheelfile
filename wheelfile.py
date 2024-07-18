@@ -96,6 +96,42 @@ def _slots_from_params(func):
     return slots
 
 
+def _clone_zipinfo(zinfo: zipfile.ZipInfo, **to_replace) -> zipfile.ZipInfo:
+    """Clone a ZipInfo object and update its attributes using to_replace."""
+
+    PRESERVED_ZIPINFO_ATTRS = [
+        "date_time",
+        "compress_type",
+        "_compresslevel",
+        "comment",
+        "extra",
+        "create_system",
+        "create_version",
+        "extract_version",
+        "volume",
+        "internal_attr",
+        "external_attr",
+    ]
+
+    # `orig_filename` instead of `filename` is used to prevent any possibility
+    # of confusing ZipInfo filename normalization.
+    new_name = zinfo.orig_filename
+    if "filename" in to_replace:
+        new_name = to_replace["filename"]
+        del to_replace["filename"]
+
+    new_zinfo = zipfile.ZipInfo(filename=new_name)
+    for attr in PRESERVED_ZIPINFO_ATTRS:
+        replaced = to_replace.get(attr)
+
+        if replaced is not None:
+            setattr(new_zinfo, attr, replaced)
+        else:
+            setattr(new_zinfo, attr, getattr(zinfo, attr))
+
+    return new_zinfo
+
+
 # TODO: accept packaging.requirements.Requirement in requires_dist, fix this in
 # example, ensure such objects are converted on __str__
 # TODO: reimplement using dataclasses
@@ -1228,7 +1264,7 @@ class WheelFile:
         language_tag: Union[str, None, _Sentinel] = _unspecified,
         abi_tag: Union[str, None, _Sentinel] = _unspecified,
         platform_tag: Union[str, None, _Sentinel] = _unspecified,
-        compression: int = zipfile.ZIP_DEFLATED,
+        compression: Optional[int] = None,
         allowZip64: bool = True,
         compresslevel: Optional[int] = None,
         strict_timestamps: bool = True,
@@ -1299,7 +1335,13 @@ class WheelFile:
             turn passes them to `zipfile.ZipFile` - see `zipfile` docs for full
             description on each.
 
-            Value from `wf` is *not* reused for this parameter.
+            Value used to construct `wf` is *not* reused for these parameters.
+
+            For `compression` and `compresslevel`, if the value is not passed,
+            the values from the original archive are preserved. Internally the
+            data is copied using `ZipFile.writestr` with `ZipInfo` attributes
+            of the files preserved. If the value is passed, these normally
+            preserved attributes are substituted.
 
         Raises
         ------
@@ -1380,6 +1422,11 @@ class WheelFile:
                     "both objects' paths point at the same file."
                 )
 
+        if compression is None:
+            default_compression = zipfile.ZIP_DEFLATED
+        else:
+            default_compression = compression
+
         new_wf = WheelFile(
             file_or_path, mode,
             distname=distname,
@@ -1388,7 +1435,7 @@ class WheelFile:
             language_tag=language_tag,
             abi_tag=abi_tag,
             platform_tag=platform_tag,
-            compression=compression,
+            compression=default_compression,
             allowZip64=allowZip64,
             compresslevel=compresslevel,
             strict_timestamps=strict_timestamps,
@@ -1429,19 +1476,24 @@ class WheelFile:
         to_copy = wf.infolist()
         for zinfo in to_copy:
 
+            data = wf.zipfile.read(zinfo)
+
             arcname = zinfo.filename
             arcname_head, *arcname_tail_parts = arcname.split('/')
             arcname_tail = '/'.join(arcname_tail_parts)
             if arcname_head == wf.distinfo_dirname:
                 new_arcname = new_wf.distinfo_dirname + '/' + arcname_tail
-                new_wf.writestr(new_arcname, wf.zipfile.read(zinfo))
-                continue
-            if arcname_head == wf.data_dirname:
+                zinfo = _clone_zipinfo(zinfo, filename=new_arcname)
+            elif arcname_head == wf.data_dirname:
                 new_arcname = new_wf.data_dirname + '/' + arcname_tail
-                new_wf.writestr(new_arcname, wf.zipfile.read(zinfo))
-                continue
+                zinfo = _clone_zipinfo(zinfo, filename=new_arcname)
 
-            new_wf.writestr(zinfo, wf.zipfile.read(zinfo))
+            new_wf.writestr(
+                zinfo,
+                data,
+                compress_type=compression,
+                compresslevel=compresslevel,
+            )
 
         return new_wf
 
@@ -1966,7 +2018,6 @@ class WheelFile:
         path = os.path.join(arcname, directory[len(prefix):], stem)
         return path
 
-    # TODO: Make sure fields of given ZipInfo objects are propagated
     def writestr(self,
                  zinfo_or_arcname: Union[zipfile.ZipInfo, str],
                  data: Union[bytes, str],
@@ -2090,7 +2141,6 @@ class WheelFile:
 
     # TODO: drive letter should be stripped from the arcname the same way
     # ZipInfo.from_file does it
-    # TODO: Make sure fields of given ZipInfo objects are propagated
     def writestr_data(self, section: str,
                       zinfo_or_arcname: Union[zipfile.ZipInfo, str],
                       data: Union[bytes, str],
@@ -2140,10 +2190,14 @@ class WheelFile:
             else zinfo_or_arcname
         )
 
-        arcname = self._distinfo_path(section + '/' + arcname.lstrip('/'),
-                                      kind='data')
+        data_arcname = self._distinfo_path(section + '/' + arcname.lstrip('/'), kind='data')
 
-        self.writestr(arcname, data, compress_type, compresslevel)
+        if isinstance(zinfo_or_arcname, zipfile.ZipInfo):
+            zinfo_or_arcname = _clone_zipinfo(zinfo_or_arcname, filename=data_arcname)
+        else:
+            zinfo_or_arcname = data_arcname
+
+        self.writestr(zinfo_or_arcname, data, compress_type, compresslevel)
 
     # TODO: Lazy mode should permit writing meta here
     def write_distinfo(self, filename: Union[str, Path],
@@ -2231,7 +2285,6 @@ class WheelFile:
         self.write(filename, arcname, compress_type, compresslevel,
                    recursive=recursive, skipdir=skipdir)
 
-    # TODO: Make sure fields of given ZipInfo objects are propagated
     def writestr_distinfo(self, zinfo_or_arcname: Union[zipfile.ZipInfo, str],
                           data: Union[bytes, str],
                           compress_type: Optional[int] = None,
@@ -2288,8 +2341,14 @@ class WheelFile:
                 f"Write would result in a duplicated metadata file: {arcname}."
             )
 
-        arcname = self._distinfo_path(arcname.lstrip('/'))
-        self.writestr(arcname, data, compress_type, compresslevel)
+        dist_arcname = self._distinfo_path(arcname.lstrip('/'))
+
+        if isinstance(zinfo_or_arcname, zipfile.ZipInfo):
+            zinfo_or_arcname = _clone_zipinfo(zinfo_or_arcname, filename=dist_arcname)
+        else:
+            zinfo_or_arcname = dist_arcname
+
+        self.writestr(zinfo_or_arcname, data, compress_type, compresslevel)
 
     @staticmethod
     def _check_section(section):

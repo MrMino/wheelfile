@@ -1077,3 +1077,70 @@ class TestZipFileRelatedArgs:
                        compresslevel=9)
         wf.writestr_distinfo('file', b'data')
         assert wf.infolist()[0]._compresslevel == 9
+
+
+class TestZipinfoAttributePreserval:
+
+    preserved_fields = pytest.mark.parametrize("field, value", [
+        ("date_time", (2000, 1, 2, 3, 4, 2)),
+        ("compress_type", ZIP_BZIP2),
+        ("comment", b"Wubba lubba dub dub"),
+        ("extra", bytes([0x00, 0x00, 0x04, 0x00] + [0xFF]*4)),
+        ("create_system", 4),
+        ("create_version", 31),
+        ("extract_version", 42),
+        ("internal_attr", 0x02),
+        ("external_attr", 0x02),
+
+        # Failing / impossible:
+
+        # ZIP stores timestamps with two seconds of granularity
+        # ("date_time", (2000, 1, 2, 3, 4, 1)),
+
+        # Not preservable without changing other values
+        # ("flag_bits", 0xFFFFFF),
+
+        # Not supported by Python's zipfile
+        # ("volume", 0x01),
+    ])
+
+    @preserved_fields
+    def test_writestr_propagates_zipinfo_fields(self, field, value, wf, buf):
+        arcpath = "some/archive/path"
+        zi = ZipInfo(arcpath)
+        setattr(zi, field, value)
+
+        wf.writestr(zi, "_")
+        wf.close()
+
+        with WheelFile(buf, distname="_", version='0') as wf:
+            assert getattr(wf.zipfile.getinfo(arcpath), field) == value
+
+    @preserved_fields
+    def test_writestr_data_propagates_zipinfo_fields(self, field, value, wf, buf):
+        data_path = "some/data"
+        section = "section"
+        zi = ZipInfo(data_path)
+        setattr(zi, field, value)
+
+        wf.writestr_data(section, zi, "_")
+        wf.close()
+
+        arcpath = wf.data_dirname + "/" + section + "/" + data_path
+
+        with WheelFile(buf, distname="_", version='0') as wf:
+            assert getattr(wf.zipfile.getinfo(arcpath), field) == value
+
+    @preserved_fields
+    def test_writestr_distinfo_propagates_zipinfo_fields(self, field, value, wf, buf):
+        data_path = "some/metadata"
+        zi = ZipInfo(data_path)
+        setattr(zi, field, value)
+
+        wf.writestr_distinfo(zi, "_")
+        wf.close()
+
+        arcpath = wf.distinfo_dirname + "/" + data_path
+
+        with WheelFile(buf, distname="_", version='0') as wf:
+            assert getattr(wf.zipfile.getinfo(arcpath), field) == value
