@@ -56,7 +56,7 @@ spec = {
 }
 
 requirements = [
-    'packaging ~= 20.8',
+    'packaging >= 20.8',
 ]
 
 with WheelFile(mode='w', **spec) as wf:
