@@ -861,12 +861,14 @@ class WheelFile:
     Attributes
     ----------
     filename : str
-        If initialized with:
-            - An IO buffer: the filename that the wheel would have after saving
-              it onto filesystem.
-            - A path to a directory: the path to the wheel, composed from its
-              the given path and the filename generated using the parameters
-              given to `__init__`.
+        Depending on what the class was initialized with, this attribute is either:
+            - If initialized with an IO buffer: the filename that the wheel
+              would have after saving it onto filesystem, considering other
+              parameters given to `__init__`: `distname`, `version`,
+              `build_tag`, `language_tag`, `abi_tag` and `platform_tag`.
+            - If initialized with a path to a directory: the path to the wheel
+              composed from the given path, and the filename that was generated
+              using other parameters given to `__init__`.
             - A path to a file: that path, even if it is not compliant with the
               spec (in lazy mode).
 
