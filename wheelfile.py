@@ -1459,6 +1459,12 @@ class WheelFile:
             compresslevel=compresslevel,
             strict_timestamps=strict_timestamps,
         )
+        # if we copy a wheel from an existing wheelfile, we should recreate the
+        # distinfo_prefix with the original distname and the modified version
+        # if we do not set _distinfo_prefix, the distname will get canonicalized through
+        # _distinfo_path(), and this is wrong when building a wheel from an existing one
+        # as it will break package discovery
+        new_wf._distinfo_prefix = f"{distname}-{version}."
 
         assert new_wf.wheeldata is not None  # For MyPy
 
