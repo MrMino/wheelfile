@@ -54,27 +54,27 @@ class TestUnspecifiedArgs:
 
     def test_copies_distname(self, wf, buf):
         cwf = WheelFile.from_wheelfile(wf, buf)
-        cwf.distname == wf.distname
+        assert cwf.distname == wf.distname
 
     def test_copies_version(self, wf, buf):
         cwf = WheelFile.from_wheelfile(wf, buf)
-        cwf.version == wf.version
+        assert cwf.version == wf.version
 
     def test_copies_build_tag(self, wf, buf):
         cwf = WheelFile.from_wheelfile(wf, buf)
-        cwf.version == wf.version
+        assert cwf.version == wf.version
 
     def test_copies_language(self, wf, buf):
         cwf = WheelFile.from_wheelfile(wf, buf)
-        cwf.language_tag == wf.language_tag
+        assert cwf.language_tag == wf.language_tag
 
     def test_copies_abi(self, wf, buf):
         cwf = WheelFile.from_wheelfile(wf, buf)
-        cwf.abi_tag == wf.abi_tag
+        assert cwf.abi_tag == wf.abi_tag
 
     def test_copies_platform(self, wf, buf):
         cwf = WheelFile.from_wheelfile(wf, buf)
-        cwf.platform_tag == wf.platform_tag
+        assert cwf.platform_tag == wf.platform_tag
 
     def test_none_build_tag_sets_default(self, wf, buf):
         cwf = WheelFile.from_wheelfile(
@@ -120,7 +120,7 @@ class TestZipFileRelatedArgs:
         # "force_zip64 is True, but allowZip64 was False when opening the ZIP
         # file."
         with pytest.raises(ValueError, match="allowZip64 was False"):
-            assert cwf.zipfile.open("file", mode="w", force_zip64=True)
+            cwf.zipfile.open("file", mode="w", force_zip64=True)
 
     def test_passes_compresslevel_arg_to_init(self, wf, buf):
         cwf = WheelFile.from_wheelfile(

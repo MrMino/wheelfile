@@ -64,7 +64,7 @@ class TestWheelFileInit:
 
     def test_on_bufs_x_mode_behaves_same_as_w(self):
         f1, f2 = BytesIO(), BytesIO()
-        wf1 = WheelFile(f1, "w", distname="_", version="0")
+        wf1 = WheelFile(f1, "x", distname="_", version="0")
         wf1.close()
         wf2 = WheelFile(f2, "w", distname="_", version="0")
         wf2.close()
@@ -334,7 +334,7 @@ class TestWheelFileWrites:
         os.utime(tmp_file, (1600000000, 1600000000))
 
         wf.write(tmp_file, arcname="file")
-        wf.zipfile.getinfo("file")
+        assert wf.zipfile.getinfo("file").date_time == (2020, 9, 13, 14, 26, 40)
 
     def test_write_has_resolve_arg(self, wf, tmp_file):
         wf.write(tmp_file, resolve=True)

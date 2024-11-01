@@ -379,6 +379,7 @@ class TestWheelRecord:
         a.update("file", buf)
         buf.seek(0)
         b.update("file", buf)
+        assert a == b
 
     def test_from_empty_str_produces_empty_record(self):
         assert str(WheelRecord.from_str("")) == ""
