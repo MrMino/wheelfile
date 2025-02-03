@@ -142,7 +142,6 @@ def _clone_zipinfo(zinfo: zipfile.ZipInfo, **to_replace) -> zipfile.ZipInfo:
 # TODO: validate provides_extras ↔ requires_dists?
 # TODO: validate values charset-wise
 # TODO: ensure name is the same as wheelfile namepath
-# TODO: PEP-643 - v2.2
 # TODO: don't raise invalid version, assign a degenerated version object instead
 class MetaData:
     """Implements Wheel Metadata format v2.1.
@@ -346,6 +345,34 @@ class MetaData:
         indicating that they should not coexist in a single environment with
         this one. Each entry must follow the same format that entries in
         "requires_dists" list do.
+
+    Dynamic
+        A string containing the name of another core metadata field. The field
+        names Name, Version, and Metadata-Version may not be specified in
+        this field.
+
+        When found in the metadata of a source distribution, the following
+        rules apply:
+
+        If a field is not marked as Dynamic, then the value of the field in
+        any wheel built from the sdist MUST match the value in the sdist. If
+        the field is not in the sdist, and not marked as Dynamic, then it
+        MUST NOT be present in the wheel.
+
+        If a field is marked as Dynamic, it may contain any valid value in a
+        wheel built from the sdist (including not being present at all).
+
+        If the sdist metadata version is older than version 2.2, then all
+        fields should be treated as if they were specified with Dynamic
+        (i.e. there are no special restrictions on the metadata of wheels
+        built from the sdist).
+
+        In any context other than a source distribution, Dynamic is for
+        information only, and indicates that the field value was calculated
+        at wheel build time, and may not be the same as the value in the
+        sdist or in other wheels for the project.
+
+        Full details of the semantics of Dynamic are described in PEP 643.
     """
 
     def __init__(
@@ -374,6 +401,7 @@ class MetaData:
         provides_extras: Optional[List[str]] = None,
         provides_dists: Optional[List[str]] = None,
         obsoletes_dists: Optional[List[str]] = None,
+        dynamic: Optional[str] = None,
     ):
         # self.metadata_version = '2.1' by property
         self.name = name
@@ -407,6 +435,7 @@ class MetaData:
         self.provides_extras = provides_extras or []
         self.provides_dists = provides_dists or []
         self.obsoletes_dists = obsoletes_dists or []
+        self.dynamic = dynamic or []
 
     __slots__ = _slots_from_params(__init__)
 
@@ -414,7 +443,7 @@ class MetaData:
     def metadata_version(self):
         return self._metadata_version
 
-    _metadata_version = "2.1"
+    _metadata_version = "2.2"
 
     @classmethod
     def field_is_multiple_use(cls, field_name: str) -> bool:
